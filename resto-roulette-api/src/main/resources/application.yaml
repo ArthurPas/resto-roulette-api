@@ -1,3 +1,17 @@
 spring:
   application:
-  name: resto-roulette-api
+    name: resto-roulette-api
+  datasource:
+    username: 'root'
+    url: jdbc:mysql://localhost:3306/resto_roulette
+    password: '****'
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+

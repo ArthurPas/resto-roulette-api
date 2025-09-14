@@ -1,7 +1,6 @@
 package com.roulette.resto.common.configuration;
 
-import com.roulette.resto.business.social.services.AccountServices;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.roulette.resto.business.social.services.AccountService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,11 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 @EnableWebSecurity
 public class SecurityConfig {
 
-	final AccountServices accountServices;
+	final AccountService accountService;
 	static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	public SecurityConfig(AccountServices accountServices) {
-		this.accountServices = accountServices;
+	public SecurityConfig(AccountService accountService) {
+		this.accountService = accountService;
 	}
 
 	@Bean
@@ -35,30 +33,11 @@ public class SecurityConfig {
 
 		http
 				.csrf(AbstractHttpConfigurer::disable)
-				.exceptionHandling(exceptionHandling ->
-								exceptionHandling
-//                                .accessDeniedHandler(new CustomAccessDeniedHandler())
-										.authenticationEntryPoint(new RestAuthenticationEntryPoint())
+				.authorizeHttpRequests(auth -> auth
+						.anyRequest().permitAll()
 				)
-				.authorizeHttpRequests((auth) ->
-						//authorize.anyRequest().authenticated()
-						auth.requestMatchers(HttpMethod.GET, "public_resource").permitAll()
-								.requestMatchers("/api/auth/**").permitAll()
-//								.anyRequest().authenticated()
-								.anyRequest().permitAll()
-				)
-//                .logout(logout -> logout
-//                        .logoutUrl("/api/auth/logout")
-//                        .invalidateHttpSession(true) // Invalidate the session
-//                        .clearAuthentication(true) // Clear authentication context
-//                        .deleteCookies("JSESSIONID") // Delete JSESSIONID cookie
-//                        .permitAll() // Allow access to the logout endpoint without authentication
-//                )
-
-				// Enable sessions;
-				.sessionManagement(s -> s
-						.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-				);
+				.formLogin(AbstractHttpConfigurer::disable)
+				.httpBasic(AbstractHttpConfigurer::disable);
 
 		return http.build();
 	}
@@ -67,7 +46,7 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager( PasswordEncoder passwordEncoder) {
 		System.out.println("in authenticationManager");
-		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(accountServices);
+		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(accountService);
 		authenticationProvider.setPasswordEncoder(passwordEncoder);
 
 		return new ProviderManager(authenticationProvider);

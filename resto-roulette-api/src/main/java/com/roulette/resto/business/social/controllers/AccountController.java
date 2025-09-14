@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -34,12 +35,10 @@ public class AccountController {
 	}
 	@PostMapping("/login")
 	public ResponseEntity<String> login(@RequestBody LoginDto loginDto, HttpServletRequest request){
-		UsernamePasswordAuthenticationToken authenticationRequest =
-				UsernamePasswordAuthenticationToken.unauthenticated(loginDto.getLogin(), loginDto.getPassword());
-		Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
-
-		SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
-
+		UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword());
+		Authentication auth = authenticationManager.authenticate(authReq);
+		SecurityContext sc = SecurityContextHolder.getContext();
+		sc.setAuthentication(auth);
 		HttpSession session = request.getSession();
 		session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 		return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);

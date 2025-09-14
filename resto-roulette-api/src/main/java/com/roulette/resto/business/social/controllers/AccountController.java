@@ -1,9 +1,11 @@
 package com.roulette.resto.business.social.controllers;
 
+import com.roulette.resto.business.social.dto.AuthResponse;
 import com.roulette.resto.business.social.dto.LoginDto;
 import com.roulette.resto.business.social.dto.RegisterDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.repository.AccountRepository;
+import com.roulette.resto.common.configuration.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -28,20 +30,26 @@ public class AccountController {
 
 	private final AccountRepository accountRepository;
 
-	public AccountController(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, AccountRepository accountRepository) {
+	private final JwtService jwtService;
+	public AccountController(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, AccountRepository accountRepository, JwtService jwtService) {
 		this.authenticationManager = authenticationManager;
 		this.passwordEncoder = passwordEncoder;
 		this.accountRepository = accountRepository;
+		this.jwtService = jwtService;
 	}
 	@PostMapping("/login")
-	public ResponseEntity<String> login(@RequestBody LoginDto loginDto, HttpServletRequest request){
+	public ResponseEntity<AuthResponse> login(@RequestBody LoginDto loginDto, HttpServletRequest request){
 		UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword());
 		Authentication auth = authenticationManager.authenticate(authReq);
 		SecurityContext sc = SecurityContextHolder.getContext();
 		sc.setAuthentication(auth);
 		HttpSession session = request.getSession();
 		session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-		return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);
+		AuthResponse authResponse = new AuthResponse();
+		String jwtToken = jwtService.generateToken(accountRepository.getAccountByLogin(loginDto.getLogin()));
+		authResponse.setToken(jwtToken);
+		authResponse.setExpiresIn(jwtService.getExpirationTime());
+		return new ResponseEntity<>(authResponse, HttpStatus.OK);
 	}
 
 

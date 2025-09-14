@@ -37,7 +37,11 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
 }
 
 tasks.named('test') {

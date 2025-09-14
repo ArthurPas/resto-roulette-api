@@ -18,8 +18,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.sql.SQLException;
 
 @Slf4j
 @Controller
@@ -54,7 +57,7 @@ public class AccountController {
 
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto, HttpServletRequest request){
+	public ResponseEntity<AuthResponse> registerUser(@RequestBody RegisterDto registerDto, HttpServletRequest request){
 
 		// add check for email exists in DB
 //		if(userRepository.existsByEmail(signupRequest.getEmail())){
@@ -72,10 +75,12 @@ public class AccountController {
 
 //		Role role = roleRepository.findByName("ROLE_USER");
 //		account.setRoles(Set.of(role));
-
 		accountRepository.registerAccount(account);
-
-		return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+		AuthResponse authResponse = new AuthResponse();
+		String jwtToken = jwtService.generateToken(accountRepository.getAccountByLogin(registerDto.getLogin()));
+		authResponse.setToken(jwtToken);
+		authResponse.setExpiresIn(jwtService.getExpirationTime());
+		return new ResponseEntity<>(authResponse, HttpStatus.OK);
 
 	}
 

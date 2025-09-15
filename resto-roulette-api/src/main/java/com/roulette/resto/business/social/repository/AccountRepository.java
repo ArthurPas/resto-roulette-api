@@ -68,7 +68,13 @@ public class AccountRepository {
 
 	public Account getAccountByLogin(String login) throws UsernameNotFoundException {
 		String query = "SELECT account_id,login,password FROM account WHERE login = ?";
-		return jdbcTemplate.queryForObject(query, new AccountRowMapper(), login);
+		try {
+			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), login);
+		}catch (DataAccessException e){
+			log.error("Error retrieving account by login {}", login);
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	public Account getAccountByEmail(String email) {

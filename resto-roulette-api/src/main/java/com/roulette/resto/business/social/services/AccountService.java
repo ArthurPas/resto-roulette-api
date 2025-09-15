@@ -3,6 +3,7 @@ package com.roulette.resto.business.social.services;
 import com.roulette.resto.business.social.dto.RegisterDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.repository.AccountRepository;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,7 +35,7 @@ public class AccountService implements UserDetailsService {
 			accountRepository.getAccountByLogin(login);
 			return true;
 		}
-		catch (EmptyResultDataAccessException e) {
+		catch (Exception e) {
 			return false;
 		}
 	}

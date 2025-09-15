@@ -55,7 +55,9 @@ public class AccountService implements UserDetailsService {
 		account.setLogin(registerDto.getLogin());
 		account.setPassword(registerDto.getPassword());
 		account.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-
+		account.setEmail(registerDto.getEmail());
+		account.setFirstName(registerDto.getFirstName());
+		account.setLastName(registerDto.getLastName());
 		accountRepository.registerAccount(account);
 	}
 	@Override

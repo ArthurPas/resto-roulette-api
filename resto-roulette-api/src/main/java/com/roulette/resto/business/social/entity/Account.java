@@ -13,11 +13,20 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Account implements UserDetails {
+	//account
 	private int accountId;
 	private String login;
 	private String password;
 
-	//	TODO: userinfo
+
+	//user_info
+	private String firstName;
+	private String lastName;
+	private String email;
+	private String phoneNumber;
+	private UserRole role = UserRole.ROLE_USER;
+	private String profilePicture;
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return List.of();

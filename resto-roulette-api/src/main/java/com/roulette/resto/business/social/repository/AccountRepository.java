@@ -6,10 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
-import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.Objects;
 
 @Slf4j
 @Repository
@@ -20,14 +23,46 @@ public class AccountRepository {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
-	public void registerAccount(Account account) {
+	public int registerUserInfo(Account account) {
+		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+		String query = "INSERT INTO user_info (last_name, first_name,email, type_id) VALUES (?, ?, ?, ?)";
+		try {
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setString(1, account.getLastName());
+				preparedStatement.setString(2, account.getFirstName());
+				preparedStatement.setString(3, account.getEmail());
+				preparedStatement.setInt(4, account.getRole().roleId);
+				return preparedStatement;
+			},generatedKeyHolder);
+			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
+		}catch (DataAccessException e) {
+			log.error("Error registering user_info {}", account.getLogin());
+			log.error(e.getMessage());
+			return -1;
+		}
+	}
+
+
+	public int registerAccount(Account account) {
+		int userInfoId = registerUserInfo(account);
+		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+
 		String query = "INSERT INTO account (login, password, user_info_id)" +
 				" VALUES (?, ?, ?)";
 		try {
-			jdbcTemplate.update(query, account.getLogin(), account.getPassword(), 1);
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setString(1, account.getLogin());
+				preparedStatement.setString(2, account.getPassword());
+				preparedStatement.setString(3, String.valueOf(userInfoId));
+				return preparedStatement;
+				},generatedKeyHolder);
+			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
 		} catch (DataAccessException e){
 			log.error("Error registering account {}", account.getLogin());
 			log.error(e.getMessage());
+			return -1;
 		}
 	}
 
@@ -37,10 +72,10 @@ public class AccountRepository {
 	}
 
 	public Account getAccountByEmail(String email) {
-		String query = "SELECT account_id,login,password,mail  FROM account JOIN user_info on account.user_info_id =" +
+		String query = "SELECT account_id,login,password,email  FROM account JOIN user_info on account.user_info_id =" +
 				" " +
 				"user_info.user_info_id  WHERE" +
-				" mail = ?";
+				" email = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), email);
 		}

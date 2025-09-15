@@ -32,17 +32,11 @@ import javax.security.auth.login.AccountNotFoundException;
 public class AccountController {
 	private final AuthenticationManager authenticationManager;
 
-	private final PasswordEncoder passwordEncoder;
-
-	private final AccountRepository accountRepository;
-
 	private final JwtService jwtService;
 	private final AccountService accountService;
 
-	public AccountController(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, AccountRepository accountRepository, JwtService jwtService, AccountService accountService) {
+	public AccountController(AuthenticationManager authenticationManager, JwtService jwtService, AccountService accountService) {
 		this.authenticationManager = authenticationManager;
-		this.passwordEncoder = passwordEncoder;
-		this.accountRepository = accountRepository;
 		this.jwtService = jwtService;
 		this.accountService = accountService;
 	}
@@ -71,26 +65,21 @@ public class AccountController {
 
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto, HttpServletRequest request){
+	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto, HttpServletRequest request) throws AccountNotFoundException {
 		if(accountService.existsByLogin(registerDto.getLogin())){
 			return new ResponseEntity<>(new APIError("Login already exist"), HttpStatus.BAD_REQUEST);
 		}
 		if(accountService.existsByEmail(registerDto.getEmail())){
 			return new ResponseEntity<>(new APIError("Email already exist"), HttpStatus.BAD_REQUEST);
 		}
-		Account account = new Account();
-		log.warn(account.toString());
-		account.setLogin(registerDto.getLogin());
-		account.setPassword(registerDto.getPassword());
-		account.setPassword(passwordEncoder.encode(registerDto.getPassword()));
 		try {
-			accountRepository.registerAccount(account);
+			accountService.registerAccount(registerDto);
 		}catch (Exception e) {
 			return new ResponseEntity<>((new APIError("DB error while creating account", e.getMessage())),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		AuthResponse authResponse = new AuthResponse();
-		String jwtToken = jwtService.generateToken(accountRepository.getAccountByLogin(registerDto.getLogin()));
+		String jwtToken = jwtService.generateToken(accountService.loadUserByUsername(registerDto.getLogin()));
 		authResponse.setToken(jwtToken);
 		authResponse.setExpiresIn(jwtService.getExpirationTime());
 		return new ResponseEntity<>(authResponse, HttpStatus.OK);

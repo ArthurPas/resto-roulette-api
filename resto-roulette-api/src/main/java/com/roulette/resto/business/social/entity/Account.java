@@ -20,12 +20,7 @@ public class Account implements UserDetails {
 
 
 	//user_info
-	private String firstName;
-	private String lastName;
-	private String email;
-	private String phoneNumber;
-	private UserRole role = UserRole.ROLE_USER;
-	private String profilePicture;
+	private UserInfo userInfo;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

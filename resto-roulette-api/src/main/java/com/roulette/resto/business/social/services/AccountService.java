@@ -2,6 +2,8 @@ package com.roulette.resto.business.social.services;
 
 import com.roulette.resto.business.social.dto.RegisterDto;
 import com.roulette.resto.business.social.entity.Account;
+import com.roulette.resto.business.social.entity.UserInfo;
+import com.roulette.resto.business.social.entity.UserRole;
 import com.roulette.resto.business.social.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -51,9 +53,12 @@ public class AccountService implements UserDetailsService {
 		account.setLogin(registerDto.getLogin());
 		account.setPassword(registerDto.getPassword());
 		account.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-		account.setEmail(registerDto.getEmail());
-		account.setFirstName(registerDto.getFirstName());
-		account.setLastName(registerDto.getLastName());
+		UserInfo userInfo = new UserInfo();
+		userInfo.setEmail(registerDto.getEmail());
+		userInfo.setFirstName(registerDto.getFirstName());
+		userInfo.setLastName(registerDto.getLastName());
+		userInfo.setRole(UserRole.ROLE_USER);
+		account.setUserInfo(userInfo);
 		accountRepository.registerAccount(account);
 	}
 	@Override

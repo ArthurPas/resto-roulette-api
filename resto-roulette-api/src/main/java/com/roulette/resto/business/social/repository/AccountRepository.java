@@ -33,10 +33,10 @@ public class AccountRepository {
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-				preparedStatement.setString(1, account.getLastName());
-				preparedStatement.setString(2, account.getFirstName());
-				preparedStatement.setString(3, account.getEmail());
-				preparedStatement.setInt(4, account.getRole().roleId);
+				preparedStatement.setString(1, account.getUserInfo().getLastName());
+				preparedStatement.setString(2, account.getUserInfo().getFirstName());
+				preparedStatement.setString(3, account.getUserInfo().getEmail());
+				preparedStatement.setInt(4, account.getUserInfo().getRole().roleId);
 				return preparedStatement;
 			},generatedKeyHolder);
 			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
@@ -105,14 +105,13 @@ public class AccountRepository {
 		try {
 			return jdbcTemplate.queryForObject(query, new UserInfoRowMapper(), login);
 		}
-		catch (EmptyResultDataAccessException e) {
-			log.error("SQl error",e);
+		catch (DataAccessException e) {
+			log.error(e.getMessage());
 			throw e;
 		}
 		catch (Exception e){
-			log.error("toto", e);
+			log.error("SQl error",e);
 			throw e;
 		}
-
 	}
 }

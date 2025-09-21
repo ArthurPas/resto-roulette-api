@@ -1,7 +1,10 @@
 package com.roulette.resto.business.social.repository;
 
+import com.roulette.resto.business.social.dto.UserInfoDto;
 import com.roulette.resto.business.social.dto.mapper.AccountRowMapper;
+import com.roulette.resto.business.social.dto.mapper.UserInfoRowMapper;
 import com.roulette.resto.business.social.entity.Account;
+import com.roulette.resto.business.social.entity.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -25,7 +28,8 @@ public class AccountRepository {
 
 	public int registerUserInfo(Account account) {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		String query = "INSERT INTO user_info (last_name, first_name,email, type_id) VALUES (?, ?, ?, ?)";
+		String query = 	"INSERT INTO user_info (last_name, first_name,email, type_id) " +
+						"VALUES (?, ?, ?, ?)";
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -48,8 +52,8 @@ public class AccountRepository {
 		int userInfoId = registerUserInfo(account);
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 
-		String query = "INSERT INTO account (login, password, user_info_id)" +
-				" VALUES (?, ?, ?)";
+		String query = 	"INSERT INTO account (login, password, user_info_id) " +
+						"VALUES (?, ?, ?)";
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -67,7 +71,9 @@ public class AccountRepository {
 	}
 
 	public Account getAccountByLogin(String login) throws UsernameNotFoundException {
-		String query = "SELECT account_id,login,password FROM account WHERE login = ?";
+		String query = 	"SELECT account_id,login,password " +
+						"FROM account " +
+						"WHERE login = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), login);
 		}catch (DataAccessException e){
@@ -78,10 +84,10 @@ public class AccountRepository {
 	}
 
 	public Account getAccountByEmail(String email) {
-		String query = "SELECT account_id,login,password,email  FROM account JOIN user_info on account.user_info_id =" +
-				" " +
-				"user_info.user_info_id  WHERE" +
-				" email = ?";
+		String query = 	"SELECT account_id,login,password,email " +
+						"FROM account " +
+						"JOIN user_info on account.user_info_id = user_info.user_info_id " +
+						"WHERE email = ? ";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), email);
 		}
@@ -89,5 +95,24 @@ public class AccountRepository {
 			log.error(e.getMessage());
 			throw e;
 		}
+	}
+
+	public UserInfo getUserInfoByLogin(String login)  {
+		String query = 	"SELECT last_name, first_name, email, type_id as role, login " +
+						"FROM user_info " +
+						"JOIN account on user_info.user_info_id = account.user_info_id "+
+						"WHERE account.login = ? ";
+		try {
+			return jdbcTemplate.queryForObject(query, new UserInfoRowMapper(), login);
+		}
+		catch (EmptyResultDataAccessException e) {
+			log.error("SQl error",e);
+			throw e;
+		}
+		catch (Exception e){
+			log.error("toto", e);
+			throw e;
+		}
+
 	}
 }

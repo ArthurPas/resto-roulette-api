@@ -1,0 +1,21 @@
+package com.roulette.resto.business.social.dto.mapper;
+
+import com.roulette.resto.business.social.entity.Account;
+import com.roulette.resto.business.social.entity.UserInfo;
+import com.roulette.resto.business.social.entity.UserRole;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class UserInfoRowMapper  implements RowMapper<UserInfo> {
+	@Override
+	public UserInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+		UserInfo userInfo = new UserInfo();
+		userInfo.setEmail(rs.getString("email"));
+		userInfo.setFirstName(rs.getString("first_name"));
+		userInfo.setLastName(rs.getString("last_name"));
+		userInfo.setRole(UserRole.fromValue(rs.getInt("role")));
+		return userInfo;
+	}
+}

@@ -3,7 +3,7 @@ package com.roulette.resto.business.social.services;
 import com.roulette.resto.business.social.dto.RegisterDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.repository.AccountRepository;
-import org.springframework.dao.DataAccessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,11 +11,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.AccountNotFoundException;
-
-
 
 @Service
+@Slf4j
 public class AccountService implements UserDetailsService {
 	final AccountRepository accountRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -26,9 +24,6 @@ public class AccountService implements UserDetailsService {
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public int getAccountIdByLogin(String login) throws AccountNotFoundException {
-		return accountRepository.getAccountByLogin(login).getAccountId();
-	}
 
 	public boolean existsByLogin(String login) {
 		try {

@@ -4,7 +4,7 @@ spring:
   datasource:
     username: 'root'
     url: jdbc:mysql://localhost:3306/resto_roulette
-    password:
+    password: 14572693
   jpa:
     properties:
       hibernate:
@@ -13,7 +13,7 @@ logging:
   level:
     org:
       springframework:
-        security: INFO
+        security: DEBUG
 security:
   jwt:
     expiration-time: '3600000'

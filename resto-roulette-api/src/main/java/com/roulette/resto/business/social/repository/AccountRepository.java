@@ -1,6 +1,5 @@
 package com.roulette.resto.business.social.repository;
 
-import com.roulette.resto.business.social.dto.UserInfoDto;
 import com.roulette.resto.business.social.dto.mapper.AccountRowMapper;
 import com.roulette.resto.business.social.dto.mapper.UserInfoRowMapper;
 import com.roulette.resto.business.social.entity.Account;
@@ -10,7 +9,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
@@ -36,7 +34,7 @@ public class AccountRepository {
 				preparedStatement.setString(1, account.getUserInfo().getLastName());
 				preparedStatement.setString(2, account.getUserInfo().getFirstName());
 				preparedStatement.setString(3, account.getUserInfo().getEmail());
-				preparedStatement.setInt(4, account.getUserInfo().getRole().roleId);
+				preparedStatement.setInt(4, account.getUserInfo().getRole().getRoleId());
 				return preparedStatement;
 			},generatedKeyHolder);
 			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
@@ -70,16 +68,15 @@ public class AccountRepository {
 		}
 	}
 
-	public Account getAccountByLogin(String login) throws UsernameNotFoundException {
+	public Account getAccountByLogin(String login) {
 		String query = 	"SELECT account_id,login,password " +
 						"FROM account " +
 						"WHERE login = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), login);
 		}catch (DataAccessException e){
-			log.error("Error retrieving account by login {}", login);
-			log.error(e.getMessage());
-			throw e;
+			log.info("No user found with login {}", login);
+			return null;
 		}
 	}
 
@@ -92,8 +89,8 @@ public class AccountRepository {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), email);
 		}
 		catch (EmptyResultDataAccessException e) {
-			log.error(e.getMessage());
-			throw e;
+			log.info("No user found with email {}", email);
+			return null;
 		}
 	}
 

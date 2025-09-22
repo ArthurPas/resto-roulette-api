@@ -6,10 +6,7 @@ import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.repository.AccountRepository;
 import com.roulette.resto.business.social.repository.InteractionRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
-
-import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 
 @Service
@@ -29,7 +26,16 @@ public class UserService {
 		UserInfoDto userInfoDto = new UserInfoDto();
 		UserInfo userInfo = accountRepository.getUserInfoByLogin(login);
 		userInfoDto.setBasicUserInfo(userInfo);
-		List<UserInteraction> interactions =interactionRepository.getInteractionsByAccountLogin(login);
+		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountLogin(login);
+		userInfoDto.setUserInteractions(interactions);
+		return userInfoDto;
+	}
+
+	public UserInfoDto getUserInfoById(int id){
+		UserInfoDto userInfoDto = new UserInfoDto();
+		UserInfo userInfo = accountRepository.getUserInfoById(id);
+		userInfoDto.setBasicUserInfo(userInfo);
+		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountId(id);
 		userInfoDto.setUserInteractions(interactions);
 		return userInfoDto;
 	}

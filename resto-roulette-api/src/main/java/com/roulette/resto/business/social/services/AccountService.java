@@ -39,6 +39,10 @@ public class AccountService implements UserDetailsService {
 			Account account = accountRepository.getAccountByEmail(email);
 			return account != null;
 	}
+	public boolean existsById(int id) {
+		Account account = accountRepository.getAccountById(id);
+		return account != null;
+	}
 
 	public void registerAccount(RegisterDto registerDto) {
 

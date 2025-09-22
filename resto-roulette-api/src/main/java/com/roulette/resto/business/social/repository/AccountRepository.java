@@ -111,4 +111,33 @@ public class AccountRepository {
 			throw e;
 		}
 	}
+	public UserInfo getUserInfoById(int id)  {
+		String query = 	"SELECT last_name, first_name, email, type_id as role, login " +
+				"FROM user_info " +
+				"JOIN account on user_info.user_info_id = account.user_info_id "+
+				"WHERE account.account_id = ? ";
+		try {
+			return jdbcTemplate.queryForObject(query, new UserInfoRowMapper(), id);
+		}
+		catch (DataAccessException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+		catch (Exception e){
+			log.error("SQl error",e);
+			throw e;
+		}
+	}
+
+	public Account getAccountById(int id) {
+		String query = 	"SELECT account_id,login,password " +
+				"FROM account " +
+				"WHERE account.account_id = ?";
+		try {
+			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), id);
+		}catch (DataAccessException e){
+			log.info("No user found with id {}", id);
+			return null;
+		}
+	}
 }

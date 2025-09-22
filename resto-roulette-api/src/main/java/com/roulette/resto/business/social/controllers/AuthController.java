@@ -3,8 +3,10 @@ package com.roulette.resto.business.social.controllers;
 import com.roulette.resto.business.social.dto.AuthResponse;
 import com.roulette.resto.business.social.dto.LoginDto;
 import com.roulette.resto.business.social.dto.RegisterDto;
+import com.roulette.resto.business.social.dto.UserInfoDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.services.AccountService;
+import com.roulette.resto.business.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,9 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.util.HashMap;
-import java.util.Map;
-
 @Slf4j
 @RestController
 public class AuthController {
@@ -33,11 +32,13 @@ public class AuthController {
 
 	private final JwtService jwtService;
 	private final AccountService accountService;
+	private final UserService userService;
 
-	public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, AccountService accountService) {
+	public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, AccountService accountService, UserService userService) {
 		this.authenticationManager = authenticationManager;
 		this.jwtService = jwtService;
 		this.accountService = accountService;
+		this.userService = userService;
 	}
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request){
@@ -48,17 +49,13 @@ public class AuthController {
 			sc.setAuthentication(auth);
 			HttpSession session = request.getSession();
 			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-
-			AuthResponse authResponse = new AuthResponse();
-			Map<String, Object> accountIdJwt = new HashMap<>();
-
-			int accountId = accountService.getAccountIdByLogin(loginDto.getLogin());
-			accountIdJwt.put("userId", String.valueOf(accountId));
-			String jwtToken = jwtService.generateToken(accountIdJwt,
-					accountService.loadUserByUsername(loginDto.getLogin()));
-			authResponse.setToken(jwtToken);
-			authResponse.setExpiresIn(jwtService.getExpirationTime());
+			Account account = accountService.getAccountByLogin(loginDto.getLogin());
+			UserInfoDto userInfo = userService.getUserInfoById(account.getAccountId());
+			log.warn(userInfo.toString());
+			final AuthResponse authResponse = jwtService.buildAuthResponse(
+					accountService.loadUserByUsername(loginDto.getLogin()),
+					account.getAccountId(),
+					userInfo.getBasicUserInfo());
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 
 		}catch (AuthenticationException e) {
@@ -80,13 +77,10 @@ public class AuthController {
 		}
 		try {
 			Account newAccount = accountService.registerAccount(registerDto);
-			AuthResponse authResponse = new AuthResponse();
-			Map<String, Object> claimsAccountId = new HashMap<>();
-			claimsAccountId.put("userId", newAccount.getAccountId());
-			String jwtToken = jwtService.generateToken(claimsAccountId,
-					accountService.loadUserByUsername(registerDto.getLogin()));
-			authResponse.setToken(jwtToken);
-			authResponse.setExpiresIn(jwtService.getExpirationTime());
+			final AuthResponse authResponse = jwtService.buildAuthResponse(
+					accountService.loadUserByUsername(newAccount.getLogin()),
+					newAccount.getAccountId(),
+					newAccount.getUserInfo());
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 		}catch (Exception e) {
 			return new ResponseEntity<>((new APIError("DB error while creating account", e.getMessage())),

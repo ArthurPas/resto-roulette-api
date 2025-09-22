@@ -1,9 +1,10 @@
 package com.roulette.resto.common.configuration;
 
+import com.roulette.resto.business.social.dto.AuthResponse;
+import com.roulette.resto.business.social.entity.UserInfo;
+import com.roulette.resto.business.social.services.AccountService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.AccountNotFoundException;
+
 import static io.jsonwebtoken.io.Decoders.*;
 
 @Service
@@ -24,6 +27,12 @@ public class JwtService {
 
 	@Value("${security.jwt.expiration-time}")
 	private long jwtExpiration;
+
+	private final AccountService accountService;
+
+	public JwtService(AccountService accountService) {
+		this.accountService = accountService;
+	}
 
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
@@ -78,5 +87,16 @@ public class JwtService {
 	private Key getSignInKey() {
 		byte[] keyBytes = BASE64.decode(secretKey);
 		return Keys.hmacShaKeyFor(keyBytes);
+	}
+
+	public AuthResponse buildAuthResponse(UserDetails userDetails, int accountId, UserInfo userInfo) throws AccountNotFoundException {
+		AuthResponse authResponse = new AuthResponse();
+		Map<String, Object> accountIdJwt = new HashMap<>();
+		accountIdJwt.put("userId", accountId);
+		String jwtToken = this.generateToken(accountIdJwt,userDetails);
+		authResponse.setToken(jwtToken);
+		authResponse.setExpiresIn(this.getExpirationTime());
+		authResponse.setUserInfo(userInfo);
+		return authResponse;
 	}
 }

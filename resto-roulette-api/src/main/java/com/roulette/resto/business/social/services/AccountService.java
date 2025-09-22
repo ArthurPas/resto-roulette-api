@@ -26,9 +26,13 @@ public class AccountService implements UserDetailsService {
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public int getAccountIdByLogin(String login) throws AccountNotFoundException {
-		return accountRepository.getAccountByLogin(login).getAccountId();
+	public Account getAccountByLogin(String login) throws AccountNotFoundException {
+		return accountRepository.getAccountByLogin(login);
 	}
+	public Account getAccountById(int id) throws AccountNotFoundException {
+		return accountRepository.getAccountById(id);
+	}
+
 
 	public boolean existsByLogin(String login) {
 			Account account = accountRepository.getAccountByLogin(login);

@@ -13,7 +13,7 @@ logging:
   level:
     org:
       springframework:
-        security: DEBUG
+        security: ERROR
 security:
   jwt:
     expiration-time: '3600000'

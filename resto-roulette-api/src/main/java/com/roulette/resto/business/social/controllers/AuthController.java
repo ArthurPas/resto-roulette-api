@@ -3,6 +3,7 @@ package com.roulette.resto.business.social.controllers;
 import com.roulette.resto.business.social.dto.AuthResponse;
 import com.roulette.resto.business.social.dto.LoginDto;
 import com.roulette.resto.business.social.dto.RegisterDto;
+import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.services.AccountService;
 import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -48,7 +51,12 @@ public class AuthController {
 
 
 			AuthResponse authResponse = new AuthResponse();
-			String jwtToken = jwtService.generateToken(accountService.loadUserByUsername(loginDto.getLogin()));
+			Map<String, Object> accountIdJwt = new HashMap<>();
+
+			int accountId = accountService.getAccountIdByLogin(loginDto.getLogin());
+			accountIdJwt.put("userId", String.valueOf(accountId));
+			String jwtToken = jwtService.generateToken(accountIdJwt,
+					accountService.loadUserByUsername(loginDto.getLogin()));
 			authResponse.setToken(jwtToken);
 			authResponse.setExpiresIn(jwtService.getExpirationTime());
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
@@ -56,12 +64,14 @@ public class AuthController {
 		}catch (AuthenticationException e) {
 			log.error(e.getMessage());
 			return new ResponseEntity<>(new APIError("Login failed", e.getMessage()), HttpStatus.UNAUTHORIZED);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Login failed", e.getMessage()), HttpStatus.BAD_REQUEST);
 		}
 	}
 
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto, HttpServletRequest request) throws AccountNotFoundException {
+	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto){
 		if(accountService.existsByLogin(registerDto.getLogin())){
 			return new ResponseEntity<>(new APIError("Login already exist"), HttpStatus.BAD_REQUEST);
 		}
@@ -69,16 +79,20 @@ public class AuthController {
 			return new ResponseEntity<>(new APIError("Email already exist"), HttpStatus.BAD_REQUEST);
 		}
 		try {
-			accountService.registerAccount(registerDto);
+			Account newAccount = accountService.registerAccount(registerDto);
+			AuthResponse authResponse = new AuthResponse();
+			Map<String, Object> claimsAccountId = new HashMap<>();
+			claimsAccountId.put("userId", newAccount.getAccountId());
+			String jwtToken = jwtService.generateToken(claimsAccountId,
+					accountService.loadUserByUsername(registerDto.getLogin()));
+			authResponse.setToken(jwtToken);
+			authResponse.setExpiresIn(jwtService.getExpirationTime());
+			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 		}catch (Exception e) {
 			return new ResponseEntity<>((new APIError("DB error while creating account", e.getMessage())),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		AuthResponse authResponse = new AuthResponse();
-		String jwtToken = jwtService.generateToken(accountService.loadUserByUsername(registerDto.getLogin()));
-		authResponse.setToken(jwtToken);
-		authResponse.setExpiresIn(jwtService.getExpirationTime());
-		return new ResponseEntity<>(authResponse, HttpStatus.OK);
+
 
 	}
 }

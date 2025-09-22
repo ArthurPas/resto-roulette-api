@@ -44,7 +44,7 @@ public class AccountService implements UserDetailsService {
 		return account != null;
 	}
 
-	public void registerAccount(RegisterDto registerDto) {
+	public Account registerAccount(RegisterDto registerDto) {
 
 		Account account = new Account();
 		account.setLogin(registerDto.getLogin());
@@ -57,7 +57,12 @@ public class AccountService implements UserDetailsService {
 		userInfo.setLastName(registerDto.getLastName());
 		userInfo.setRole(UserRole.ROLE_USER);
 		account.setUserInfo(userInfo);
-		accountRepository.registerAccount(account);
+		int newAccountId = accountRepository.registerAccount(account);
+		if(newAccountId != -1){
+			account.setAccountId(newAccountId);
+			return account;
+		}
+		return null;
 	}
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

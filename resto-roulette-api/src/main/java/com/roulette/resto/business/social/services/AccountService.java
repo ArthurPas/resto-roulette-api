@@ -37,18 +37,33 @@ public class AccountService implements UserDetailsService {
 	}
 
 
-	public boolean existsByLogin(String login) {
-			Account account = accountRepository.getAccountByLogin(login);
-			return account != null;
+	public boolean existsByLogin(String login) throws AccountNotFoundException {
+			try {
+				accountRepository.getAccountByLogin(login);
+				return true;
+			} catch (AccountNotFoundException e) {
+				log.error(e.getMessage());
+				throw e;
+			}
 	}
 
-	public boolean existsByEmail(String email) {
-			Account account = accountRepository.getAccountByEmail(email);
-			return account != null;
+	public boolean existsByEmail(String email) throws AccountNotFoundException {
+		try {
+			accountRepository.getAccountByEmail(email);
+			return true;
+		} catch (AccountNotFoundException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
-	public boolean existsById(int id) {
-		Account account = accountRepository.getAccountById(id);
-		return account != null;
+	public boolean existsById(int id) throws AccountNotFoundException {
+		try {
+			accountRepository.getAccountById(id);
+			return true;
+		} catch (AccountNotFoundException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	public Account registerAccount(RegisterDto registerDto) throws DuplicateKeyException{
@@ -74,6 +89,11 @@ public class AccountService implements UserDetailsService {
 	}
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		return accountRepository.getAccountByLogin(username);
+		try {
+			return accountRepository.getAccountByLogin(username);
+		} catch (AccountNotFoundException e) {
+			log.error(e.getMessage());
+			throw new UsernameNotFoundException(e.getMessage(), e.getCause());
+		}
 	}
 }

@@ -1,7 +1,7 @@
 package com.roulette.resto.common.configuration;
 
-import com.roulette.resto.business.social.dto.AuthResponse;
-import com.roulette.resto.business.social.dto.BasicAuthDto;
+import com.roulette.resto.business.social.dto.out.AuthResponse;
+import com.roulette.resto.business.social.dto.out.BasicAuthDto;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.services.AccountService;
 import io.jsonwebtoken.Claims;

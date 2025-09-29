@@ -1,6 +1,6 @@
 package com.roulette.resto.business.social.repository;
 
-import com.roulette.resto.business.social.dto.UserInteraction;
+import com.roulette.resto.business.social.dto.out.UserInteraction;
 import com.roulette.resto.business.social.dto.mapper.InteractionRowMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;

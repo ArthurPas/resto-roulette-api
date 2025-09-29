@@ -1,4 +1,4 @@
-package com.roulette.resto.business.social.dto;
+package com.roulette.resto.business.social.dto.in;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -8,12 +8,13 @@ import lombok.NoArgsConstructor;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class LoginDto {
+@AllArgsConstructor
+public class ChangePasswordDto {
+	@Schema(example = "azerty123", requiredMode = REQUIRED)
+	private String oldPassword;
+	@Schema(example = "azerty123", requiredMode = REQUIRED)
+	private String newPassword;
 	@Schema(example = "fan2resto", requiredMode = REQUIRED)
 	String login;
-	@Schema(example = "azerty123", requiredMode = REQUIRED)
-	String password;
-
 }

@@ -1,9 +1,9 @@
 package com.roulette.resto.business.social.controllers;
 
-import com.roulette.resto.business.social.dto.AuthResponse;
-import com.roulette.resto.business.social.dto.LoginDto;
-import com.roulette.resto.business.social.dto.RegisterDto;
-import com.roulette.resto.business.social.dto.UserInfoDto;
+import com.roulette.resto.business.social.dto.out.AuthResponse;
+import com.roulette.resto.business.social.dto.in.LoginDto;
+import com.roulette.resto.business.social.dto.in.RegisterDto;
+import com.roulette.resto.business.social.dto.out.UserInfoDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.services.AccountService;
 import com.roulette.resto.business.social.services.UserService;

@@ -1,6 +1,6 @@
 package com.roulette.resto.business.social.services;
 
-import com.roulette.resto.business.social.dto.RegisterDto;
+import com.roulette.resto.business.social.dto.in.RegisterDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.entity.UserRole;

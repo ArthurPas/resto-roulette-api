@@ -1,4 +1,4 @@
-package com.roulette.resto.business.social.dto;
+package com.roulette.resto.business.social.dto.out;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

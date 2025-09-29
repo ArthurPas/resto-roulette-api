@@ -64,10 +64,29 @@ public class AccountController {
 		}
 	}
 	@PutMapping("info/{id}")
+	@Operation(summary = "Update user infos", description = "Update all users info " +
+			"since its a put mapping you must send all userinfo that changed or not")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "updated user infos (basicaly what that was sent)",
+					content = @Content(mediaType = "application/json",schema = @Schema(implementation =
+							UserInfo.class))),
+			@ApiResponse(responseCode = "500", description = "Server error",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "failed to update userinfos",
+									value = "{\"message\":\"Database error : failed to update\",\"description\":\"\"}")})),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Account not found",
+									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> updateUserInfo(UserInfo userInfo, @PathVariable String id){
 		try {
-			UserInfo userInfoDto = userService.updateUserInfo(id, userInfo);
-			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
+			UserInfo updateUserInfo = userService.updateUserInfo(id, userInfo);
+			return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
 		}
 		catch (AccountNotFoundException e){
 			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);

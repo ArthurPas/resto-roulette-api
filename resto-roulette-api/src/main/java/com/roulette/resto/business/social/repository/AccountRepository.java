@@ -5,13 +5,16 @@ import com.roulette.resto.business.social.dto.mapper.UserInfoRowMapper;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 
@@ -61,10 +64,10 @@ public class AccountRepository {
 				return preparedStatement;
 				},generatedKeyHolder);
 			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
-		} catch (DataAccessException e){
+		} catch (DuplicateKeyException e){
 			log.error("Error registering account {}", account.getLogin());
 			log.error(e.getMessage());
-			return -1;
+			throw e;
 		}
 	}
 
@@ -138,6 +141,21 @@ public class AccountRepository {
 		}catch (DataAccessException e){
 			log.info("No user found with id {}", id);
 			return null;
+		}
+	}
+
+	public int updateUserInfo(String id, UserInfo newUserInfo) throws SQLException {
+		String query = "UPDATE user_info " +
+				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
+				" SET user_info.email = ?, user_info.last_name = ?, user_info.first_name = ?" +
+				" WHERE account_id = ?";
+		try {
+			return jdbcTemplate.update(query, newUserInfo.getEmail(),
+					newUserInfo.getLastName(), newUserInfo.getFirstName(), id);
+		}
+		catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
+			throw new SQLException(e);
 		}
 	}
 }

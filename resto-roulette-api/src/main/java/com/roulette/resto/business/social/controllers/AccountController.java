@@ -1,6 +1,7 @@
 package com.roulette.resto.business.social.controllers;
 
 import com.roulette.resto.business.social.dto.UserInfoDto;
+import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.services.AccountService;
 import com.roulette.resto.business.social.services.UserService;
 import com.roulette.resto.common.exception.APIError;
@@ -14,6 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.security.auth.login.AccountNotFoundException;
+import java.sql.SQLException;
+
 @Slf4j
 @RestController
 @RequestMapping("/users")
@@ -55,6 +60,19 @@ public class AccountController {
 		}catch (Exception e) {
 			log.error(e.getMessage());
 			return new ResponseEntity<>((new APIError("failed to retrieve user info", e.getMessage())),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	@PutMapping("info/{id}")
+	public ResponseEntity<?> updateUserInfo(UserInfo userInfo, @PathVariable String id){
+		try {
+			UserInfo userInfoDto = userService.updateUserInfo(id, userInfo);
+			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
+		}
+		catch (AccountNotFoundException e){
+			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
+		} catch (SQLException e) {
+			return new ResponseEntity<>(new APIError("Database error : failed to update", e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 

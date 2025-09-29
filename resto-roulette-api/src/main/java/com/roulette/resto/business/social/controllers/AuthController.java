@@ -125,10 +125,14 @@ public class AuthController {
 									value = "{\"message\":\"database error while creating account\",\"description\":\"\"}")}))
 	})
 	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto){
-		if(accountService.existsByLogin(registerDto.getLogin())){
+		try {
+			accountService.existsByLogin(registerDto.getLogin());
+		}catch (AccountNotFoundException e){
 			return new ResponseEntity<>(new APIError("Login already exist"), HttpStatus.BAD_REQUEST);
 		}
-		if(accountService.existsByEmail(registerDto.getEmail())){
+		try {
+			accountService.existsByEmail(registerDto.getEmail());
+		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Email already exist"), HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -148,7 +152,5 @@ public class AuthController {
 		catch (Exception e){
 			return new ResponseEntity<>(new APIError("Unexpected error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
-
 	}
 }

@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -71,19 +72,19 @@ public class AccountRepository {
 		}
 	}
 
-	public Account getAccountByLogin(String login) {
+	public Account getAccountByLogin(String login) throws AccountNotFoundException {
 		String query = 	"SELECT account_id,login,password " +
 						"FROM account " +
 						"WHERE login = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), login);
-		}catch (DataAccessException e){
+		}catch (EmptyResultDataAccessException e){
 			log.info("No user found with login {}", login);
-			return null;
+			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
 
-	public Account getAccountByEmail(String email) {
+	public Account getAccountByEmail(String email) throws AccountNotFoundException {
 		String query = 	"SELECT account_id,login,password,email " +
 						"FROM account " +
 						"JOIN user_info on account.user_info_id = user_info.user_info_id " +
@@ -93,7 +94,8 @@ public class AccountRepository {
 		}
 		catch (EmptyResultDataAccessException e) {
 			log.info("No user found with email {}", email);
-			return null;
+
+			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
 
@@ -132,7 +134,7 @@ public class AccountRepository {
 		}
 	}
 
-	public Account getAccountById(int id) {
+	public Account getAccountById(int id) throws AccountNotFoundException {
 		String query = 	"SELECT account_id,login,password " +
 				"FROM account " +
 				"WHERE account.account_id = ?";
@@ -140,7 +142,7 @@ public class AccountRepository {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), id);
 		}catch (DataAccessException e){
 			log.info("No user found with id {}", id);
-			return null;
+			throw new AccountNotFoundException("No user found with id " + id);
 		}
 	}
 
@@ -157,5 +159,12 @@ public class AccountRepository {
 			log.error(e.getMessage());
 			throw new SQLException(e);
 		}
+	}
+
+	public void changePassword(int id, String newPassword) {
+		String query = "UPDATE account " +
+				" SET password = ? " +
+				" WHERE account_id = ?";
+		jdbcTemplate.update(query, newPassword, id);
 	}
 }

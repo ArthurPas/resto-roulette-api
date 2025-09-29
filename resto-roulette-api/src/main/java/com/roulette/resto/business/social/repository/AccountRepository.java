@@ -85,7 +85,7 @@ public class AccountRepository {
 	}
 
 	public Account getAccountByEmail(String email) throws AccountNotFoundException {
-		String query = 	"SELECT account_id,login,password,email " +
+		String query = 	"SELECT account_id,login,password,email, verification_token " +
 						"FROM account " +
 						"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 						"WHERE email = ? ";
@@ -134,15 +134,15 @@ public class AccountRepository {
 		}
 	}
 
-	public Account getAccountById(int id) throws AccountNotFoundException {
-		String query = 	"SELECT account_id,login,password " +
+	public Account getAccountById(int id) {
+		String query = 	"SELECT account_id,login,password, verification_token " +
 				"FROM account " +
 				"WHERE account.account_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), id);
 		}catch (DataAccessException e){
-			log.info("No user found with id {}", id);
-			throw new AccountNotFoundException("No user found with id " + id);
+			log.error("failed to acces users" + e.getMessage());
+			throw e;
 		}
 	}
 

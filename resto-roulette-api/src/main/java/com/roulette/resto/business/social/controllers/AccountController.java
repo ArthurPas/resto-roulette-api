@@ -8,6 +8,7 @@ import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.services.AccountService;
 import com.roulette.resto.business.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
+import com.roulette.resto.common.dao.SendEmail;
 import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,10 +31,11 @@ public class AccountController {
 	private final UserService userService;
 	private final JwtService jwtService;
 	private final AccountService accountService;
-	public AccountController(UserService userService, AccountService accountService, JwtService jwtService, AccountService accountService1) {
+
+	public AccountController(UserService userService, JwtService jwtService, AccountService accountService, SendEmail sendEmail) {
 		this.userService = userService;
 		this.jwtService = jwtService;
-		this.accountService = accountService1;
+		this.accountService = accountService;
 	}
 	@GetMapping("/info/{id}")
 	@Operation(summary = "Get information about an user", description = "Get all the information about a user by his " +

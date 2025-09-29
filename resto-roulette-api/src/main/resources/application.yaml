@@ -21,3 +21,6 @@ security:
 springdoc:
   swagger-ui:
     path: "/swagger-ui.html"
+mail:
+  token: ""
+  verification_url: ""

@@ -47,12 +47,9 @@ public class UserService {
 	}
 
 	public UserInfoDto getUserInfoById(int id) throws AccountNotFoundException {
-		try {
-			accountService.existsById(id);
-		}catch (AccountNotFoundException e){
-			log.error("Account not found");
-			throw e;
-		}
+		if(!accountService.existsById(id)){
+			throw new AccountNotFoundException();
+		};
 		UserInfoDto userInfoDto = new UserInfoDto();
 		UserInfo userInfo = accountRepository.getUserInfoById(id);
 		userInfoDto.setBasicUserInfo(userInfo);

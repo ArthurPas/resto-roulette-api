@@ -13,6 +13,7 @@ public class AccountRowMapper implements RowMapper<Account> {
 		account.setAccountId(rs.getInt("account_id"));
 		account.setLogin(rs.getString("login"));
 		account.setPassword(rs.getString("password"));
+		account.setVerificationToken(rs.getString("verification_token"));
 		return account;
 	}
 }

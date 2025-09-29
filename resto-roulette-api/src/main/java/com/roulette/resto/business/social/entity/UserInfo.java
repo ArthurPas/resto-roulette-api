@@ -19,5 +19,6 @@ public class UserInfo {
 	@Schema(example = "d'resto", requiredMode = NOT_REQUIRED)
 	private String lastName;
 	UserRole role;
+	private boolean emailVerified;
 
 }

@@ -17,6 +17,7 @@ public class Account implements UserDetails {
 	private int accountId;
 	private String login;
 	private String password;
+	private String verificationToken;
 
 
 	//user_info

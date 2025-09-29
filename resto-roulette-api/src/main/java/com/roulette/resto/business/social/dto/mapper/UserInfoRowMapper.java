@@ -16,6 +16,7 @@ public class UserInfoRowMapper  implements RowMapper<UserInfo> {
 		userInfo.setFirstName(rs.getString("first_name"));
 		userInfo.setLastName(rs.getString("last_name"));
 		userInfo.setRole(UserRole.fromValue(rs.getInt("role")));
+		userInfo.setEmailVerified(rs.getBoolean("email_verified"));
 		return userInfo;
 	}
 }

@@ -1,5 +1,6 @@
 package com.roulette.resto.business.social.controllers;
 
+import com.roulette.resto.business.social.dto.in.VerifyEmailDto;
 import com.roulette.resto.business.social.dto.out.AuthResponse;
 import com.roulette.resto.business.social.dto.in.LoginDto;
 import com.roulette.resto.business.social.dto.in.RegisterDto;
@@ -27,11 +28,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.sql.SQLException;
+
 @Slf4j
 @RestController
 public class AuthController {
@@ -125,14 +126,10 @@ public class AuthController {
 									value = "{\"message\":\"database error while creating account\",\"description\":\"\"}")}))
 	})
 	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto){
-		try {
-			accountService.existsByLogin(registerDto.getLogin());
-		}catch (AccountNotFoundException e){
+		if(accountService.existsByLogin(registerDto.getLogin())){
 			return new ResponseEntity<>(new APIError("Login already exist"), HttpStatus.BAD_REQUEST);
 		}
-		try {
-			accountService.existsByEmail(registerDto.getEmail());
-		} catch (AccountNotFoundException e) {
+		if(accountService.existsByEmail(registerDto.getEmail())){
 			return new ResponseEntity<>(new APIError("Email already exist"), HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -141,6 +138,7 @@ public class AuthController {
 					accountService.loadUserByUsername(newAccount.getLogin()),
 					newAccount.getAccountId(),
 					newAccount.getUserInfo());
+
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 		}catch (DuplicateKeyException e) {
 			return new ResponseEntity<>((new APIError("Duplicate value that should be unique", e.getMessage())),
@@ -150,6 +148,21 @@ public class AuthController {
 			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 		catch (Exception e){
+			return new ResponseEntity<>(new APIError("Unexpected error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping("/verify")
+	public ResponseEntity<?> verifyMail(@RequestBody VerifyEmailDto verifyEmailDto){
+		try {
+			boolean success = accountService.verifyEmail(verifyEmailDto);
+			if(!success){
+				return new ResponseEntity<>("Message: email verification failed, wrong token", HttpStatus.BAD_REQUEST);
+			}
+			return new ResponseEntity<>("Message: email verification succeed", HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
+		}catch (SQLException e){
 			return new ResponseEntity<>(new APIError("Unexpected error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

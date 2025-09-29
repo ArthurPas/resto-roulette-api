@@ -5,7 +5,6 @@ import com.roulette.resto.business.social.dto.mapper.UserInfoRowMapper;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -54,14 +53,15 @@ public class AccountRepository {
 		int userInfoId = registerUserInfo(account);
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 
-		String query = 	"INSERT INTO account (login, password, user_info_id) " +
-						"VALUES (?, ?, ?)";
+		String query = 	"INSERT INTO account (login, password, user_info_id, verification_token) " +
+						"VALUES (?, ?, ?, ?)";
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setString(1, account.getLogin());
 				preparedStatement.setString(2, account.getPassword());
 				preparedStatement.setString(3, String.valueOf(userInfoId));
+				preparedStatement.setString(4, account.getVerificationToken());
 				return preparedStatement;
 				},generatedKeyHolder);
 			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
@@ -73,7 +73,7 @@ public class AccountRepository {
 	}
 
 	public Account getAccountByLogin(String login) throws AccountNotFoundException {
-		String query = 	"SELECT account_id,login,password " +
+		String query = 	"SELECT account_id,login,password, verification_token " +
 						"FROM account " +
 						"WHERE login = ?";
 		try {
@@ -117,7 +117,7 @@ public class AccountRepository {
 		}
 	}
 	public UserInfo getUserInfoById(int id)  {
-		String query = 	"SELECT last_name, first_name, email, type_id as role, login " +
+		String query = 	"SELECT last_name, first_name, email, type_id as role, login, email_verified " +
 				"FROM user_info " +
 				"JOIN account on user_info.user_info_id = account.user_info_id "+
 				"WHERE account.account_id = ? ";
@@ -166,5 +166,18 @@ public class AccountRepository {
 				" SET password = ? " +
 				" WHERE account_id = ?";
 		jdbcTemplate.update(query, newPassword, id);
+	}
+
+	public int verifyMail(int accountId) throws SQLException {
+		String query = "UPDATE user_info " +
+				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
+				" SET user_info.email_verified = ? WHERE account_id = ?";
+		try {
+			return jdbcTemplate.update(query,1, accountId);
+		}
+		catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
+			throw new SQLException(e);
+		}
 	}
 }

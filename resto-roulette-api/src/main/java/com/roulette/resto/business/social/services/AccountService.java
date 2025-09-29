@@ -5,6 +5,8 @@ import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.entity.UserRole;
 import com.roulette.resto.business.social.repository.AccountRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +17,7 @@ import javax.security.auth.login.AccountNotFoundException;
 
 
 
+@Slf4j
 @Service
 public class AccountService implements UserDetailsService {
 	final AccountRepository accountRepository;
@@ -48,7 +51,7 @@ public class AccountService implements UserDetailsService {
 		return account != null;
 	}
 
-	public Account registerAccount(RegisterDto registerDto) {
+	public Account registerAccount(RegisterDto registerDto) throws DuplicateKeyException{
 
 		Account account = new Account();
 		account.setLogin(registerDto.getLogin());
@@ -61,12 +64,13 @@ public class AccountService implements UserDetailsService {
 		userInfo.setLastName(registerDto.getLastName());
 		userInfo.setRole(UserRole.ROLE_USER);
 		account.setUserInfo(userInfo);
-		int newAccountId = accountRepository.registerAccount(account);
-		if(newAccountId != -1){
-			account.setAccountId(newAccountId);
+		try {
+			accountRepository.registerAccount(account);
 			return account;
+		}catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
+			throw e;
 		}
-		return null;
 	}
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

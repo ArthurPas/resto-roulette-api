@@ -1,6 +1,8 @@
 package com.roulette.resto.business.social.controllers;
 
-import com.roulette.resto.business.social.dto.*;
+import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.business.social.dto.out.BasicAuthDto;
+import com.roulette.resto.business.social.dto.out.UserInfoDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.services.AccountService;
@@ -99,6 +101,24 @@ public class AccountController {
 		}
 	}
 	@PatchMapping("newPassword")
+	@Operation(summary = "Update password", description = "Password update with verification of the old password")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Reauthentication after update",
+					content = @Content(mediaType = "application/json",schema = @Schema(implementation =
+							BasicAuthDto.class))),
+			@ApiResponse(responseCode = "500", description = "Server error",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "failed to update",
+									value = "{\"message\":\"Database error : failed to update\",\"description\":\"\"}")})),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Account not found",
+									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> updatePassword(ChangePasswordDto changePasswordDto){
 		try {
 			Account account = userService.updatePassword(changePasswordDto);

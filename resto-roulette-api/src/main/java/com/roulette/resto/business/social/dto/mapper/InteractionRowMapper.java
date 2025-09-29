@@ -1,12 +1,10 @@
 package com.roulette.resto.business.social.dto.mapper;
 
-import com.roulette.resto.business.social.dto.UserInteraction;
+import com.roulette.resto.business.social.dto.out.UserInteraction;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class InteractionRowMapper implements RowMapper<UserInteraction> {

@@ -1,17 +1,15 @@
 package com.roulette.resto.business.social.services;
 
-import com.roulette.resto.business.social.dto.ChangePasswordDto;
-import com.roulette.resto.business.social.dto.UserInfoDto;
-import com.roulette.resto.business.social.dto.UserInteraction;
+import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.business.social.dto.out.UserInfoDto;
+import com.roulette.resto.business.social.dto.out.UserInteraction;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.repository.AccountRepository;
 import com.roulette.resto.business.social.repository.InteractionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,6 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
 import java.util.List;
-
-import static com.roulette.resto.common.configuration.SecurityConfig.passwordEncoder;
 
 @Service
 @Slf4j

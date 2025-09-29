@@ -1,4 +1,4 @@
-package com.roulette.resto.business.social.dto;
+package com.roulette.resto.business.social.dto.out;
 
 import com.roulette.resto.business.social.entity.UserInfo;
 import lombok.AllArgsConstructor;

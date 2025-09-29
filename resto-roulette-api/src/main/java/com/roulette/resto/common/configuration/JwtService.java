@@ -1,6 +1,7 @@
 package com.roulette.resto.common.configuration;
 
 import com.roulette.resto.business.social.dto.AuthResponse;
+import com.roulette.resto.business.social.dto.BasicAuthDto;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.services.AccountService;
 import io.jsonwebtoken.Claims;
@@ -90,13 +91,20 @@ public class JwtService {
 	}
 
 	public AuthResponse buildAuthResponse(UserDetails userDetails, int accountId, UserInfo userInfo) throws AccountNotFoundException {
+		BasicAuthDto basicAuthDto = buildAuthResponse(userDetails, accountId);
 		AuthResponse authResponse = new AuthResponse();
+		authResponse.setExpiresIn(basicAuthDto.getExpiresIn());
+		authResponse.setToken(basicAuthDto.getToken());
+		authResponse.setUserInfo(userInfo);
+		return authResponse;
+	}
+	public BasicAuthDto buildAuthResponse(UserDetails userDetails, int accountId) {
+		BasicAuthDto authResponse = new BasicAuthDto();
 		Map<String, Object> accountIdJwt = new HashMap<>();
 		accountIdJwt.put("userId", accountId);
 		String jwtToken = this.generateToken(accountIdJwt,userDetails);
 		authResponse.setToken(jwtToken);
 		authResponse.setExpiresIn(this.getExpirationTime());
-		authResponse.setUserInfo(userInfo);
 		return authResponse;
 	}
 }

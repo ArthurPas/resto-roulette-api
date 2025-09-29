@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -124,10 +125,14 @@ public class AuthController {
 									value = "{\"message\":\"database error while creating account\",\"description\":\"\"}")}))
 	})
 	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto){
-		if(accountService.existsByLogin(registerDto.getLogin())){
+		try {
+			accountService.existsByLogin(registerDto.getLogin());
+		}catch (AccountNotFoundException e){
 			return new ResponseEntity<>(new APIError("Login already exist"), HttpStatus.BAD_REQUEST);
 		}
-		if(accountService.existsByEmail(registerDto.getEmail())){
+		try {
+			accountService.existsByEmail(registerDto.getEmail());
+		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Email already exist"), HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -137,11 +142,15 @@ public class AuthController {
 					newAccount.getAccountId(),
 					newAccount.getUserInfo());
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
-		}catch (Exception e) {
-			return new ResponseEntity<>((new APIError("database error while creating account", e.getMessage())),
-					HttpStatus.INTERNAL_SERVER_ERROR);
+		}catch (DuplicateKeyException e) {
+			return new ResponseEntity<>((new APIError("Duplicate value that should be unique", e.getMessage())),
+					HttpStatus.BAD_REQUEST);
 		}
-
-
+		catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
+		}
+		catch (Exception e){
+			return new ResponseEntity<>(new APIError("Unexpected error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 }

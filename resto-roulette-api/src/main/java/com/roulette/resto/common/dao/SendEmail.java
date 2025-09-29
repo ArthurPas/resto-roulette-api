@@ -5,35 +5,56 @@ import com.mailersend.sdk.MailerSend;
 import com.mailersend.sdk.MailerSendResponse;
 import com.mailersend.sdk.exceptions.MailerSendException;
 import com.roulette.resto.common.service.MailService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Repository
+@Slf4j
 public class SendEmail {
 	private static final String DOMAIN = "test-eqvygm0mwkzl0p7w.mlsender.net";
-	private static final String ISSUER_NAME = "Admin";
+	private static final String ISSUER_NAME = "Resto-roulette Admin";
+	private static final String ISSUER_ADDRESS = "arthur.pascal33@gmail.com"; //TODO replace with custom domain
+	private static final String API_URL = "https://api.brevo.com/v3/smtp/email";
 	@Value("${mail.token}")
-	private String token;
+	private String API_KEY;
 
-	@Value("${mail.verification_url}")
-	public static String verificationUrl;
+	private final RestTemplate restTemplate = new RestTemplate();
+
 	public void sendEmail(EmailContent emailContent) {
-		Email email = new Email();
-		email.setFrom(ISSUER_NAME, ISSUER_NAME+"@"+DOMAIN);
-		email.addRecipient(emailContent.getRecipientName(), emailContent.getRecipientEmail());
-		email.setSubject(emailContent.getSubject());
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+		headers.set("api-key", API_KEY);
 
-		email.setPlain(emailContent.getBody());
-//		email.setHtml("<p>This is the HTML content</p>");
-		MailerSend ms = new MailerSend();
-		ms.setToken(token);
-		try {
-			MailerSendResponse response = ms.emails().send(email);
-			System.out.println(response.messageId);
-		} catch (MailerSendException e) {
-			e.printStackTrace();
-		}
+		Map<String, Object> body = new HashMap<>();
+		Map<String, String> sender = Map.of(
+				"name", ISSUER_NAME,
+				"email", ISSUER_ADDRESS
+		);
+		Map<String, String> recipient = Map.of(
+				"email", emailContent.getRecipientEmail(),
+				"name", emailContent.getRecipientName()
+		);
+
+		body.put("sender", sender);
+		body.put("to", List.of(recipient));
+		body.put("subject", emailContent.getSubject());
+		body.put("htmlContent", emailContent.getBody());
+
+
+		HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+		restTemplate.postForEntity(API_URL, request, String.class);
 
 	}
 }

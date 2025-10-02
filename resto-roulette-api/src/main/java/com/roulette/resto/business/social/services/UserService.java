@@ -1,6 +1,7 @@
 package com.roulette.resto.business.social.services;
 
 import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.business.social.dto.out.UserInfoDto;
 import com.roulette.resto.business.social.dto.out.UserInteraction;
 import com.roulette.resto.business.social.entity.Account;
@@ -58,13 +59,18 @@ public class UserService {
 		return userInfoDto;
 	}
 
-	public UserInfo updateUserInfo(String userId, UserInfo newUserInfo) throws AccountNotFoundException, SQLException {
+	public UserInfo updateUserInfo(String userId, UpdateUserInfo newUserInfo) throws AccountNotFoundException, SQLException {
 		try {
-			int rowupdated = accountRepository.updateUserInfo(userId, newUserInfo);
-			if (rowupdated == 0) {
+			UserInfo olduserInfo = accountRepository.getUserInfoById(Integer.parseInt(userId));
+			//If email has changed
+			if(!olduserInfo.getEmail().equals(newUserInfo.getEmail())){
+				accountRepository.updateMailVerificationStatus(Integer.parseInt(userId), false);
+			}
+			int updatedRows = accountRepository.updateUserInfo(userId, newUserInfo);
+			if (updatedRows == 0) {
 				throw new SQLException("no rows updated");
 			}
-			return newUserInfo;
+			return accountRepository.getUserInfoById(Integer.parseInt(userId));
 		}catch (SQLException e) {
 			log.error(e.getMessage());
 			throw new SQLException(e);

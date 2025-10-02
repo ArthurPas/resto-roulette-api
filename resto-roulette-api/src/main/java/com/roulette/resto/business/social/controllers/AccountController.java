@@ -1,6 +1,7 @@
 package com.roulette.resto.business.social.controllers;
 
 import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.business.social.dto.out.BasicAuthDto;
 import com.roulette.resto.business.social.dto.out.UserInfoDto;
 import com.roulette.resto.business.social.entity.Account;
@@ -90,7 +91,7 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> updateUserInfo(UserInfo userInfo, @PathVariable String id){
+	public ResponseEntity<?> updateUserInfo(UpdateUserInfo userInfo, @PathVariable String id){
 		try {
 			UserInfo updateUserInfo = userService.updateUserInfo(id, userInfo);
 			return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);

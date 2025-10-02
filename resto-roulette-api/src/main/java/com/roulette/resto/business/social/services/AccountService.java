@@ -118,7 +118,7 @@ public class AccountService implements UserDetailsService {
 			if(!(Objects.equals(account.getVerificationToken(), verifyEmailDto.getVerificationCode()))){
 				return false;
 			}else {
-				accountRepository.verifyMail(account.getAccountId());
+				accountRepository.updateMailVerificationStatus(account.getAccountId(), true);
 				return true;
 			}
 		} catch (AccountNotFoundException e) {

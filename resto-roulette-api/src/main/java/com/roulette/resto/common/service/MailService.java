@@ -24,7 +24,7 @@ public class MailService {
 		sb.append("Bonjour et bienvenu ").append(account.getUsername()).append(" ! \n");
 		sb.append("Nous sommes ravis de te voir parmis nous").append("\n");
 		sb.append("Tu reçois ce mail pour vérifier ton compte").append("\n");
-		sb.append("Clique sur ce lien ").append(verificationurl);
+		sb.append("Clique sur ce lien ").append(verificationurl).append("\n");
 		sb.append("entre ce code ").append(account.getVerificationToken()).append("\n");
 		sb.append("Et bon appétit :p");
 		emailContent.setBody(sb.toString());

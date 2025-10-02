@@ -9,6 +9,7 @@ import com.roulette.resto.business.social.repository.AccountRepository;
 import com.roulette.resto.common.dao.SendEmail;
 import com.roulette.resto.common.service.MailService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -114,20 +115,27 @@ public class AccountService implements UserDetailsService {
 
 	public boolean verifyEmail(VerifyEmailDto verifyEmailDto) throws AccountNotFoundException, SQLException {
 		try {
-			Account account = accountRepository.getAccountByLogin(verifyEmailDto.getLogin());
+			Account account = accountRepository.getAccountById(Integer.parseInt(verifyEmailDto.getAccountId()));
 			if(!(Objects.equals(account.getVerificationToken(), verifyEmailDto.getVerificationCode()))){
 				return false;
 			}else {
 				accountRepository.updateMailVerificationStatus(account.getAccountId(), true);
 				return true;
 			}
-		} catch (AccountNotFoundException e) {
-			log.error(e.getMessage());
-			throw e;
 		} catch (SQLException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
 
+	}
+
+	public void resendEmail(String accountId) throws AccountNotFoundException {
+		try {
+			Account account = accountRepository.getAccountById(Integer.parseInt(accountId));
+			mailService.sendVerificationMail(account);
+		}catch (DataAccessException e){
+			log.error(e.getMessage());
+			throw new AccountNotFoundException(e.getMessage());
+		}
 	}
 }

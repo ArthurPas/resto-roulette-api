@@ -38,7 +38,7 @@ public class AccountController {
 		this.jwtService = jwtService;
 		this.accountService = accountService;
 	}
-	@GetMapping("/info/{id}")
+	@GetMapping("/info/{accountId}")
 	@Operation(summary = "Get information about an user", description = "Get all the information about a user by his " +
 			"id including basic info of his profile and an array of all his social interactions with restaurants")
 	@ApiResponses(value = {
@@ -58,9 +58,9 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> usersInfo(@PathVariable String id)  {
+	public ResponseEntity<?> usersInfo(@PathVariable String accountId)  {
 		try {
-			UserInfoDto userInfoDto = userService.getUserInfoById(Integer.parseInt(id));
+			UserInfoDto userInfoDto = userService.getUserInfoById(Integer.parseInt(accountId));
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
 		}catch (AccountNotFoundException e){
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -137,6 +137,18 @@ public class AccountController {
 			log.error(e.getMessage());
 			return new ResponseEntity<>(new APIError("Database error : failed to update", e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+
+
+	@PostMapping("/resendVerifyCode/{accountId}")
+	public ResponseEntity<?> sendMail(@PathVariable String accountId) {
+		try {
+			accountService.resendEmail(accountId);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}
 	}
 }

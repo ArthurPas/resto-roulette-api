@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerifyEmailDto {
-	private String login;
+	private String accountId;
 	private String verificationCode;
 }

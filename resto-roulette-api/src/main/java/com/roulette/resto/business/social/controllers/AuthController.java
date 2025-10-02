@@ -86,7 +86,7 @@ public class AuthController {
 			final AuthResponse authResponse = jwtService.buildAuthResponse(
 					accountService.loadUserByUsername(loginDto.getLogin()),
 					account.getAccountId(),
-					userInfo.getBasicUserInfo());
+					userInfo.getPersonnelInformation());
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 
 		}catch (AuthenticationException e) {

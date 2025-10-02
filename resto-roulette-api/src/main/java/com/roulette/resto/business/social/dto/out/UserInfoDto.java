@@ -11,7 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfoDto {
-	private UserInfo basicUserInfo;
+	private String login;
+	private UserInfo personnelInformation;
 	private List<UserInteraction>  userInteractions;
 
 }

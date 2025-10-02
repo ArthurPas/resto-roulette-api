@@ -1,6 +1,7 @@
 package com.roulette.resto.business.social.services;
 
 import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.business.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.business.social.dto.out.UserInfoDto;
 import com.roulette.resto.business.social.dto.out.UserInteraction;
@@ -9,6 +10,7 @@ import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.repository.AccountRepository;
 import com.roulette.resto.business.social.repository.InteractionRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -41,7 +44,7 @@ public class UserService {
 	public UserInfoDto getUserInfoByLogin(String login){
 		UserInfoDto userInfoDto = new UserInfoDto();
 		UserInfo userInfo = accountRepository.getUserInfoByLogin(login);
-		userInfoDto.setBasicUserInfo(userInfo);
+		userInfoDto.setPersonnelInformation(userInfo);
 		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountLogin(login);
 		userInfoDto.setUserInteractions(interactions);
 		return userInfoDto;
@@ -52,10 +55,11 @@ public class UserService {
 			throw new AccountNotFoundException();
 		};
 		UserInfoDto userInfoDto = new UserInfoDto();
-		UserInfo userInfo = accountRepository.getUserInfoById(id);
-		userInfoDto.setBasicUserInfo(userInfo);
+		Account account = accountRepository.getAccountById(id);
+		userInfoDto.setPersonnelInformation(account.getUserInfo());
 		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountId(id);
 		userInfoDto.setUserInteractions(interactions);
+		userInfoDto.setLogin(account.getLogin());
 		return userInfoDto;
 	}
 
@@ -94,6 +98,21 @@ public class UserService {
 		catch (AccountNotFoundException e){
 			log.error("account not found");
 			throw e;
+		}
+	}
+
+
+	public void resetPassword(String accountId, ResetPasswordDto resetPasswordDto) throws AccountNotFoundException {
+		try {
+			Account account = accountRepository.getAccountById(Integer.parseInt(accountId));
+			if(!(Objects.equals(account.getVerificationToken(), resetPasswordDto.getVerificationToken()))){
+				throw new SecurityException("security code doesnt match");
+			}
+			String encodedNewPassword = passwordEncoder.encode(resetPasswordDto.getNewPassword());
+			accountRepository.changePassword(account.getAccountId(), encodedNewPassword);
+		}catch (DataAccessException e){
+			log.error(e.getMessage());
+			throw new AccountNotFoundException("No account found with this id : "+accountId);
 		}
 	}
 }

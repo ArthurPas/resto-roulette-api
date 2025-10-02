@@ -2,6 +2,7 @@ package com.roulette.resto.business.social.repository;
 
 import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.business.social.dto.mapper.AccountRowMapper;
+import com.roulette.resto.business.social.dto.mapper.AccountUserRowMapper;
 import com.roulette.resto.business.social.dto.mapper.UserInfoRowMapper;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
@@ -142,7 +143,7 @@ public class AccountRepository {
 				"JOIN resto_roulette.user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE account.account_id = ?";
 		try {
-			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), id);
+			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), id);
 		}catch (DataAccessException e){
 			log.error("failed to acces users" + e.getMessage());
 			throw e;
@@ -184,4 +185,16 @@ public class AccountRepository {
 		}
 	}
 
+	public void updateVerificationToken(String token, int accountId) {
+		String query = "UPDATE account " +
+				"SET account.verification_token = ? "+
+				"WHERE account_id = ?";
+		try {
+			jdbcTemplate.update(query, token, accountId);
+		}catch (DataAccessException e){
+			log.error(e.getMessage());
+			throw e;
+		}
+
+	}
 }

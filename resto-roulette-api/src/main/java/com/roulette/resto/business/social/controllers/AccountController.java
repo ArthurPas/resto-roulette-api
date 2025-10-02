@@ -1,6 +1,7 @@
 package com.roulette.resto.business.social.controllers;
 
 import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.business.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.business.social.dto.out.BasicAuthDto;
 import com.roulette.resto.business.social.dto.out.UserInfoDto;
@@ -103,7 +104,7 @@ public class AccountController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	@PatchMapping("newPassword")
+	@PatchMapping("password/new")
 	@Operation(summary = "Update password", description = "Password update with verification of the old password")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -142,13 +143,24 @@ public class AccountController {
 
 
 
-	@PostMapping("/resendVerifyCode/{accountId}")
+	@PostMapping("/sendVerificationCode/{accountId}")
 	public ResponseEntity<?> sendMail(@PathVariable String accountId) {
 		try {
-			accountService.resendEmail(accountId);
+			accountService.sendVerificationCode(accountId);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}
 	}
+
+	@PostMapping("/password/reset/{accountId}")
+	public ResponseEntity<?> resetPassword(@PathVariable String accountId, ResetPasswordDto resetPasswordDto) {
+		try {
+			userService.resetPassword(accountId, resetPasswordDto);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
+		}
+	}
+
 }

@@ -1,5 +1,6 @@
 package com.roulette.resto.business.social.repository;
 
+import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.business.social.dto.mapper.AccountRowMapper;
 import com.roulette.resto.business.social.dto.mapper.UserInfoRowMapper;
 import com.roulette.resto.business.social.entity.Account;
@@ -146,7 +147,7 @@ public class AccountRepository {
 		}
 	}
 
-	public int updateUserInfo(String id, UserInfo newUserInfo) throws SQLException {
+	public int updateUserInfo(String id, UpdateUserInfo newUserInfo) throws SQLException {
 		String query = "UPDATE user_info " +
 				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
 				" SET user_info.email = ?, user_info.last_name = ?, user_info.first_name = ?" +
@@ -168,16 +169,17 @@ public class AccountRepository {
 		jdbcTemplate.update(query, newPassword, id);
 	}
 
-	public int verifyMail(int accountId) throws SQLException {
+	public void updateMailVerificationStatus(int accountId, boolean isVerified) throws SQLException {
 		String query = "UPDATE user_info " +
 				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
 				" SET user_info.email_verified = ? WHERE account_id = ?";
 		try {
-			return jdbcTemplate.update(query,1, accountId);
+			jdbcTemplate.update(query, isVerified ? 1 : 0, accountId);
 		}
 		catch (DuplicateKeyException e) {
 			log.error(e.getMessage());
 			throw new SQLException(e);
 		}
 	}
+
 }

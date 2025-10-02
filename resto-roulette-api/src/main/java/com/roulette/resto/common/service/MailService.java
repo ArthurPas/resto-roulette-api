@@ -22,10 +22,10 @@ public class MailService {
 		emailContent.setRecipientName(account.getUsername());
 		StringBuilder sb =  new StringBuilder();
 		sb.append("Bonjour et bienvenu ").append(account.getUsername()).append(" ! \n");
-		sb.append("Nous sommes ravis de te voir parmis nous").append("\n");
-		sb.append("Tu reçois ce mail pour vérifier ton compte").append("\n");
+		sb.append("Nous sommes ravis de te voir parmis nous.").append("\n");
+		sb.append("Tu reçois ce mail pour vérifier ton compte.").append("\n");
 		sb.append("Clique sur ce lien ").append(verificationurl).append("\n");
-		sb.append("entre ce code ").append(account.getVerificationToken()).append("\n");
+		sb.append("puis entre ce code : ").append(account.getVerificationToken()).append(".\n");
 		sb.append("Et bon appétit :p");
 		emailContent.setBody(sb.toString());
 		emailContent.setSubject("Bienvenue sur resto-roulette");
@@ -34,7 +34,7 @@ public class MailService {
 
 	public void sendVerificationMail(Account account) {
 		log.info("Sending verification mail");
-		EmailContent emailContent = this.verificationMailContent(account, "todo");
+		EmailContent emailContent = this.verificationMailContent(account, "https://todo.todo/todo");
 		try {
 			sendEmail.sendEmail(emailContent);
 		}

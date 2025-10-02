@@ -136,8 +136,10 @@ public class AccountRepository {
 	}
 
 	public Account getAccountById(int id) {
-		String query = 	"SELECT account_id,login,password, verification_token " +
+		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
+				"first_name, email_verified " +
 				"FROM account " +
+				"JOIN resto_roulette.user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE account.account_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), id);

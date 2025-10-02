@@ -139,4 +139,12 @@ public class AccountController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+
+
+	@PostMapping("/verify/resendCode/{accountId}")
+	public ResponseEntity<?> sendMail(@PathVariable String accountId){
+		accountService.resendEmail(accountId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }

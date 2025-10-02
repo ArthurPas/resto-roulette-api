@@ -130,4 +130,8 @@ public class AccountService implements UserDetailsService {
 		}
 
 	}
+
+	public void resendEmail(String accountId) {
+		mailService.sendVerificationMail(accountRepository.getAccountById(Integer.parseInt(accountId)));
+	}
 }

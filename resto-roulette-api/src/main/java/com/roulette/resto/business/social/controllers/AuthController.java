@@ -156,7 +156,7 @@ public class AuthController {
 		}
 	}
 
-	@PostMapping("/verify")
+	@PostMapping("/verifyEmailAddress")
 	@Operation(summary = "Update the verified mail status of the account", description = "After a registration, the " +
 			"app send a code by email. Call this endpoint with the code received by mail to update the account status" +
 			" about the email verification. In case of a email address change, just call again the endpoint with the " +

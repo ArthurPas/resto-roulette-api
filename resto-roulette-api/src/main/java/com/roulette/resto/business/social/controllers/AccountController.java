@@ -143,7 +143,42 @@ public class AccountController {
 
 
 
+	@PostMapping("/password/reset/")
+	@Operation(summary = "Reset password", description = "This route need to be called after calling the verification" +
+			" by email. You must provide the accountId, the new password AND the last code received by mail to be " +
+			"able to reset the password ")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Reset succeed"),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Account not found",
+									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
+	public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
+		try {
+			userService.resetPassword(resetPasswordDto);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
+		}
+	}
+
+
 	@PostMapping("/sendVerificationCode/{accountId}")
+	@Operation(summary = "Send verification code", description = "Send a code by email to the address associated to " +
+			"the account. This code can be used to perfom action that require a verification such as reset the " +
+			"account password ")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "sucess"),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Account not found",
+									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> sendMail(@PathVariable String accountId) {
 		try {
 			accountService.sendVerificationCode(accountId);
@@ -152,15 +187,4 @@ public class AccountController {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}
 	}
-
-	@PostMapping("/password/reset/{accountId}")
-	public ResponseEntity<?> resetPassword(@PathVariable String accountId, ResetPasswordDto resetPasswordDto) {
-		try {
-			userService.resetPassword(accountId, resetPasswordDto);
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
-		}
-	}
-
 }

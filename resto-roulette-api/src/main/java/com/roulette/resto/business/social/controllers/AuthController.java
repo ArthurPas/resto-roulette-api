@@ -102,7 +102,7 @@ public class AuthController {
 	@Operation(summary = "Register user", description = "Register a new user with auth and personal information"+
 			"then return a jwt token and his profile information")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
+			@ApiResponse(responseCode = "201",
 					description = "Auth info",
 					content = @Content(mediaType = "application/json",schema = @Schema(implementation =
 							AuthResponse.class))),
@@ -123,7 +123,7 @@ public class AuthController {
 							schema = @Schema(implementation =APIError.class),examples = {
 							@ExampleObject(
 									name = "server error",
-									value = "{\"message\":\"database error while creating account\",\"description\":\"\"}")}))
+									value = "{\"message\":\"Server error while creating account\",\"description\":\"\"}")}))
 	})
 	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto){
 		if(accountService.existsByLogin(registerDto.getLogin())){
@@ -139,7 +139,7 @@ public class AuthController {
 					newAccount.getAccountId(),
 					newAccount.getUserInfo());
 
-			return new ResponseEntity<>(authResponse, HttpStatus.OK);
+			return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
 		}catch (DuplicateKeyException e) {
 			return new ResponseEntity<>((new APIError("Duplicate value that should be unique", e.getMessage())),
 					HttpStatus.BAD_REQUEST);
@@ -148,18 +148,45 @@ public class AuthController {
 			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 		catch (Exception e){
-			return new ResponseEntity<>(new APIError("Unexpected error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(new APIError("Server error while creating account", e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@PostMapping("/verify")
+	@Operation(summary = "Update the verified mail status of the account", description = "After a registration, the " +
+			"app send a code by email. Call this endpoint with the code received by mail to update the account status" +
+			" about the email verification. In case of a email address change, just call again the endpoint with the " +
+			"code received in the other email address")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204",
+					description = "Success (no detail needed)"),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Account not found",
+									value = "{\"message\":\"Account not found\",\"description\":\"\"}")})),
+			@ApiResponse(responseCode = "400", description = "Wrong token",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Tokens didnt match",
+									value = "{\"message\":\"Tokens didnt match\",\"description\":\"\"}")})),
+			@ApiResponse(responseCode = "500", description = "Server error",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "server error",
+									value = "{\"message\":\"Unexpected error\",\"description\":\"\"}")}))
+	})
 	public ResponseEntity<?> verifyMail(@RequestBody VerifyEmailDto verifyEmailDto){
 		try {
 			boolean success = accountService.verifyEmail(verifyEmailDto);
 			if(!success){
-				return new ResponseEntity<>("Message: email verification failed, wrong token", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>((new APIError("Tokens didnt match")), HttpStatus.BAD_REQUEST);
 			}
-			return new ResponseEntity<>("Message: email verification succeed", HttpStatus.OK);
+			return new ResponseEntity<>("Message: email verification succeed", HttpStatus.NO_CONTENT);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
 		}catch (SQLException e){

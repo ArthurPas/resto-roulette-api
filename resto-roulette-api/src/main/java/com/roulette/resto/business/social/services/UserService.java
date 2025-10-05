@@ -102,9 +102,9 @@ public class UserService {
 	}
 
 
-	public void resetPassword(String accountId, ResetPasswordDto resetPasswordDto) throws AccountNotFoundException {
+	public void resetPassword(ResetPasswordDto resetPasswordDto) throws AccountNotFoundException {
 		try {
-			Account account = accountRepository.getAccountById(Integer.parseInt(accountId));
+			Account account = accountRepository.getAccountById(Integer.parseInt(resetPasswordDto.getAccountId()));
 			if(!(Objects.equals(account.getVerificationToken(), resetPasswordDto.getVerificationToken()))){
 				throw new SecurityException("security code doesnt match");
 			}
@@ -112,7 +112,7 @@ public class UserService {
 			accountRepository.changePassword(account.getAccountId(), encodedNewPassword);
 		}catch (DataAccessException e){
 			log.error(e.getMessage());
-			throw new AccountNotFoundException("No account found with this id : "+accountId);
+			throw new AccountNotFoundException("No account found with this id : "+resetPasswordDto.getAccountId());
 		}
 	}
 }

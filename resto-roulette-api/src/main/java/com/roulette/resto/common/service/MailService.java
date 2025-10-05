@@ -38,10 +38,10 @@ public class MailService {
 		emailContent.setRecipientName(account.getUsername());
 		StringBuilder sb =  new StringBuilder();
 		sb.append("Bonjour et bienvenu ").append(account.getUsername()).append(" ! \n");
-		sb.append("Tu as initié une action qui requiet un code de sécurité.");
+		sb.append("Tu as initié une action qui requiert un code de sécurité.");
 		sb.append("\n");
 		sb.append("Le code de sécurité est : ").append(account.getVerificationToken()).append(".\n");
-		sb.append("A la prochaine, et d'ici là bonne dégustations ;)");
+		sb.append("A la prochaine, et d'ici là, bonnes dégustations ;)");
 		emailContent.setBody(sb.toString());
 		emailContent.setSubject("Ton code de sécurité");
 		return emailContent;

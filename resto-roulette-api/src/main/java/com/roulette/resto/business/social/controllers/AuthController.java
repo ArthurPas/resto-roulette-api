@@ -37,6 +37,7 @@ import java.sql.SQLException;
 @Slf4j
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*")
 public class AuthController {
 	private final AuthenticationManager authenticationManager;
 

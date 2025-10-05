@@ -33,6 +33,7 @@ import java.sql.SQLException;
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "*")
 public class AccountController {
 	private final UserService userService;
 	private final JwtService jwtService;

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,16 +28,24 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http, AccountService userDetailsService) throws Exception {
 
-		http
-				.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(auth -> auth
-						.anyRequest().permitAll()
-				)
-				.formLogin(AbstractHttpConfigurer::disable)
-				.httpBasic(AbstractHttpConfigurer::disable);
+		http.authorizeHttpRequests(auth -> auth
+				// Public endpoints
+				.requestMatchers("/auth/**").permitAll()
+				.requestMatchers(
+						"/v3/api-docs/**",
+						"/swagger-ui/**",
+						"/swagger-ui.html",
+						"/swagger-resources/**",
+						"/webjars/**"
+				).permitAll()
+						.requestMatchers("/users/**").authenticated()
+		);
 
+		http.httpBasic(Customizer.withDefaults());
+		http.userDetailsService(userDetailsService);
+		http.csrf(AbstractHttpConfigurer::disable);
 		return http.build();
 	}
 

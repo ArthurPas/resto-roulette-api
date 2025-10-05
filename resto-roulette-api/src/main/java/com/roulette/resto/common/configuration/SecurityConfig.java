@@ -42,7 +42,7 @@ public class SecurityConfig {
 						"/swagger-resources/**",
 						"/webjars/**"
 				).permitAll()
-						.requestMatchers("/users/**").authenticated()
+				.requestMatchers("/users/**").authenticated()
 		);
 
 		http.httpBasic(Customizer.withDefaults());

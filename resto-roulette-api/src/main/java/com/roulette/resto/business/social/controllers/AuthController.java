@@ -1,5 +1,6 @@
 package com.roulette.resto.business.social.controllers;
 
+import com.roulette.resto.business.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.business.social.dto.in.VerifyEmailDto;
 import com.roulette.resto.business.social.dto.out.AuthResponse;
 import com.roulette.resto.business.social.dto.in.LoginDto;
@@ -35,6 +36,7 @@ import java.sql.SQLException;
 
 @Slf4j
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 	private final AuthenticationManager authenticationManager;
 
@@ -186,11 +188,57 @@ public class AuthController {
 			if(!success){
 				return new ResponseEntity<>((new APIError("Tokens didnt match")), HttpStatus.BAD_REQUEST);
 			}
-			return new ResponseEntity<>("Message: email verification succeed", HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>("{\"Message\": \"email verification succeed\"}", HttpStatus.NO_CONTENT);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
 		}catch (SQLException e){
 			return new ResponseEntity<>(new APIError("Unexpected error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping("/password/reset")
+	@Operation(summary = "Reset password", description = "This route need to be called after calling the verification" +
+			" by email. You must provide the accountId, the new password AND the last code received by mail to be " +
+			"able to reset the password ")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Reset succeed"),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Account not found",
+									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
+	public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
+		try {
+			userService.resetPassword(resetPasswordDto);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
+		}
+	}
+
+
+	@PostMapping("/sendVerificationCode")
+	@Operation(summary = "Send verification code", description = "Send a code by email to the address associated to " +
+			"the account. This code can be used to perfom action that require a verification such as reset the " +
+			"account password ")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "sucess"),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Account not found",
+									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
+	public ResponseEntity<?> sendMail(Authentication authentication) {
+		try {
+			int accountId = jwtService.getAccountIdAuthenticated(authentication);
+			accountService.sendVerificationCode(accountId);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}
 	}
 }

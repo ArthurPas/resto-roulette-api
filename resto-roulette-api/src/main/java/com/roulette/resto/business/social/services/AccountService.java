@@ -115,7 +115,7 @@ public class AccountService implements UserDetailsService {
 
 	public boolean verifyEmail(VerifyEmailDto verifyEmailDto) throws AccountNotFoundException, SQLException {
 		try {
-			Account account = accountRepository.getAccountById(Integer.parseInt(verifyEmailDto.getAccountId()));
+			Account account = accountRepository.getAccountByEmail(verifyEmailDto.getEmail());
 			if(!(Objects.equals(account.getVerificationToken(), verifyEmailDto.getVerificationCode()))){
 				return false;
 			}else {
@@ -129,9 +129,9 @@ public class AccountService implements UserDetailsService {
 
 	}
 
-	public void sendVerificationCode(String accountId) throws AccountNotFoundException {
+	public void sendVerificationCode(int accountId) throws AccountNotFoundException {
 		try {
-			Account account = accountRepository.getAccountById(Integer.parseInt(accountId));
+			Account account = accountRepository.getAccountById(accountId);
 			String newToken = generateVerificationToken(8);
 			accountRepository.updateVerificationToken(newToken, account.getAccountId());
 			account.setVerificationToken(newToken);

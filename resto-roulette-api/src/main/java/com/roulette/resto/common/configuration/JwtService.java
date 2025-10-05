@@ -2,6 +2,7 @@ package com.roulette.resto.common.configuration;
 
 import com.roulette.resto.business.social.dto.out.AuthResponse;
 import com.roulette.resto.business.social.dto.out.BasicAuthDto;
+import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.services.AccountService;
 import io.jsonwebtoken.Claims;
@@ -14,9 +15,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import javax.security.auth.login.AccountNotFoundException;
 
 import static io.jsonwebtoken.io.Decoders.*;
@@ -35,6 +38,15 @@ public class JwtService {
 		this.accountService = accountService;
 	}
 
+	public int getAccountIdAuthenticated(Authentication authentication) {
+		Account a = (Account) authentication.getPrincipal();
+		return a.getAccountId();
+	}
+
+	public String getAccountLoginAuthenticated(Authentication authentication) {
+		Account a = (Account) authentication.getPrincipal();
+		return a.getLogin();
+	}
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
 	}
@@ -82,8 +94,14 @@ public class JwtService {
 	}
 
 	private Claims extractAllClaims(String token) {
-		return Jwts.claims().subject(extractClaim(token, Claims::getSubject)).build();
+		return Jwts
+				.parser() // parser() is still valid in 0.13.0
+				.verifyWith((SecretKey) getSignInKey())
+				.build()
+				.parseSignedClaims(token)
+				.getPayload();
 	}
+
 
 	private Key getSignInKey() {
 		byte[] keyBytes = BASE64.decode(secretKey);
@@ -107,4 +125,5 @@ public class JwtService {
 		authResponse.setExpiresIn(this.getExpirationTime());
 		return authResponse;
 	}
+
 }

@@ -63,29 +63,30 @@ public class UserService {
 		return userInfoDto;
 	}
 
-	public UserInfo updateUserInfo(String userId, UpdateUserInfo newUserInfo) throws AccountNotFoundException, SQLException {
+	public UserInfo updateUserInfo(int userId, UpdateUserInfo newUserInfo) throws AccountNotFoundException,
+			SQLException {
 		try {
-			UserInfo olduserInfo = accountRepository.getUserInfoById(Integer.parseInt(userId));
+			UserInfo olduserInfo = accountRepository.getUserInfoById(userId);
 			//If email has changed
 			if(!olduserInfo.getEmail().equals(newUserInfo.getEmail())){
-				accountRepository.updateMailVerificationStatus(Integer.parseInt(userId), false);
+				accountRepository.updateMailVerificationStatus(userId, false);
 			}
-			int updatedRows = accountRepository.updateUserInfo(userId, newUserInfo);
+			int updatedRows = accountRepository.updateUserInfo(String.valueOf(userId), newUserInfo);
 			if (updatedRows == 0) {
 				throw new SQLException("no rows updated");
 			}
-			return accountRepository.getUserInfoById(Integer.parseInt(userId));
+			return accountRepository.getUserInfoById(userId);
 		}catch (SQLException e) {
 			log.error(e.getMessage());
 			throw new SQLException(e);
 		}
 	}
 
-	public Account updatePassword(ChangePasswordDto passwordDto) throws AuthenticationException,
+	public Account updatePassword(ChangePasswordDto passwordDto, int accountId) throws AuthenticationException,
 			AccountNotFoundException {
 		try {
-			Account account = accountRepository.getAccountByLogin(passwordDto.getLogin());
-			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(passwordDto.getLogin(),
+			Account account = accountRepository.getAccountById(accountId);
+			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(account.getLogin(),
 					passwordDto.getOldPassword());
 			authenticationManager.authenticate(authReq);
 		 	String encodedNewPassword = passwordEncoder.encode(passwordDto.getNewPassword());
@@ -95,16 +96,16 @@ public class UserService {
 			log.error("Authentication exception {}", e.getMessage());
 			throw e;
 		}
-		catch (AccountNotFoundException e){
+		catch (DataAccessException e){
 			log.error("account not found");
-			throw e;
+			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
 
 
 	public void resetPassword(ResetPasswordDto resetPasswordDto) throws AccountNotFoundException {
 		try {
-			Account account = accountRepository.getAccountById(Integer.parseInt(resetPasswordDto.getAccountId()));
+			Account account = accountRepository.getAccountByEmail(resetPasswordDto.getEmail());
 			if(!(Objects.equals(account.getVerificationToken(), resetPasswordDto.getVerificationToken()))){
 				throw new SecurityException("security code doesnt match");
 			}
@@ -112,7 +113,7 @@ public class UserService {
 			accountRepository.changePassword(account.getAccountId(), encodedNewPassword);
 		}catch (DataAccessException e){
 			log.error(e.getMessage());
-			throw new AccountNotFoundException("No account found with this id : "+resetPasswordDto.getAccountId());
+			throw new AccountNotFoundException("No account found with this email : "+resetPasswordDto.getEmail());
 		}
 	}
 }

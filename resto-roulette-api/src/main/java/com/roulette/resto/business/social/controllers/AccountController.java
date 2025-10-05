@@ -18,9 +18,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -34,12 +38,12 @@ public class AccountController {
 	private final JwtService jwtService;
 	private final AccountService accountService;
 
-	public AccountController(UserService userService, JwtService jwtService, AccountService accountService, SendEmail sendEmail) {
+	public AccountController(UserService userService, JwtService jwtService, AccountService accountService) {
 		this.userService = userService;
 		this.jwtService = jwtService;
 		this.accountService = accountService;
 	}
-	@GetMapping("/info/{accountId}")
+	@GetMapping("/info")
 	@Operation(summary = "Get information about an user", description = "Get all the information about a user by his " +
 			"id including basic info of his profile and an array of all his social interactions with restaurants")
 	@ApiResponses(value = {
@@ -59,9 +63,10 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> usersInfo(@PathVariable String accountId)  {
+	public ResponseEntity<?> usersInfo(Authentication authentication)   {
 		try {
-			UserInfoDto userInfoDto = userService.getUserInfoById(Integer.parseInt(accountId));
+			int accountId = jwtService.getAccountIdAuthenticated(authentication);
+			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
 		}catch (AccountNotFoundException e){
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -72,7 +77,7 @@ public class AccountController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	@PutMapping("info/{id}")
+	@PutMapping("info")
 	@Operation(summary = "Update user infos", description = "Update all users info " +
 			"since its a put mapping you must send all userinfo that changed or not")
 	@ApiResponses(value = {
@@ -92,9 +97,12 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> updateUserInfo(UpdateUserInfo userInfo, @PathVariable String id){
+	public ResponseEntity<?> updateUserInfo(@RequestBody UpdateUserInfo userInfo, Authentication authentication){
 		try {
-			UserInfo updateUserInfo = userService.updateUserInfo(id, userInfo);
+			int accountId = jwtService.getAccountIdAuthenticated(authentication);
+			log.warn("AccountId {}", accountId);
+			log.warn(userInfo.toString());
+			UserInfo updateUserInfo = userService.updateUserInfo(accountId, userInfo);
 			return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
 		}
 		catch (AccountNotFoundException e){
@@ -123,11 +131,14 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> updatePassword(ChangePasswordDto changePasswordDto){
+	public ResponseEntity<?> updatePassword(@RequestBody ChangePasswordDto changePasswordDto,
+											Authentication authentication){
 		try {
-			Account account = userService.updatePassword(changePasswordDto);
+
+			int accountId = jwtService.getAccountIdAuthenticated(authentication);
+			Account account = userService.updatePassword(changePasswordDto, accountId);
 			final BasicAuthDto authResponse = jwtService.buildAuthResponse(
-					accountService.loadUserByUsername(changePasswordDto.getLogin()),
+					accountService.loadUserByUsername(account.getUsername()),
 					account.getAccountId());
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 		}
@@ -143,48 +154,5 @@ public class AccountController {
 
 
 
-	@PostMapping("/password/reset/")
-	@Operation(summary = "Reset password", description = "This route need to be called after calling the verification" +
-			" by email. You must provide the accountId, the new password AND the last code received by mail to be " +
-			"able to reset the password ")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-					description = "Reset succeed"),
-			@ApiResponse(responseCode = "404", description = "Account not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
-							@ExampleObject(
-									name = "Account not found",
-									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
-		try {
-			userService.resetPassword(resetPasswordDto);
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
-		}
-	}
 
-
-	@PostMapping("/sendVerificationCode/{accountId}")
-	@Operation(summary = "Send verification code", description = "Send a code by email to the address associated to " +
-			"the account. This code can be used to perfom action that require a verification such as reset the " +
-			"account password ")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-					description = "sucess"),
-			@ApiResponse(responseCode = "404", description = "Account not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
-							@ExampleObject(
-									name = "Account not found",
-									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> sendMail(@PathVariable String accountId) {
-		try {
-			accountService.sendVerificationCode(accountId);
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
-		}
-	}
 }

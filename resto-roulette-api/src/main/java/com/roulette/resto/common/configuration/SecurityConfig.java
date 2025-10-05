@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
 @Configuration
@@ -22,14 +23,15 @@ public class SecurityConfig {
 
 	final AccountService accountService;
 	static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-	public SecurityConfig(AccountService accountService) {
+	final JwtAuthenticationFilter jwtAuthenticationFilter;
+	public SecurityConfig(AccountService accountService, JwtAuthenticationFilter jwtAuthenticationFilter) {
 		this.accountService = accountService;
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 	}
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http, AccountService userDetailsService) throws Exception {
-
+		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		http.authorizeHttpRequests(auth -> auth
 				// Public endpoints
 				.requestMatchers("/auth/**").permitAll()

@@ -15,6 +15,4 @@ public class ChangePasswordDto {
 	private String oldPassword;
 	@Schema(example = "azerty123", requiredMode = REQUIRED)
 	private String newPassword;
-	@Schema(example = "fan2resto", requiredMode = REQUIRED)
-	String login;
 }

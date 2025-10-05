@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ResetPasswordDto {
-	String accountId;
+	String email;
 	String verificationToken;
 	String newPassword;
 }

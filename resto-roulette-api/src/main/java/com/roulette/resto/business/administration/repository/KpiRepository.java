@@ -6,6 +6,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,5 +51,42 @@ public class KpiRepository {
 			log.error(e.getMessage());
 			throw e;
 		}
+	}
+
+	public long getNbUsers() {
+		String query = "SELECT COUNT(*) FROM account";
+		try {
+			return jdbcTemplate.queryForObject(query, Long.class);
+		}catch (EmptyResultDataAccessException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	public Float getRegistrationVariation(int currentMonth, int comparedMonth) {
+		String query = """
+            SELECT
+                curr.total AS current_month_total,
+                prev.total AS previous_month_total,
+                (curr.total - prev.total) AS difference,
+                ROUND(
+                            IF(prev.total > 0, ((curr.total - prev.total) / prev.total) * 100, NULL), 2
+                ) AS percentage_change
+            FROM (
+                SELECT COUNT(account_id) AS total
+                FROM account
+                WHERE MONTH(created_at) = ?
+            ) AS curr
+            JOIN (
+                SELECT COUNT(account_id) AS total
+                FROM account
+                WHERE MONTH(created_at) = ?
+            ) AS prev;
+        """;
+		List<Map<String, Object>> rows = jdbcTemplate.queryForList(query, currentMonth, comparedMonth);
+		var data = rows.getFirst();
+		log.warn(data.toString());
+
+		return ((BigDecimal) data.get("percentage_change")).floatValue();
 	}
 }

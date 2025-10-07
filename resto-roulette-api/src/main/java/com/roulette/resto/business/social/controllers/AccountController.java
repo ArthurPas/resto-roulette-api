@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +35,7 @@ import java.sql.SQLException;
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(origins = "*")
+@SecurityRequirement(name="Bearer Authentication")
 public class AccountController {
 	private final UserService userService;
 	private final JwtService jwtService;

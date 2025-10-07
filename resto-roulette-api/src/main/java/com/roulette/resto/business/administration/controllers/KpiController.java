@@ -2,6 +2,7 @@ package com.roulette.resto.business.administration.controllers;
 
 import com.roulette.resto.business.administration.dto.out.GlobalUserStatDto;
 import com.roulette.resto.business.administration.services.KpiService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/kpi")
 @CrossOrigin(origins = "*")
+@SecurityRequirement(name="Bearer Authentication")
 public class KpiController {
 
 	final KpiService kpiService;

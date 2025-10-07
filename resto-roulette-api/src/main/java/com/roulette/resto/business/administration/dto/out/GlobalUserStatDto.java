@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GlobalUserStatDto {
 	private long totalRegistered;
-	private float variation;
+	private float percentageVariation;
 	private VARIATION variationType;
 }

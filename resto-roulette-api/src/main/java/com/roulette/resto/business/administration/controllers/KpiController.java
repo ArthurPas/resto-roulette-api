@@ -83,7 +83,14 @@ public class KpiController {
 	}
 
 
-	@GetMapping("/launchedWheels")
+	@GetMapping("/launchedWheelsTrend")
+	@Operation(summary = "Wheels launched trend", description = "Return the total " +
+			"number of wheel launched and the trend between current and last month in percentage.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Total and trend data",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =TrendDto.class)))})
 	public ResponseEntity<?> getLaunchedWheels(Authentication authentication) {
 		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
 		if(UNAUTHORIZED != null) return UNAUTHORIZED;

@@ -43,6 +43,7 @@ public class SecurityConfig {
 						"/webjars/**"
 				).permitAll()
 				.requestMatchers("/users/**").authenticated()
+				.requestMatchers("/kpi/**").authenticated()
 		);
 
 		http.httpBasic(Customizer.withDefaults());

@@ -1,8 +1,7 @@
 package com.roulette.resto.business.administration.controllers;
 
-import com.roulette.resto.business.administration.dto.out.GlobalUserStatDto;
+import com.roulette.resto.business.administration.dto.out.TrendDto;
 import com.roulette.resto.business.administration.services.KpiService;
-import com.roulette.resto.business.social.dto.out.UserInfoDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserRole;
 import com.roulette.resto.business.social.services.AccountService;
@@ -75,18 +74,23 @@ public class KpiController {
 			@ApiResponse(responseCode = "200",
 					description = "Total and trend data",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =String.class, example = "{" +
-									"  \"totalRegistered\": 54,\n" +
-									"  \"variation\": 10.00,\n" +
-									"  \"variationType\": \"UP (or DOWN or EQUAL)\"\n" +
-									"}")))})
+							schema = @Schema(implementation =TrendDto.class)))})
 	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication) {
 		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
 		if(UNAUTHORIZED != null) return UNAUTHORIZED;
-		GlobalUserStatDto globalUserStatDto = kpiService.getVariationRegistration();
-		return new ResponseEntity<>(globalUserStatDto, HttpStatus.OK);
+		TrendDto trendDto = kpiService.getRegistrationTrend();
+		return new ResponseEntity<>(trendDto, HttpStatus.OK);
 	}
 
+
+	@GetMapping("/launchedWheels")
+	public ResponseEntity<?> getLaunchedWheels(Authentication authentication) {
+		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
+		if(UNAUTHORIZED != null) return UNAUTHORIZED;
+		TrendDto trendDto = kpiService.getWheelTrend();
+		return new ResponseEntity<>(trendDto, HttpStatus.OK);
+
+	}
 
 
 	private ResponseEntity<?> rightCheck(Authentication authentication) {

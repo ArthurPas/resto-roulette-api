@@ -1,7 +1,7 @@
 package com.roulette.resto.business.administration.services;
 
 import com.roulette.resto.business.administration.dto.UserRegistrationHistory;
-import com.roulette.resto.business.administration.dto.out.GlobalUserStatDto;
+import com.roulette.resto.business.administration.dto.out.TrendDto;
 import com.roulette.resto.business.administration.dto.out.VARIATION;
 import com.roulette.resto.business.administration.repository.KpiRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -29,18 +29,35 @@ public class KpiService {
 		return result;
 	}
 
-	public GlobalUserStatDto getVariationRegistration() {
-		GlobalUserStatDto globalUserStatDto = new GlobalUserStatDto();
-		globalUserStatDto.setTotalRegistered(kpiRepository.getNbUsers());
+	public TrendDto getRegistrationTrend() {
+		TrendDto trendDto = new TrendDto();
+		trendDto.setTotal(kpiRepository.getNbUsers());
 		int currentMonth = YearMonth.now().getMonthValue();
 		int lastMonth = YearMonth.now().minusMonths(1).getMonthValue();
-		Float variation = kpiRepository.getRegistrationVariation(currentMonth, lastMonth);
-		globalUserStatDto.setPercentageVariation(variation);
+		int currentYear = YearMonth.now().getYear();
+		Float variation = kpiRepository.getRegistrationTrend(currentMonth, lastMonth, currentYear);
+		trendDto.setPercentageVariation(variation);
 		if(variation > 0) {
-			globalUserStatDto.setVariationType(VARIATION.UP);
+			trendDto.setVariationType(VARIATION.UP);
 		} else if(variation < 0) {
-			globalUserStatDto.setVariationType(VARIATION.DOWN);
-		} else globalUserStatDto.setVariationType(VARIATION.EQUAL);
-		return globalUserStatDto;
+			trendDto.setVariationType(VARIATION.DOWN);
+		} else trendDto.setVariationType(VARIATION.EQUAL);
+		return trendDto;
+	}
+
+	public TrendDto getWheelTrend() {
+		TrendDto trendDto = new TrendDto();
+		trendDto.setTotal(kpiRepository.getWheelLaunched());
+		int currentMonth = YearMonth.now().getMonthValue();
+		int lastMonth = YearMonth.now().minusMonths(1).getMonthValue();
+		int currentYear = YearMonth.now().getYear();
+		Float variation = kpiRepository.getWheelTrend(currentMonth, lastMonth, currentYear );
+		trendDto.setPercentageVariation(variation);
+		if(variation > 0) {
+			trendDto.setVariationType(VARIATION.UP);
+		} else if(variation < 0) {
+			trendDto.setVariationType(VARIATION.DOWN);
+		} else trendDto.setVariationType(VARIATION.EQUAL);
+		return trendDto;
 	}
 }

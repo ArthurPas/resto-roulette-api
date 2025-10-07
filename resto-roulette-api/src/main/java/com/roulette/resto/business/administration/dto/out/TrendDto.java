@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GlobalUserStatDto {
-	private long totalRegistered;
+public class TrendDto {
+	private long total;
 	private float percentageVariation;
 	private VARIATION variationType;
 }

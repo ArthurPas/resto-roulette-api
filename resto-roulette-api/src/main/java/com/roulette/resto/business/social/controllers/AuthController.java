@@ -1,15 +1,13 @@
 package com.roulette.resto.business.social.controllers;
 
-import com.roulette.resto.business.social.dto.in.ResetPasswordDto;
-import com.roulette.resto.business.social.dto.in.VerifyEmailDto;
+import com.roulette.resto.business.social.dto.in.*;
 import com.roulette.resto.business.social.dto.out.AuthResponse;
-import com.roulette.resto.business.social.dto.in.LoginDto;
-import com.roulette.resto.business.social.dto.in.RegisterDto;
 import com.roulette.resto.business.social.dto.out.UserInfoDto;
 import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.services.AccountService;
 import com.roulette.resto.business.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
+import com.roulette.resto.common.dao.SendEmail;
 import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -162,8 +161,9 @@ public class AuthController {
 			" about the email verification. In case of a email address change, just call again the endpoint with the " +
 			"code received in the other email address")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204",
-					description = "Success (no detail needed)"),
+			@ApiResponse(responseCode = "200",
+					description = "User verified status updated",content = @Content(schema =
+			@Schema(implementation = Void.class))),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation =APIError.class),examples = {
@@ -199,11 +199,14 @@ public class AuthController {
 
 	@PostMapping("/password/reset")
 	@Operation(summary = "Reset password", description = "This route need to be called after calling the verification" +
-			" by email. You must provide the accountId, the new password AND the last code received by mail to be " +
+			" by email. You must provide the email associated with the account, the new password AND the last code " +
+			"received by mail to" +
+			" be " +
 			"able to reset the password ")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
-					description = "Reset succeed"),
+					description = "Reset password succeed",content = @Content(schema =
+			@Schema(implementation = Void.class))),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation =APIError.class),examples = {
@@ -226,17 +229,18 @@ public class AuthController {
 			"account password ")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
-					description = "sucess"),
+					description = "Email sent", content = @Content(schema = @Schema(implementation = Void.class))),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation =APIError.class),examples = {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> sendMail(Authentication authentication) {
+	public ResponseEntity<?> sendMail(@RequestBody SendEmailDto emailDto) {
 		try {
-			int accountId = jwtService.getAccountIdAuthenticated(authentication);
-			accountService.sendVerificationCode(accountId);
+			//int accountId = jwtService.getAccountIdAuthenticated(authentication);
+ 			// User cant be connected if he wants to reset his password
+			accountService.sendVerificationCode(emailDto.getEmail());
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);

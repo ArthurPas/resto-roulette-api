@@ -129,9 +129,10 @@ public class AccountService implements UserDetailsService {
 
 	}
 
-	public void sendVerificationCode(int accountId) throws AccountNotFoundException {
+	public void sendVerificationCode(String email) throws AccountNotFoundException {
 		try {
-			Account account = accountRepository.getAccountById(accountId);
+			Account account = accountRepository.getAccountByEmail(email);
+			log.warn(account.toString());
 			String newToken = generateVerificationToken(8);
 			accountRepository.updateVerificationToken(newToken, account.getAccountId());
 			account.setVerificationToken(newToken);

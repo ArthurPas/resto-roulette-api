@@ -87,12 +87,13 @@ public class AccountRepository {
 	}
 
 	public Account getAccountByEmail(String email) throws AccountNotFoundException {
-		String query = 	"SELECT account_id,login,password,email, verification_token " +
+		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
+								"first_name, email_verified " +
 						"FROM account " +
 						"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 						"WHERE email = ? ";
 		try {
-			return jdbcTemplate.queryForObject(query, new AccountRowMapper(), email);
+			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), email);
 		}
 		catch (EmptyResultDataAccessException e) {
 			log.info("No user found with email {}", email);

@@ -3,6 +3,11 @@ package com.roulette.resto.business.administration.controllers;
 import com.roulette.resto.business.administration.dto.out.GlobalUserStatDto;
 import com.roulette.resto.business.administration.services.KpiService;
 import com.roulette.resto.business.social.dto.out.UserInfoDto;
+import com.roulette.resto.business.social.entity.Account;
+import com.roulette.resto.business.social.entity.UserRole;
+import com.roulette.resto.business.social.services.AccountService;
+import com.roulette.resto.common.configuration.JwtService;
+import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +17,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import javax.security.auth.login.AccountNotFoundException;
 
 @Slf4j
 @RestController
@@ -22,9 +30,13 @@ import org.springframework.web.bind.annotation.*;
 public class KpiController {
 
 	final KpiService kpiService;
+	private final JwtService jwtService;
+	private final AccountService accountService;
 
-	public KpiController(KpiService kpiService) {
+	public KpiController(KpiService kpiService, JwtService jwtService, AccountService accountService) {
 		this.kpiService = kpiService;
+		this.jwtService = jwtService;
+		this.accountService = accountService;
 	}
 
 	@GetMapping("/yearlyRegistrations")
@@ -49,7 +61,9 @@ public class KpiController {
 									"  0,\n" +
 									"  0\n" +
 									"]")))})
-	public ResponseEntity<?> getUsersRegistrationsByYear(@RequestParam String year) {
+	public ResponseEntity<?> getUsersRegistrationsByYear(@RequestParam String year, Authentication authentication) throws AccountNotFoundException {
+		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
+		if(UNAUTHORIZED != null) return UNAUTHORIZED;
 		long[] history = kpiService.getUsersRegistrationHistoric(year);
 		return new ResponseEntity<>(history, HttpStatus.OK);
 	}
@@ -66,9 +80,28 @@ public class KpiController {
 									"  \"variation\": 10.00,\n" +
 									"  \"variationType\": \"UP (or DOWN or EQUAL)\"\n" +
 									"}")))})
-	public ResponseEntity<?> getTotalUsersRegistrations() {
+	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication) {
+		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
+		if(UNAUTHORIZED != null) return UNAUTHORIZED;
 		GlobalUserStatDto globalUserStatDto = kpiService.getVariationRegistration();
 		return new ResponseEntity<>(globalUserStatDto, HttpStatus.OK);
 	}
 
+
+
+	private ResponseEntity<?> rightCheck(Authentication authentication) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		log.warn(String.valueOf(accountId));
+		try {
+			Account account = accountService.getAccountById(accountId);
+			if(account.getUserInfo().getRole()!= UserRole.ROLE_ADMIN){
+				return new ResponseEntity<>(new APIError("You are not allowed to see this resource, only admin " +
+						"profile can"),
+						HttpStatus.UNAUTHORIZED);
+			}
+		}catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		return null;
+	}
 }

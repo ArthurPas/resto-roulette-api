@@ -1,6 +1,5 @@
 package com.roulette.resto.business.social.dto.in;
 
-import com.roulette.resto.business.social.entity.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;

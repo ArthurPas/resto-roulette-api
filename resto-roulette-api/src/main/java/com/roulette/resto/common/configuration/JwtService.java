@@ -8,12 +8,6 @@ import com.roulette.resto.business.social.services.AccountService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,8 +15,13 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import javax.security.auth.login.AccountNotFoundException;
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
-import static io.jsonwebtoken.io.Decoders.*;
+import static io.jsonwebtoken.io.Decoders.BASE64;
 
 @Service
 public class JwtService {

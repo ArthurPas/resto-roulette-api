@@ -7,7 +7,6 @@ import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.services.AccountService;
 import com.roulette.resto.business.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
-import com.roulette.resto.common.dao.SendEmail;
 import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
-import java.util.Map;
 
 @Slf4j
 @RestController

@@ -1,6 +1,5 @@
 package com.roulette.resto.business.social.dto.mapper;
 
-import com.roulette.resto.business.social.entity.Account;
 import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.entity.UserRole;
 import org.springframework.jdbc.core.RowMapper;

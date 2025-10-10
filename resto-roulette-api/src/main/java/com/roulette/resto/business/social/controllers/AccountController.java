@@ -1,7 +1,6 @@
 package com.roulette.resto.business.social.controllers;
 
 import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
-import com.roulette.resto.business.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.business.social.dto.out.BasicAuthDto;
 import com.roulette.resto.business.social.dto.out.UserInfoDto;
@@ -10,7 +9,6 @@ import com.roulette.resto.business.social.entity.UserInfo;
 import com.roulette.resto.business.social.services.AccountService;
 import com.roulette.resto.business.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
-import com.roulette.resto.common.dao.SendEmail;
 import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,13 +17,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;

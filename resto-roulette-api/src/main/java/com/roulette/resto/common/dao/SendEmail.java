@@ -1,18 +1,11 @@
 package com.roulette.resto.common.dao;
 
-import com.mailersend.sdk.emails.Email;
-import com.mailersend.sdk.MailerSend;
-import com.mailersend.sdk.MailerSendResponse;
-import com.mailersend.sdk.exceptions.MailerSendException;
-import com.roulette.resto.common.service.MailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;

@@ -24,8 +24,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -86,7 +89,7 @@ public class AuthController {
 			final AuthResponse authResponse = jwtService.buildAuthResponse(
 					accountService.loadUserByUsername(loginDto.getLogin()),
 					account.getAccountId(),
-					userInfo.getPersonnelInformation());
+					userInfo.getUserInfo());
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 
 		}catch (AuthenticationException e) {
@@ -211,7 +214,7 @@ public class AuthController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
+	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
 		try {
 			userService.resetPassword(resetPasswordDto);
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -240,6 +243,23 @@ public class AuthController {
  			// User cant be connected if he wants to reset his password
 			accountService.sendVerificationCode(emailDto.getEmail());
 			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@GetMapping("/oauth/google")
+	public ResponseEntity<?> grantCode(@AuthenticationPrincipal OAuth2User principal) throws AccountNotFoundException {
+		String email = principal.getAttribute("email");
+		try {
+			Account account = accountService.getAccountByEmail(email);
+			UserInfoDto userInfo = userService.getUserInfoById(account.getAccountId());
+			log.warn(userInfo.toString());
+			final AuthResponse authResponse = jwtService.buildAuthResponse(
+					accountService.loadUserByUsername(account.getLogin()),
+					account.getAccountId(),
+					userInfo.getUserInfo());
+			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}

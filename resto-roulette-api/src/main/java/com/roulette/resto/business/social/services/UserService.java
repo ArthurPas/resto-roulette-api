@@ -44,7 +44,7 @@ public class UserService {
 	public UserInfoDto getUserInfoByLogin(String login){
 		UserInfoDto userInfoDto = new UserInfoDto();
 		UserInfo userInfo = accountRepository.getUserInfoByLogin(login);
-		userInfoDto.setPersonnelInformation(userInfo);
+		userInfoDto.setUserInfo(userInfo);
 		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountLogin(login);
 		userInfoDto.setUserInteractions(interactions);
 		return userInfoDto;
@@ -56,7 +56,7 @@ public class UserService {
 		};
 		UserInfoDto userInfoDto = new UserInfoDto();
 		Account account = accountRepository.getAccountById(id);
-		userInfoDto.setPersonnelInformation(account.getUserInfo());
+		userInfoDto.setUserInfo(account.getUserInfo());
 		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountId(id);
 		userInfoDto.setUserInteractions(interactions);
 		userInfoDto.setLogin(account.getLogin());

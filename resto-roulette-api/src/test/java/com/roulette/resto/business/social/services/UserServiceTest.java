@@ -88,7 +88,7 @@ class UserServiceTest {
 			// Assert
 			assertNotNull(result);
 			assertEquals("testuser", result.getLogin());
-			assertEquals("John", result.getPersonnelInformation().getFirstName());
+			assertEquals("John", result.getUserInfo().getFirstName());
 			assertEquals(1, result.getUserInteractions().size());
 			verify(accountService).existsById(userId);
 			verify(accountRepository).getAccountById(userId);

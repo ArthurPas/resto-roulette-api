@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UserInfoDto {
 	private String login;
-	private UserInfo personnelInformation;
+	private UserInfo userInfo;
 	private List<UserInteraction>  userInteractions;
 
 }

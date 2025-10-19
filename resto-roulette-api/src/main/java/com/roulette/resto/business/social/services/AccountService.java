@@ -142,4 +142,8 @@ public class AccountService implements UserDetailsService {
 			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
+
+	public Account getAccountByEmail(String email) throws AccountNotFoundException {
+		return accountRepository.getAccountByEmail(email);
+	}
 }

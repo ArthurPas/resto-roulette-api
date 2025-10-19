@@ -4,6 +4,7 @@ import com.roulette.resto.business.social.services.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -11,10 +12,15 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import static org.springframework.security.authorization.SingleResultAuthorizationManager.permitAll;
 
 @Slf4j
 @Configuration
@@ -31,6 +37,7 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http, AccountService userDetailsService) throws Exception {
+		http.cors(Customizer.withDefaults());
 		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		http.authorizeHttpRequests(auth -> auth
 				// Public endpoints
@@ -44,7 +51,13 @@ public class SecurityConfig {
 				).permitAll()
 				.requestMatchers("/users/**").authenticated()
 				.requestMatchers("/kpi/**").authenticated()
-		);
+				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+		).oauth2Login(new Customizer<OAuth2LoginConfigurer<HttpSecurity>>() {
+			@Override
+			public void customize(OAuth2LoginConfigurer<HttpSecurity> httpSecurityOAuth2LoginConfigurer) {
+
+			}
+		});
 
 		http.httpBasic(Customizer.withDefaults());
 		http.userDetailsService(userDetailsService);
@@ -62,7 +75,20 @@ public class SecurityConfig {
 		return new ProviderManager(authenticationProvider);
 	}
 
-
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**")
+						.allowedOrigins("*")
+						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+						.allowedHeaders("Authorization", "Content-Type", "Accept")
+						.exposedHeaders("Authorization")
+						.allowCredentials(false);
+			}
+		};
+	}
 	@Bean
 	public static PasswordEncoder passwordEncoder(){
 		return passwordEncoder;

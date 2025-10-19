@@ -1,6 +1,5 @@
 package com.roulette.resto.business.social.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roulette.resto.business.social.dto.in.LoginDto;
 import com.roulette.resto.business.social.dto.in.RegisterDto;
 import com.roulette.resto.business.social.dto.in.VerifyEmailDto;
@@ -96,7 +95,7 @@ class AuthControllerTest {
 			// Arrange
 			LoginDto loginDto = new LoginDto("testuser", "password");
 			UserInfoDto userInfoDto = new UserInfoDto();
-			userInfoDto.setPersonnelInformation(sampleUserInfo);
+			userInfoDto.setUserInfo(sampleUserInfo);
 
 			when(authenticationManager.authenticate(any())).thenReturn(authentication);
 			when(accountService.getAccountByLogin("testuser")).thenReturn(sampleAccount);

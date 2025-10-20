@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import javax.security.auth.login.AccountNotFoundException;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,10 +41,6 @@ public class JwtService {
 		return a.getAccountId();
 	}
 
-	public String getAccountLoginAuthenticated(Authentication authentication) {
-		Account a = (Account) authentication.getPrincipal();
-		return a.getLogin();
-	}
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
 	}
@@ -107,7 +102,7 @@ public class JwtService {
 		return Keys.hmacShaKeyFor(keyBytes);
 	}
 
-	public AuthResponse buildAuthResponse(UserDetails userDetails, int accountId, UserInfo userInfo) throws AccountNotFoundException {
+	public AuthResponse buildAuthResponse(UserDetails userDetails, int accountId, UserInfo userInfo)  {
 		BasicAuthDto basicAuthDto = buildAuthResponse(userDetails, accountId);
 		AuthResponse authResponse = new AuthResponse();
 		authResponse.setExpiresIn(basicAuthDto.getExpiresIn());
@@ -122,6 +117,15 @@ public class JwtService {
 		String jwtToken = this.generateToken(accountIdJwt,userDetails);
 		authResponse.setToken(jwtToken);
 		authResponse.setExpiresIn(this.getExpirationTime());
+		return authResponse;
+	}
+
+
+	public AuthResponse buildAuthResponse(Account newAccount)  {
+		final AuthResponse authResponse = this.buildAuthResponse(
+				accountService.loadUserByUsername(newAccount.getLogin()),
+				newAccount.getAccountId(),
+				newAccount.getUserInfo());
 		return authResponse;
 	}
 

@@ -24,11 +24,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -85,11 +82,7 @@ public class AuthController {
 			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 			Account account = accountService.getAccountByLogin(loginDto.getLogin());
 			UserInfoDto userInfo = userService.getUserInfoById(account.getAccountId());
-			log.warn(userInfo.toString());
-			final AuthResponse authResponse = jwtService.buildAuthResponse(
-					accountService.loadUserByUsername(loginDto.getLogin()),
-					account.getAccountId(),
-					userInfo.getUserInfo());
+			final AuthResponse authResponse = jwtService.buildAuthResponse(account);
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 
 		}catch (AuthenticationException e) {
@@ -137,20 +130,12 @@ public class AuthController {
 		}
 		try {
 			Account newAccount = accountService.registerAccount(registerDto);
-			final AuthResponse authResponse = jwtService.buildAuthResponse(
-					accountService.loadUserByUsername(newAccount.getLogin()),
-					newAccount.getAccountId(),
-					newAccount.getUserInfo());
-
+			final AuthResponse authResponse = jwtService.buildAuthResponse(newAccount);
 			return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
 		}catch (DuplicateKeyException e) {
 			return new ResponseEntity<>((new APIError("Duplicate value that should be unique", e.getMessage())),
 					HttpStatus.BAD_REQUEST);
-		}
-		catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
-		}
-		catch (Exception e){
+		} catch (Exception e){
 			return new ResponseEntity<>(new APIError("Server error while creating account", e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -248,20 +233,26 @@ public class AuthController {
 		}
 	}
 
-	@GetMapping("/oauth/google")
-	public ResponseEntity<?> grantCode(@AuthenticationPrincipal OAuth2User principal) throws AccountNotFoundException {
+/*	@GetMapping("/auth/google/success")
+	public ResponseEntity<?> grantCode(@AuthenticationPrincipal OAuth2User principal) {
+		if (principal == null) {
+			return new ResponseEntity<>("Erreur: Principal non trouvé", HttpStatus.UNAUTHORIZED);
+		}
 		String email = principal.getAttribute("email");
 		try {
 			Account account = accountService.getAccountByEmail(email);
-			UserInfoDto userInfo = userService.getUserInfoById(account.getAccountId());
-			log.warn(userInfo.toString());
-			final AuthResponse authResponse = jwtService.buildAuthResponse(
-					accountService.loadUserByUsername(account.getLogin()),
-					account.getAccountId(),
-					userInfo.getUserInfo());
+			final AuthResponse authResponse = jwtService.buildAuthResponse(account);
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
+
 		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
+			RegisterDto registerDto = new RegisterDto();
+			registerDto.setEmail(email);
+			registerDto.setFirstName(principal.getAttribute("given_name"));
+			registerDto.setLastName(principal.getAttribute("family_name"));
+			registerDto.setLogin(email);
+			Account newAccount = accountService.registerAccount(registerDto);
+			final AuthResponse authResponse = jwtService.buildAuthResponse(newAccount);
+			return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
 		}
-	}
+	}*/
 }

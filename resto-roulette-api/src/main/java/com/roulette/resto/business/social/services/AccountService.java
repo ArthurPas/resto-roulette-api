@@ -73,8 +73,8 @@ public class AccountService implements UserDetailsService {
 
 		Account account = new Account();
 		account.setLogin(registerDto.getLogin());
-		account.setPassword(registerDto.getPassword());
-		account.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+		if(registerDto.getPassword() != null)
+			account.setPassword(passwordEncoder.encode(registerDto.getPassword()));
 		account.setVerificationToken(generateVerificationToken(8));
 		UserInfo userInfo = new UserInfo();
 		userInfo.setEmail(registerDto.getEmail());

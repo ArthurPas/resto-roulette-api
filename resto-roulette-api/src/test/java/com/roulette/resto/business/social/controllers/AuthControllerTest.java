@@ -100,8 +100,7 @@ class AuthControllerTest {
 			when(authenticationManager.authenticate(any())).thenReturn(authentication);
 			when(accountService.getAccountByLogin("testuser")).thenReturn(sampleAccount);
 			when(userService.getUserInfoById(1)).thenReturn(userInfoDto);
-			when(accountService.loadUserByUsername("testuser")).thenReturn(mock(UserDetails.class));
-			when(jwtService.buildAuthResponse(any(UserDetails.class), eq(1), any(UserInfo.class))).thenReturn(sampleAuthResponse);
+			when(jwtService.buildAuthResponse(any())).thenReturn(sampleAuthResponse);
 
 			// Act
 			ResponseEntity<?> response = authController.login(loginDto, new MockHttpServletRequest());
@@ -156,7 +155,7 @@ class AuthControllerTest {
 			when(accountService.existsByLogin("newuser")).thenReturn(false);
 			when(accountService.existsByEmail("new@example.com")).thenReturn(false);
 			when(accountService.registerAccount(registerDto)).thenReturn(sampleAccount);
-			when(jwtService.buildAuthResponse(any(), anyInt(), any())).thenReturn(sampleAuthResponse);
+			when(jwtService.buildAuthResponse(any())).thenReturn(sampleAuthResponse);
 
 			// Act
 			ResponseEntity<?> response = authController.registerUser(registerDto);

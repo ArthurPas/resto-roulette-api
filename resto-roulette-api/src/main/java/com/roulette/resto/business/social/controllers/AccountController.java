@@ -130,7 +130,7 @@ public class AccountController {
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> updatePassword(@RequestBody ChangePasswordDto changePasswordDto,
-											Authentication authentication){
+											Authentication authentication) {
 		try {
 
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);

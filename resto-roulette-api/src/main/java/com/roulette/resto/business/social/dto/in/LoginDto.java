@@ -11,8 +11,10 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginDto {
-	@Schema(example = "fan2resto", requiredMode = REQUIRED)
+	@Schema(example = "fan2resto")
 	String login;
+	@Schema(example = "fan@resto.com")
+	String email;
 	@Schema(example = "azerty123", requiredMode = REQUIRED)
 	String password;
 

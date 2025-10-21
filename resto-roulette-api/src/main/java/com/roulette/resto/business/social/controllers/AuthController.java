@@ -65,6 +65,14 @@ public class AuthController {
 									value = "{\"message\":\"Bad credentials\",\"description\":\"\"}"
 							)
 					})),
+			@ApiResponse(responseCode = "400", description = "Bad request",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation =APIError.class),examples = {
+							@ExampleObject(
+									name = "Bad request",
+									value = "{\"message\":\"Login request must have at least login or email\",\"description\":\"\"}"
+							)
+					})),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation =APIError.class),examples = {
@@ -74,20 +82,32 @@ public class AuthController {
 	})
 	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request){
 		try {
-			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword());
+
+			Account account;
+			if(loginDto.getLogin() != null){
+				account = accountService.getAccountByLogin(loginDto.getLogin());
+				log.warn(account.toString());
+			}
+			else if(loginDto.getEmail()!= null) {
+				account = accountService.getAccountByEmail(loginDto.getEmail());
+				log.warn(account.toString());
+			}else{
+				return new ResponseEntity<>(new APIError("Login request must have at least login or email"),
+						HttpStatus.BAD_REQUEST);
+			}
+			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(account.getLogin(),
+					loginDto.getPassword());
 			Authentication auth = authenticationManager.authenticate(authReq);
 			SecurityContext sc = SecurityContextHolder.getContext();
 			sc.setAuthentication(auth);
 			HttpSession session = request.getSession();
-			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-			Account account = accountService.getAccountByLogin(loginDto.getLogin());
-			UserInfoDto userInfo = userService.getUserInfoById(account.getAccountId());
+			session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
 			final AuthResponse authResponse = jwtService.buildAuthResponse(account);
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 
 		}catch (AuthenticationException e) {
 			log.error(e.getMessage());
-			return new ResponseEntity<>(new APIError("Bad credentials", e.getMessage()), HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(new APIError("Wrong credentials", e.getMessage()), HttpStatus.UNAUTHORIZED);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
 		}
@@ -207,8 +227,7 @@ public class AuthController {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}
 	}
-
-
+	
 	@PostMapping("/sendVerificationCode")
 	@Operation(summary = "Send verification code", description = "Send a code by email to the address associated to " +
 			"the account. This code can be used to perfom action that require a verification such as reset the " +
@@ -232,27 +251,4 @@ public class AuthController {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}
 	}
-
-/*	@GetMapping("/auth/google/success")
-	public ResponseEntity<?> grantCode(@AuthenticationPrincipal OAuth2User principal) {
-		if (principal == null) {
-			return new ResponseEntity<>("Erreur: Principal non trouvé", HttpStatus.UNAUTHORIZED);
-		}
-		String email = principal.getAttribute("email");
-		try {
-			Account account = accountService.getAccountByEmail(email);
-			final AuthResponse authResponse = jwtService.buildAuthResponse(account);
-			return new ResponseEntity<>(authResponse, HttpStatus.OK);
-
-		} catch (AccountNotFoundException e) {
-			RegisterDto registerDto = new RegisterDto();
-			registerDto.setEmail(email);
-			registerDto.setFirstName(principal.getAttribute("given_name"));
-			registerDto.setLastName(principal.getAttribute("family_name"));
-			registerDto.setLogin(email);
-			Account newAccount = accountService.registerAccount(registerDto);
-			final AuthResponse authResponse = jwtService.buildAuthResponse(newAccount);
-			return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
-		}
-	}*/
 }

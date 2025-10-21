@@ -120,6 +120,7 @@ public class AccountService implements UserDetailsService {
 				return false;
 			}else {
 				accountRepository.updateMailVerificationStatus(account.getAccountId(), true);
+				accountRepository.updateVerificationToken(generateVerificationToken(8), account.getAccountId());
 				return true;
 			}
 		} catch (SQLException e) {

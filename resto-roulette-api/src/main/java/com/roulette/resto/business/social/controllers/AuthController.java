@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.el.parser.Token;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -222,9 +223,13 @@ public class AuthController {
 	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
 		try {
 			userService.resetPassword(resetPasswordDto);
+			accountService.verifyEmail(new VerifyEmailDto(resetPasswordDto.getEmail(),
+					resetPasswordDto.getVerificationToken()));
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
+		} catch (SQLException e) {
+			return new ResponseEntity<>(new APIError("Server error"), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	

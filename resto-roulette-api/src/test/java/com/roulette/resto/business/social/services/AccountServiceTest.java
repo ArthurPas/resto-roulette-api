@@ -1,11 +1,12 @@
 package com.roulette.resto.business.social.services;
 
-import com.roulette.resto.business.social.dto.in.RegisterDto;
-import com.roulette.resto.business.social.dto.in.VerifyEmailDto;
-import com.roulette.resto.business.social.entity.Account;
-import com.roulette.resto.business.social.entity.UserInfo;
-import com.roulette.resto.business.social.repository.AccountRepository;
+import com.roulette.resto.social.dto.in.RegisterDto;
+import com.roulette.resto.social.dto.in.VerifyEmailDto;
+import com.roulette.resto.social.entity.Account;
+import com.roulette.resto.social.entity.UserInfo;
+import com.roulette.resto.social.repository.AccountRepository;
 import com.roulette.resto.common.service.MailService;
+import com.roulette.resto.social.services.AccountService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

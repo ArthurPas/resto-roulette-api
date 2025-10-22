@@ -1,6 +1,6 @@
 package com.roulette.resto.common.configuration;
 
-import com.roulette.resto.business.social.services.AccountService;
+import com.roulette.resto.social.services.AccountService;
 import com.roulette.resto.common.dao.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;

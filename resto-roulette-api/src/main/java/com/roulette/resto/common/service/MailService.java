@@ -1,6 +1,6 @@
 package com.roulette.resto.common.service;
 
-import com.roulette.resto.business.social.entity.Account;
+import com.roulette.resto.social.entity.Account;
 import com.roulette.resto.common.dao.EmailContent;
 import com.roulette.resto.common.dao.SendEmail;
 import lombok.extern.slf4j.Slf4j;

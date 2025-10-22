@@ -1,14 +1,15 @@
 package com.roulette.resto.business.social.controllers;
 
-import com.roulette.resto.business.social.dto.in.LoginDto;
-import com.roulette.resto.business.social.dto.in.RegisterDto;
-import com.roulette.resto.business.social.dto.in.VerifyEmailDto;
-import com.roulette.resto.business.social.dto.out.AuthResponse;
-import com.roulette.resto.business.social.dto.out.UserInfoDto;
-import com.roulette.resto.business.social.entity.Account;
-import com.roulette.resto.business.social.entity.UserInfo;
-import com.roulette.resto.business.social.services.AccountService;
-import com.roulette.resto.business.social.services.UserService;
+import com.roulette.resto.social.controllers.AuthController;
+import com.roulette.resto.social.dto.in.LoginDto;
+import com.roulette.resto.social.dto.in.RegisterDto;
+import com.roulette.resto.social.dto.in.VerifyEmailDto;
+import com.roulette.resto.social.dto.out.AuthResponse;
+import com.roulette.resto.social.dto.out.UserInfoDto;
+import com.roulette.resto.social.entity.Account;
+import com.roulette.resto.social.entity.UserInfo;
+import com.roulette.resto.social.services.AccountService;
+import com.roulette.resto.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +22,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 

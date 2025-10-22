@@ -2,10 +2,10 @@ package com.roulette.resto.common.dao;
 
 // Importez vos classes (Account, AccountService, JwtService, AuthResponse, etc.)
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.roulette.resto.business.social.dto.in.RegisterDto;
-import com.roulette.resto.business.social.dto.out.AuthResponse;
-import com.roulette.resto.business.social.entity.Account;
-import com.roulette.resto.business.social.services.AccountService;
+import com.roulette.resto.social.dto.in.RegisterDto;
+import com.roulette.resto.social.dto.out.AuthResponse;
+import com.roulette.resto.social.entity.Account;
+import com.roulette.resto.social.services.AccountService;
 import com.roulette.resto.common.configuration.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

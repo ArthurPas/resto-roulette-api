@@ -1,6 +1,6 @@
 package com.roulette.resto.common.configuration;
 
-import com.roulette.resto.business.social.services.AccountService;
+import com.roulette.resto.social.services.AccountService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

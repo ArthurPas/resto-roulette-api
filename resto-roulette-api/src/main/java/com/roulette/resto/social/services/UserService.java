@@ -1,16 +1,18 @@
-package com.roulette.resto.business.social.services;
+package com.roulette.resto.social.services;
 
-import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
-import com.roulette.resto.business.social.dto.in.ResetPasswordDto;
-import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
-import com.roulette.resto.business.social.dto.out.UserInfoDto;
-import com.roulette.resto.business.social.dto.out.UserInteraction;
-import com.roulette.resto.business.social.entity.Account;
-import com.roulette.resto.business.social.entity.UserInfo;
-import com.roulette.resto.business.social.repository.AccountRepository;
-import com.roulette.resto.business.social.repository.InteractionRepository;
+import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.social.dto.in.ResetPasswordDto;
+import com.roulette.resto.social.dto.in.UpdateUserInfo;
+import com.roulette.resto.social.dto.out.UserInfoDto;
+import com.roulette.resto.social.dto.out.UserInteraction;
+import com.roulette.resto.social.entity.Account;
+import com.roulette.resto.social.entity.UserInfo;
+import com.roulette.resto.social.repository.AccountRepository;
+import com.roulette.resto.social.repository.InteractionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -103,7 +105,7 @@ public class UserService {
 	}
 
 
-	public void resetPassword(ResetPasswordDto resetPasswordDto) throws AccountNotFoundException {
+	public void resetPassword(ResetPasswordDto resetPasswordDto) throws APIError {
 		try {
 			Account account = accountRepository.getAccountByEmail(resetPasswordDto.getEmail());
 			if(!(Objects.equals(account.getVerificationToken(), resetPasswordDto.getVerificationToken()))){
@@ -113,7 +115,9 @@ public class UserService {
 			accountRepository.changePassword(account.getAccountId(), encodedNewPassword);
 		}catch (DataAccessException e){
 			log.error(e.getMessage());
-			throw new AccountNotFoundException("No account found with this email : "+resetPasswordDto.getEmail());
+			throw new APIError("server error", HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (AccountNotFoundException e) {
+			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
 		}
 	}
 }

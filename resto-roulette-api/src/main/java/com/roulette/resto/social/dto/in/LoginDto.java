@@ -1,6 +1,8 @@
-package com.roulette.resto.business.social.dto.in;
+package com.roulette.resto.social.dto.in;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +18,7 @@ public class LoginDto {
 	@Schema(example = "fan@resto.com")
 	String email;
 	@Schema(example = "azerty123", requiredMode = REQUIRED)
+	@NotBlank(message = "Email is mandatory")
 	String password;
 
 }

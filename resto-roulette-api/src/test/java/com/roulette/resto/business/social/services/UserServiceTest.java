@@ -1,14 +1,17 @@
 package com.roulette.resto.business.social.services;
 
-import com.roulette.resto.business.social.dto.in.ChangePasswordDto;
-import com.roulette.resto.business.social.dto.in.ResetPasswordDto;
-import com.roulette.resto.business.social.dto.in.UpdateUserInfo;
-import com.roulette.resto.business.social.dto.out.UserInfoDto;
-import com.roulette.resto.business.social.dto.out.UserInteraction;
-import com.roulette.resto.business.social.entity.Account;
-import com.roulette.resto.business.social.entity.UserInfo;
-import com.roulette.resto.business.social.repository.AccountRepository;
-import com.roulette.resto.business.social.repository.InteractionRepository;
+import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.social.dto.in.ResetPasswordDto;
+import com.roulette.resto.social.dto.in.UpdateUserInfo;
+import com.roulette.resto.social.dto.out.UserInfoDto;
+import com.roulette.resto.social.dto.out.UserInteraction;
+import com.roulette.resto.social.entity.Account;
+import com.roulette.resto.social.entity.UserInfo;
+import com.roulette.resto.social.repository.AccountRepository;
+import com.roulette.resto.social.repository.InteractionRepository;
+import com.roulette.resto.social.services.AccountService;
+import com.roulette.resto.social.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -217,7 +220,7 @@ class UserServiceTest {
 	class ResetPasswordTests {
 		@Test
 		@DisplayName("should reset password when verification token is correct")
-		void resetPassword_shouldSucceed_whenTokenIsValid() throws AccountNotFoundException {
+		void resetPassword_shouldSucceed_whenTokenIsValid() throws AccountNotFoundException, APIError {
 			// Arrange
 			ResetPasswordDto resetDto = new ResetPasswordDto("test@example.com", "VALID_TOKEN", "newPassword123");
 			when(accountRepository.getAccountByEmail("test@example.com")).thenReturn(sampleAccount);

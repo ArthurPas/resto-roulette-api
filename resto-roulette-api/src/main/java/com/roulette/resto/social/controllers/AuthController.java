@@ -1,11 +1,11 @@
-package com.roulette.resto.business.social.controllers;
+package com.roulette.resto.social.controllers;
 
-import com.roulette.resto.business.social.dto.in.*;
-import com.roulette.resto.business.social.dto.out.AuthResponse;
-import com.roulette.resto.business.social.dto.out.UserInfoDto;
-import com.roulette.resto.business.social.entity.Account;
-import com.roulette.resto.business.social.services.AccountService;
-import com.roulette.resto.business.social.services.UserService;
+import com.roulette.resto.social.dto.in.*;
+import com.roulette.resto.social.dto.out.AuthResponse;
+import com.roulette.resto.social.entity.Account;
+import com.roulette.resto.social.services.AccountService;
+import com.roulette.resto.social.services.AuthService;
+import com.roulette.resto.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.el.parser.Token;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,18 +36,19 @@ import java.sql.SQLException;
 @RequestMapping("/auth")
 @CrossOrigin(origins = "*")
 public class AuthController {
-	private final AuthenticationManager authenticationManager;
+
 
 	private final JwtService jwtService;
 	private final AccountService accountService;
 	private final UserService userService;
+	private final AuthService authService;
 
 
-	public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, AccountService accountService, UserService userService) {
-		this.authenticationManager = authenticationManager;
+	public AuthController( JwtService jwtService, AccountService accountService, UserService userService, AuthService authService) {
 		this.jwtService = jwtService;
 		this.accountService = accountService;
 		this.userService = userService;
+		this.authService = authService;
 	}
 	@PostMapping("/login")
 	@Operation(summary = "Log user", description = "Authenticate a user using his login and password combination, " +
@@ -83,36 +83,14 @@ public class AuthController {
 	})
 	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request){
 		try {
-
-			Account account;
-			if(loginDto.getLogin() != null){
-				account = accountService.getAccountByLogin(loginDto.getLogin());
-				log.warn(account.toString());
-			}
-			else if(loginDto.getEmail()!= null) {
-				account = accountService.getAccountByEmail(loginDto.getEmail());
-				log.warn(account.toString());
-			}else{
-				return new ResponseEntity<>(new APIError("Login request must have at least login or email"),
-						HttpStatus.BAD_REQUEST);
-			}
-			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(account.getLogin(),
-					loginDto.getPassword());
-			Authentication auth = authenticationManager.authenticate(authReq);
-			SecurityContext sc = SecurityContextHolder.getContext();
-			sc.setAuthentication(auth);
-			HttpSession session = request.getSession();
-			session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
-			final AuthResponse authResponse = jwtService.buildAuthResponse(account);
-			return new ResponseEntity<>(authResponse, HttpStatus.OK);
-
-		}catch (AuthenticationException e) {
-			log.error(e.getMessage());
-			return new ResponseEntity<>(new APIError("Wrong credentials", e.getMessage()), HttpStatus.UNAUTHORIZED);
-		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
+			Account account = authService.getAccountFromLoginRequest(loginDto);
+			authService.authenticate(loginDto, request, account);
+			return new ResponseEntity<>(jwtService.buildAuthResponse(account), HttpStatus.OK);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e, e.getStatus());
 		}
 	}
+
 
 
 	@PostMapping("/signup")
@@ -143,24 +121,22 @@ public class AuthController {
 									value = "{\"message\":\"Server error while creating account\",\"description\":\"\"}")}))
 	})
 	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto){
-		if(accountService.existsByLogin(registerDto.getLogin())){
-			return new ResponseEntity<>(new APIError("Login already exist"), HttpStatus.BAD_REQUEST);
-		}
-		if(accountService.existsByEmail(registerDto.getEmail())){
-			return new ResponseEntity<>(new APIError("Email already exist"), HttpStatus.BAD_REQUEST);
-		}
+
 		try {
+			authService.checkIfExists(registerDto);
 			Account newAccount = accountService.registerAccount(registerDto);
-			final AuthResponse authResponse = jwtService.buildAuthResponse(newAccount);
-			return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+			return new ResponseEntity<>(jwtService.buildAuthResponse(newAccount), HttpStatus.CREATED);
 		}catch (DuplicateKeyException e) {
-			return new ResponseEntity<>((new APIError("Duplicate value that should be unique", e.getMessage())),
+			return new ResponseEntity<>((new APIError("Duplicate value that should be unique")),
 					HttpStatus.BAD_REQUEST);
 		} catch (Exception e){
-			return new ResponseEntity<>(new APIError("Server error while creating account", e.getMessage()),
+			return new ResponseEntity<>(new APIError("Server error while creating account"),
 					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e, e.getStatus());
 		}
 	}
+
 
 	@PostMapping("/verifyEmailAddress")
 	@Operation(summary = "Update the verified mail status of the account", description = "After a registration, the " +
@@ -192,15 +168,10 @@ public class AuthController {
 	})
 	public ResponseEntity<?> verifyMail(@RequestBody VerifyEmailDto verifyEmailDto){
 		try {
-			boolean success = accountService.verifyEmail(verifyEmailDto);
-			if(!success){
-				return new ResponseEntity<>((new APIError("Tokens didnt match")), HttpStatus.BAD_REQUEST);
-			}
+			accountService.verifyEmail(verifyEmailDto);
 			return new ResponseEntity<>("{\"Message\": \"email verification succeed\"}", HttpStatus.NO_CONTENT);
-		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
-		}catch (SQLException e){
-			return new ResponseEntity<>(new APIError("Unexpected error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e, e.getStatus());
 		}
 	}
 
@@ -223,13 +194,10 @@ public class AuthController {
 	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
 		try {
 			userService.resetPassword(resetPasswordDto);
-			accountService.verifyEmail(new VerifyEmailDto(resetPasswordDto.getEmail(),
-					resetPasswordDto.getVerificationToken()));
+			accountService.verifyEmail(new VerifyEmailDto(resetPasswordDto.getEmail(), resetPasswordDto.getVerificationToken()));
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
-		} catch (SQLException e) {
-			return new ResponseEntity<>(new APIError("Server error"), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e, e.getStatus());
 		}
 	}
 	
@@ -248,12 +216,10 @@ public class AuthController {
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> sendMail(@RequestBody SendEmailDto emailDto) {
 		try {
-			//int accountId = jwtService.getAccountIdAuthenticated(authentication);
- 			// User cant be connected if he wants to reset his password
 			accountService.sendVerificationCode(emailDto.getEmail());
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e, e.getStatus());
 		}
 	}
 }

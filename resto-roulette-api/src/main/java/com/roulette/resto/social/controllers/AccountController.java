@@ -41,7 +41,7 @@ public class AccountController {
 		this.jwtService = jwtService;
 		this.accountService = accountService;
 	}
-	@GetMapping("/info")
+	@GetMapping("/me")
 	@Operation(summary = "Get information about an user", description = "Get all the information about a user by his " +
 			"id including basic info of his profile and an array of all his social interactions with restaurants")
 	@ApiResponses(value = {
@@ -71,7 +71,7 @@ public class AccountController {
 		}
 		catch (Exception e) {
 			log.error(e.getMessage());
-			return new ResponseEntity<>((new APIError("failed to retrieve user info", e.getMessage())),
+			return new ResponseEntity<>((new APIError("failed to retrieve user info")),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -98,15 +98,13 @@ public class AccountController {
 	public ResponseEntity<?> updateUserInfo(@RequestBody UpdateUserInfo userInfo, Authentication authentication){
 		try {
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);
-			log.warn("AccountId {}", accountId);
-			log.warn(userInfo.toString());
 			UserInfo updateUserInfo = userService.updateUserInfo(accountId, userInfo);
 			return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
 		}
 		catch (AccountNotFoundException e){
-			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		} catch (SQLException e) {
-			return new ResponseEntity<>(new APIError("Database error : failed to update", e.getMessage()),
+			return new ResponseEntity<>(new APIError("Database error : failed to update"),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -135,17 +133,15 @@ public class AccountController {
 
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);
 			Account account = userService.updatePassword(changePasswordDto, accountId);
-			final BasicAuthDto authResponse = jwtService.buildAuthResponse(
-					accountService.loadUserByUsername(account.getUsername()),
-					account.getAccountId());
+			final BasicAuthDto authResponse = jwtService.buildAuthResponse(account);
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 		}
 		catch (AccountNotFoundException e){
-			return new ResponseEntity<>(new APIError("Account not found", e.getMessage()), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
 		}
 		catch (Exception e){
 			log.error(e.getMessage());
-			return new ResponseEntity<>(new APIError("Database error : failed to update", e.getMessage()),
+			return new ResponseEntity<>(new APIError("Database error : failed to update"),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

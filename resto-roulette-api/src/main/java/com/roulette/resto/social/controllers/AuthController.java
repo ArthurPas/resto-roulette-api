@@ -1,13 +1,13 @@
 package com.roulette.resto.social.controllers;
 
+import com.roulette.resto.common.configuration.JwtService;
+import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.social.dto.in.*;
 import com.roulette.resto.social.dto.out.AuthResponse;
 import com.roulette.resto.social.entity.Account;
 import com.roulette.resto.social.services.AccountService;
 import com.roulette.resto.social.services.AuthService;
 import com.roulette.resto.social.services.UserService;
-import com.roulette.resto.common.configuration.JwtService;
-import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -15,21 +15,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.auth.login.AccountNotFoundException;
-import java.sql.SQLException;
 
 @Slf4j
 @RestController
@@ -44,23 +35,24 @@ public class AuthController {
 	private final AuthService authService;
 
 
-	public AuthController( JwtService jwtService, AccountService accountService, UserService userService, AuthService authService) {
+	public AuthController(JwtService jwtService, AccountService accountService, UserService userService, AuthService authService) {
 		this.jwtService = jwtService;
 		this.accountService = accountService;
 		this.userService = userService;
 		this.authService = authService;
 	}
+
 	@PostMapping("/login")
 	@Operation(summary = "Log user", description = "Authenticate a user using his login and password combination, " +
 			"then return a jwt token and his profile information")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Auth info",
-					content = @Content(mediaType = "application/json",schema = @Schema(implementation =
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation =
 							AuthResponse.class))),
 			@ApiResponse(responseCode = "401", description = "Login failed",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "login failed",
 									value = "{\"message\":\"Bad credentials\",\"description\":\"\"}"
@@ -68,7 +60,7 @@ public class AuthController {
 					})),
 			@ApiResponse(responseCode = "400", description = "Bad request",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "Bad request",
 									value = "{\"message\":\"Login request must have at least login or email\",\"description\":\"\"}"
@@ -76,12 +68,12 @@ public class AuthController {
 					})),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))
 	})
-	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request){
+	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request) {
 		try {
 			Account account = authService.getAccountFromLoginRequest(loginDto);
 			authService.authenticate(loginDto, request, account);
@@ -92,18 +84,17 @@ public class AuthController {
 	}
 
 
-
 	@PostMapping("/signup")
-	@Operation(summary = "Register user", description = "Register a new user with auth and personal information"+
+	@Operation(summary = "Register user", description = "Register a new user with auth and personal information" +
 			"then return a jwt token and his profile information")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "201",
 					description = "Auth info",
-					content = @Content(mediaType = "application/json",schema = @Schema(implementation =
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation =
 							AuthResponse.class))),
 			@ApiResponse(responseCode = "400", description = "Login already exist",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "Login already exist",
 									value = "{\"message\":\"Login already exist\",\"description\":\"\"}"
@@ -115,21 +106,21 @@ public class AuthController {
 					})),
 			@ApiResponse(responseCode = "500", description = "Server error",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "server error",
 									value = "{\"message\":\"Server error while creating account\",\"description\":\"\"}")}))
 	})
-	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto){
+	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto) {
 
 		try {
 			authService.checkIfExists(registerDto);
 			Account newAccount = accountService.registerAccount(registerDto);
 			return new ResponseEntity<>(jwtService.buildAuthResponse(newAccount), HttpStatus.CREATED);
-		}catch (DuplicateKeyException e) {
+		} catch (DuplicateKeyException e) {
 			return new ResponseEntity<>((new APIError("Duplicate value that should be unique")),
 					HttpStatus.BAD_REQUEST);
-		} catch (Exception e){
+		} catch (Exception e) {
 			return new ResponseEntity<>(new APIError("Server error while creating account"),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (APIError e) {
@@ -145,28 +136,28 @@ public class AuthController {
 			"code received in the other email address")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
-					description = "User verified status updated",content = @Content(schema =
+					description = "User verified status updated", content = @Content(schema =
 			@Schema(implementation = Void.class))),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")})),
 			@ApiResponse(responseCode = "400", description = "Wrong token",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "Tokens didnt match",
 									value = "{\"message\":\"Tokens didnt match\",\"description\":\"\"}")})),
 			@ApiResponse(responseCode = "500", description = "Server error",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "server error",
 									value = "{\"message\":\"Unexpected error\",\"description\":\"\"}")}))
 	})
-	public ResponseEntity<?> verifyMail(@RequestBody VerifyEmailDto verifyEmailDto){
+	public ResponseEntity<?> verifyMail(@RequestBody VerifyEmailDto verifyEmailDto) {
 		try {
 			accountService.verifyEmail(verifyEmailDto);
 			return new ResponseEntity<>("{\"Message\": \"email verification succeed\"}", HttpStatus.NO_CONTENT);
@@ -183,11 +174,11 @@ public class AuthController {
 			"able to reset the password ")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
-					description = "Reset password succeed",content = @Content(schema =
+					description = "Reset password succeed", content = @Content(schema =
 			@Schema(implementation = Void.class))),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
@@ -200,7 +191,7 @@ public class AuthController {
 			return new ResponseEntity<>(e, e.getStatus());
 		}
 	}
-	
+
 	@PostMapping("/sendVerificationCode")
 	@Operation(summary = "Send verification code", description = "Send a code by email to the address associated to " +
 			"the account. This code can be used to perfom action that require a verification such as reset the " +
@@ -210,7 +201,7 @@ public class AuthController {
 					description = "Email sent", content = @Content(schema = @Schema(implementation = Void.class))),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =APIError.class),examples = {
+							schema = @Schema(implementation = APIError.class), examples = {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})

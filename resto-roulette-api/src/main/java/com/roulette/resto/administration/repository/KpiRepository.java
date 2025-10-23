@@ -50,8 +50,7 @@ public class KpiRepository {
 				userRegistrationHistory.add(users);
 			}
 			return userRegistrationHistory;
-		}
-		catch (EmptyResultDataAccessException e) {
+		} catch (EmptyResultDataAccessException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
@@ -61,41 +60,42 @@ public class KpiRepository {
 		String query = "SELECT COUNT(*) FROM account";
 		try {
 			return jdbcTemplate.queryForObject(query, Long.class);
-		}catch (EmptyResultDataAccessException e) {
+		} catch (EmptyResultDataAccessException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
 	}
-	
-	public long getWheelLaunched(){
+
+	public long getWheelLaunched() {
 		String query = "SELECT SUM(wheel_launched) FROM user_info";
 		try {
 			return jdbcTemplate.queryForObject(query, Long.class);
-		}catch (EmptyResultDataAccessException e) {
+		} catch (EmptyResultDataAccessException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
 	}
+
 	public Float getRegistrationTrend(int currentMonth, int comparedMonth, int year) {
 		String query = """
-            SELECT
-                curr.total AS current_month_total,
-                prev.total AS previous_month_total,
-                (curr.total - prev.total) AS difference,
-                ROUND(
-                            IF(prev.total > 0, ((curr.total - prev.total) / prev.total) * 100, NULL), 2
-                ) AS percentage_change
-            FROM (
-                SELECT COUNT(account_id) AS total
-                FROM account
-                WHERE MONTH(created_at) = :currentMonth AND YEAR(created_at) = :year
-            ) AS curr
-            JOIN (
-                SELECT COUNT(account_id) AS total
-                FROM account
-                WHERE MONTH(created_at) = :comparedMonth  AND YEAR(created_at) = :year
-            ) AS prev;
-        """;
+				    SELECT
+				        curr.total AS current_month_total,
+				        prev.total AS previous_month_total,
+				        (curr.total - prev.total) AS difference,
+				        ROUND(
+				                    IF(prev.total > 0, ((curr.total - prev.total) / prev.total) * 100, NULL), 2
+				        ) AS percentage_change
+				    FROM (
+				        SELECT COUNT(account_id) AS total
+				        FROM account
+				        WHERE MONTH(created_at) = :currentMonth AND YEAR(created_at) = :year
+				    ) AS curr
+				    JOIN (
+				        SELECT COUNT(account_id) AS total
+				        FROM account
+				        WHERE MONTH(created_at) = :comparedMonth  AND YEAR(created_at) = :year
+				    ) AS prev;
+				""";
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("currentMonth", currentMonth);
 		params.addValue("comparedMonth", comparedMonth);
@@ -108,26 +108,26 @@ public class KpiRepository {
 
 	public Float getWheelTrend(int currentMonth, int comparedMonth, int year) {
 		String query = """
-            SELECT
-                curr.total AS current_month_total,
-                prev.total AS previous_month_total,
-                (curr.total - prev.total) AS difference,
-                ROUND(
-                    IF(prev.total > 0, ((curr.total - prev.total) / prev.total) * 100, NULL), 2
-                ) AS percentage_change
-            FROM (
-                SELECT SUM(u.wheel_launched) AS total
-                FROM account a
-                JOIN user_info u ON a.user_info_id = u.user_info_id
-                WHERE MONTH(a.created_at) = :currentMonth AND YEAR(a.created_at) = :year
-            ) AS curr
-            JOIN (
-                SELECT SUM(u.wheel_launched) AS total
-                FROM account a
-                JOIN user_info u ON a.user_info_id = u.user_info_id
-                WHERE MONTH(a.created_at) = :comparedMonth AND YEAR(a.created_at) = :year
-            ) AS prev
-            """;
+				SELECT
+				    curr.total AS current_month_total,
+				    prev.total AS previous_month_total,
+				    (curr.total - prev.total) AS difference,
+				    ROUND(
+				        IF(prev.total > 0, ((curr.total - prev.total) / prev.total) * 100, NULL), 2
+				    ) AS percentage_change
+				FROM (
+				    SELECT SUM(u.wheel_launched) AS total
+				    FROM account a
+				    JOIN user_info u ON a.user_info_id = u.user_info_id
+				    WHERE MONTH(a.created_at) = :currentMonth AND YEAR(a.created_at) = :year
+				) AS curr
+				JOIN (
+				    SELECT SUM(u.wheel_launched) AS total
+				    FROM account a
+				    JOIN user_info u ON a.user_info_id = u.user_info_id
+				    WHERE MONTH(a.created_at) = :comparedMonth AND YEAR(a.created_at) = :year
+				) AS prev
+				""";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("currentMonth", currentMonth);

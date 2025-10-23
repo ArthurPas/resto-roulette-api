@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class InteractionRowMapper implements RowMapper<UserInteraction> {
 	@Override
 	public UserInteraction mapRow(ResultSet rs, int rowNum) throws SQLException {
-		UserInteraction interaction = new  UserInteraction();
+		UserInteraction interaction = new UserInteraction();
 		interaction.setComment(rs.getString("text"));
 		interaction.setHas_liked(rs.getBoolean("has_liked"));
 		interaction.setRestoId(rs.getInt("resto_id"));

@@ -17,7 +17,7 @@ public enum UserRole {
 
 	public static UserRole fromValue(int value) {
 		for (UserRole role : UserRole.values()) {
-			if (role.roleId == value) {
+			if(role.roleId == value) {
 				return role;
 			}
 		}

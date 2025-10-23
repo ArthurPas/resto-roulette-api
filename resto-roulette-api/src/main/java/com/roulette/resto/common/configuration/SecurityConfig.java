@@ -1,7 +1,7 @@
 package com.roulette.resto.common.configuration;
 
-import com.roulette.resto.social.services.AccountService;
 import com.roulette.resto.common.dao.OAuth2LoginSuccessHandler;
+import com.roulette.resto.social.services.AccountService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -27,8 +27,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 public class SecurityConfig {
 
-	final AccountService accountService;
 	static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	final AccountService accountService;
 	final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
@@ -36,6 +36,11 @@ public class SecurityConfig {
 		this.accountService = accountService;
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+	}
+
+	@Bean
+	public static PasswordEncoder passwordEncoder() {
+		return passwordEncoder;
 	}
 
 	@Bean
@@ -76,9 +81,8 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-
 	@Bean
-	public AuthenticationManager authenticationManager( PasswordEncoder passwordEncoder) {
+	public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder) {
 		System.out.println("in authenticationManager");
 		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(accountService);
 		authenticationProvider.setPasswordEncoder(passwordEncoder);
@@ -99,9 +103,5 @@ public class SecurityConfig {
 						.allowCredentials(false);
 			}
 		};
-	}
-	@Bean
-	public static PasswordEncoder passwordEncoder(){
-		return passwordEncoder;
 	}
 }

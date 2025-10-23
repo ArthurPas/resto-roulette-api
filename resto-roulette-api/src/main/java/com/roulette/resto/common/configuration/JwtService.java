@@ -24,13 +24,11 @@ import static io.jsonwebtoken.io.Decoders.BASE64;
 
 @Service
 public class JwtService {
+	private final AccountService accountService;
 	@Value("${security.jwt.secret-key}")
 	private String secretKey;
-
 	@Value("${security.jwt.expiration-time}")
 	private long jwtExpiration;
-
-	private final AccountService accountService;
 
 	public JwtService(AccountService accountService) {
 		this.accountService = accountService;
@@ -50,16 +48,8 @@ public class JwtService {
 		return claimsResolver.apply(claims);
 	}
 
-	public String generateToken(UserDetails userDetails) {
-		return generateToken(new HashMap<>(), userDetails);
-	}
-
 	public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
 		return buildToken(extraClaims, userDetails, jwtExpiration);
-	}
-
-	public long getExpirationTime() {
-		return jwtExpiration;
 	}
 
 	private String buildToken(
@@ -72,6 +62,11 @@ public class JwtService {
 				.issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() + expiration))
 				.signWith(getSignInKey())
 				.compact();
+	}
+
+	private Key getSignInKey() {
+		byte[] keyBytes = BASE64.decode(secretKey);
+		return Keys.hmacShaKeyFor(keyBytes);
 	}
 
 	public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -96,13 +91,14 @@ public class JwtService {
 				.getPayload();
 	}
 
-
-	private Key getSignInKey() {
-		byte[] keyBytes = BASE64.decode(secretKey);
-		return Keys.hmacShaKeyFor(keyBytes);
+	public AuthResponse buildAuthResponse(Account newAccount) {
+		return this.buildAuthResponse(
+				accountService.loadUserByUsername(newAccount.getLogin()),
+				newAccount.getAccountId(),
+				newAccount.getUserInfo());
 	}
 
-	public AuthResponse buildAuthResponse(UserDetails userDetails, int accountId, UserInfo userInfo)  {
+	public AuthResponse buildAuthResponse(UserDetails userDetails, int accountId, UserInfo userInfo) {
 		BasicAuthDto basicAuthDto = buildAuthResponse(userDetails, accountId);
 		AuthResponse authResponse = new AuthResponse();
 		authResponse.setExpiresIn(basicAuthDto.getExpiresIn());
@@ -110,23 +106,19 @@ public class JwtService {
 		authResponse.setUserInfo(userInfo);
 		return authResponse;
 	}
+
 	public BasicAuthDto buildAuthResponse(UserDetails userDetails, int accountId) {
 		BasicAuthDto authResponse = new BasicAuthDto();
 		Map<String, Object> accountIdJwt = new HashMap<>();
 		accountIdJwt.put("userId", accountId);
-		String jwtToken = this.generateToken(accountIdJwt,userDetails);
+		String jwtToken = this.generateToken(accountIdJwt, userDetails);
 		authResponse.setToken(jwtToken);
 		authResponse.setExpiresIn(this.getExpirationTime());
 		return authResponse;
 	}
 
-
-	public AuthResponse buildAuthResponse(Account newAccount)  {
-		final AuthResponse authResponse = this.buildAuthResponse(
-				accountService.loadUserByUsername(newAccount.getLogin()),
-				newAccount.getAccountId(),
-				newAccount.getUserInfo());
-		return authResponse;
+	public long getExpirationTime() {
+		return jwtExpiration;
 	}
 
 }

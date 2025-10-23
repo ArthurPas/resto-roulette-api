@@ -12,13 +12,13 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfo {
+	UserRole role;
 	@Schema(example = "fan@resto.com", requiredMode = REQUIRED)
 	private String email;
 	@Schema(example = "fan", requiredMode = REQUIRED)
 	private String firstName;
 	@Schema(example = "d'resto", requiredMode = NOT_REQUIRED)
 	private String lastName;
-	UserRole role;
 	private boolean emailVerified;
 
 }

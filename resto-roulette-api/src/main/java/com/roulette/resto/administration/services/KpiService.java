@@ -4,9 +4,17 @@ import com.roulette.resto.administration.dto.UserRegistrationHistory;
 import com.roulette.resto.administration.dto.out.TrendDto;
 import com.roulette.resto.administration.dto.out.VARIATION;
 import com.roulette.resto.administration.repository.KpiRepository;
+import com.roulette.resto.common.configuration.JwtService;
+import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.social.entity.Account;
+import com.roulette.resto.social.entity.UserRole;
+import com.roulette.resto.social.services.AccountService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -16,14 +24,19 @@ public class KpiService {
 
 	private final KpiRepository kpiRepository;
 
-	public KpiService(KpiRepository kpiRepository) {
+	private final JwtService jwtService;
+	private final AccountService accountService;
+
+	public KpiService(KpiRepository kpiRepository, JwtService jwtService, AccountService accountService) {
 		this.kpiRepository = kpiRepository;
+		this.jwtService = jwtService;
+		this.accountService = accountService;
 	}
 
 	public long[] getUsersRegistrationHistoric(String year) {
 		List<UserRegistrationHistory> historic = kpiRepository.getNewUsersByYear(year);
 		long[] result = new long[historic.size()];
-		for(int i = 0; i < historic.size(); i++) {
+		for (int i = 0; i < historic.size(); i++) {
 			result[i] = historic.get(i).getTotal();
 		}
 		return result;
@@ -51,7 +64,7 @@ public class KpiService {
 		int currentMonth = YearMonth.now().getMonthValue();
 		int lastMonth = YearMonth.now().minusMonths(1).getMonthValue();
 		int currentYear = YearMonth.now().getYear();
-		Float variation = kpiRepository.getWheelTrend(currentMonth, lastMonth, currentYear );
+		Float variation = kpiRepository.getWheelTrend(currentMonth, lastMonth, currentYear);
 		trendDto.setPercentageVariation(variation);
 		if(variation > 0) {
 			trendDto.setVariationType(VARIATION.UP);
@@ -59,5 +72,18 @@ public class KpiService {
 			trendDto.setVariationType(VARIATION.DOWN);
 		} else trendDto.setVariationType(VARIATION.EQUAL);
 		return trendDto;
+	}
+
+	public void checkRight(Authentication authentication) throws APIError {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		try {
+			Account account = accountService.getAccountById(accountId);
+			if(account.getUserInfo().getRole() != UserRole.ROLE_ADMIN) {
+				throw new APIError("You are not allowed to see this resource, only admin " +
+						"profile can", HttpStatus.UNAUTHORIZED);
+			}
+		} catch (AccountNotFoundException e) {
+			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
+		}
 	}
 }

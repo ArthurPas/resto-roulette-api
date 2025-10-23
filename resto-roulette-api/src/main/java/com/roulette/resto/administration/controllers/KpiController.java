@@ -2,10 +2,6 @@ package com.roulette.resto.administration.controllers;
 
 import com.roulette.resto.administration.dto.out.TrendDto;
 import com.roulette.resto.administration.services.KpiService;
-import com.roulette.resto.social.entity.Account;
-import com.roulette.resto.social.entity.UserRole;
-import com.roulette.resto.social.services.AccountService;
-import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,23 +15,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.auth.login.AccountNotFoundException;
-
 @Slf4j
 @RestController
 @RequestMapping("/kpi")
 @CrossOrigin(origins = "*")
-@SecurityRequirement(name="Bearer Authentication")
+@SecurityRequirement(name = "Bearer Authentication")
 public class KpiController {
 
 	final KpiService kpiService;
-	private final JwtService jwtService;
-	private final AccountService accountService;
 
-	public KpiController(KpiService kpiService, JwtService jwtService, AccountService accountService) {
+	public KpiController(KpiService kpiService) {
 		this.kpiService = kpiService;
-		this.jwtService = jwtService;
-		this.accountService = accountService;
 	}
 
 	@GetMapping("/yearlyRegistrations")
@@ -45,8 +35,8 @@ public class KpiController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Total by month 12 length array",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =String.class, example = "[\n" +
+					content = @Content(mediaType = "application/text",
+							schema = @Schema(implementation = String.class, example = "[\n" +
 									"  2,\n" +
 									"  3,\n" +
 									"  3,\n" +
@@ -60,11 +50,14 @@ public class KpiController {
 									"  0,\n" +
 									"  0\n" +
 									"]")))})
-	public ResponseEntity<?> getUsersRegistrationsByYear(@RequestParam String year, Authentication authentication) throws AccountNotFoundException {
-		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
-		if(UNAUTHORIZED != null) return UNAUTHORIZED;
-		long[] history = kpiService.getUsersRegistrationHistoric(year);
-		return new ResponseEntity<>(history, HttpStatus.OK);
+	public ResponseEntity<?> getUsersRegistrationsByYear(@RequestParam String year, Authentication authentication) {
+		try {
+			kpiService.checkRight(authentication);
+			long[] history = kpiService.getUsersRegistrationHistoric(year);
+			return new ResponseEntity<>(history, HttpStatus.OK);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e.getMessage(), e.getStatus());
+		}
 	}
 
 	@GetMapping("/registrationTrend")
@@ -74,12 +67,15 @@ public class KpiController {
 			@ApiResponse(responseCode = "200",
 					description = "Total and trend data",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =TrendDto.class)))})
+							schema = @Schema(implementation = TrendDto.class)))})
 	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication) {
-		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
-		if(UNAUTHORIZED != null) return UNAUTHORIZED;
-		TrendDto trendDto = kpiService.getRegistrationTrend();
-		return new ResponseEntity<>(trendDto, HttpStatus.OK);
+		try {
+			kpiService.checkRight(authentication);
+			TrendDto trendDto = kpiService.getRegistrationTrend();
+			return new ResponseEntity<>(trendDto, HttpStatus.OK);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e.getMessage(), e.getStatus());
+		}
 	}
 
 
@@ -90,29 +86,14 @@ public class KpiController {
 			@ApiResponse(responseCode = "200",
 					description = "Total and trend data",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation =TrendDto.class)))})
+							schema = @Schema(implementation = TrendDto.class)))})
 	public ResponseEntity<?> getLaunchedWheels(Authentication authentication) {
-		final ResponseEntity<?> UNAUTHORIZED = rightCheck(authentication);
-		if(UNAUTHORIZED != null) return UNAUTHORIZED;
-		TrendDto trendDto = kpiService.getWheelTrend();
-		return new ResponseEntity<>(trendDto, HttpStatus.OK);
-
-	}
-
-
-	private ResponseEntity<?> rightCheck(Authentication authentication) {
-		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		log.warn(String.valueOf(accountId));
 		try {
-			Account account = accountService.getAccountById(accountId);
-			if(account.getUserInfo().getRole()!= UserRole.ROLE_ADMIN){
-				return new ResponseEntity<>(new APIError("You are not allowed to see this resource, only admin " +
-						"profile can"),
-						HttpStatus.UNAUTHORIZED);
-			}
-		}catch (AccountNotFoundException e) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			kpiService.checkRight(authentication);
+			TrendDto trendDto = kpiService.getWheelTrend();
+			return new ResponseEntity<>(trendDto, HttpStatus.OK);
+		} catch (APIError e) {
+			return new ResponseEntity<>(e.getMessage(), e.getStatus());
 		}
-		return null;
 	}
 }

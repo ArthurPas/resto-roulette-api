@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public class APIError extends Throwable {
 	private String message;
-	private HttpStatus  status;
+	private HttpStatus status;
 
 	public APIError(String message) {
 		this.message = message;

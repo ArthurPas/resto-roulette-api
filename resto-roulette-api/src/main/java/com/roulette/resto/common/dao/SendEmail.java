@@ -19,10 +19,9 @@ public class SendEmail {
 	private static final String ISSUER_NAME = "Resto-roulette Admin";
 	private static final String ISSUER_ADDRESS = "arthur.pascal33@gmail.com"; //TODO replace with custom domain
 	private static final String API_URL = "https://api.brevo.com/v3/smtp/email";
+	private final RestTemplate restTemplate = new RestTemplate();
 	@Value("${mail.token}")
 	private String API_KEY;
-
-	private final RestTemplate restTemplate = new RestTemplate();
 
 	public void sendEmail(EmailContent emailContent) {
 		HttpHeaders headers = new HttpHeaders();

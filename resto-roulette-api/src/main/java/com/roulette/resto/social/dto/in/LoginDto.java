@@ -1,7 +1,6 @@
 package com.roulette.resto.social.dto.in;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,4 +20,8 @@ public class LoginDto {
 	@NotBlank(message = "Email is mandatory")
 	String password;
 
+	public LoginDto(String login, String password) {
+		this.login = login;
+		this.password = password;
+	}
 }

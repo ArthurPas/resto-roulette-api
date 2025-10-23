@@ -3,12 +3,26 @@ spring:
     name: resto-roulette-api
   datasource:
     username: 'root'
-    url: jdbc:mysql://localhost:3306/resto_roulette
+    url:
     password:
   jpa:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id:
+            client-secret:
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            authorization-uri:
+            token-uri:
+            user-info-uri:
+            user-name-attribute: sub
 logging:
   level:
     org:
@@ -16,11 +30,19 @@ logging:
         security: ERROR
 security:
   jwt:
-    expiration-time: '3600000'
-    secret-key: 3e9f79e94251ca53bc05f255779c84e9dbecca634b028569f966f619ef4563b3
+    expiration-time: ''
+    secret-key:
 springdoc:
   swagger-ui:
     path: "/swagger-ui.html"
 mail:
   token: ""
-  verification_url: ""
+  verification_url: TODO
+server:
+  ssl:
+    key-store-password: ""
+    key-store-type: ""
+    enabled: ""
+    key-store: "/etc/ssl/springboot/keystore.p12"
+  port: "443"
+

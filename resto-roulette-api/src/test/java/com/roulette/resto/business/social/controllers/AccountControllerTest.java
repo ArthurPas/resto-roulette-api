@@ -3,6 +3,7 @@ package com.roulette.resto.business.social.controllers;
 import com.roulette.resto.social.controllers.AccountController;
 import com.roulette.resto.social.dto.in.ChangePasswordDto;
 import com.roulette.resto.social.dto.in.UpdateUserInfo;
+import com.roulette.resto.social.dto.out.AuthResponse;
 import com.roulette.resto.social.dto.out.BasicAuthDto;
 import com.roulette.resto.social.dto.out.UserInfoDto;
 import com.roulette.resto.social.entity.Account;
@@ -171,12 +172,12 @@ class AccountControllerTest {
 			updatedAccount.setAccountId(MOCK_ACCOUNT_ID);
 			updatedAccount.setLogin("testuser");
 
-			BasicAuthDto expectedAuthDto = new BasicAuthDto("new-jwt-token", 1L);
+			AuthResponse expectedAuthDto = new AuthResponse(new UserInfo());
 
 			when(userService.updatePassword(passwordDto, MOCK_ACCOUNT_ID)).thenReturn(updatedAccount);
-			when(accountService.loadUserByUsername("testuser")).thenReturn(mock(UserDetails.class));
-			when(jwtService.buildAuthResponse(any(UserDetails.class), eq(MOCK_ACCOUNT_ID))).thenReturn(expectedAuthDto);
-
+			when(jwtService.buildAuthResponse(updatedAccount)).thenReturn(expectedAuthDto);
+			when(jwtService.getAccountIdAuthenticated(authentication)).thenReturn(MOCK_ACCOUNT_ID);
+			when(userService.updatePassword(passwordDto, updatedAccount.getAccountId())).thenReturn(updatedAccount);
 			// Act
 			ResponseEntity<?> response = accountController.updatePassword(passwordDto, authentication);
 
@@ -184,7 +185,7 @@ class AccountControllerTest {
 			assertEquals(HttpStatus.OK, response.getStatusCode());
 			assertEquals(expectedAuthDto, response.getBody());
 			verify(userService).updatePassword(passwordDto, MOCK_ACCOUNT_ID);
-			verify(jwtService).buildAuthResponse(any(UserDetails.class), eq(MOCK_ACCOUNT_ID));
+			verify(jwtService).buildAuthResponse(updatedAccount);
 		}
 
 		@Test

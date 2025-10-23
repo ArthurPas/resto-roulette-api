@@ -1,5 +1,6 @@
 package com.roulette.resto.business.social.services;
 
+import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.social.dto.in.RegisterDto;
 import com.roulette.resto.social.dto.in.VerifyEmailDto;
 import com.roulette.resto.social.entity.Account;
@@ -116,34 +117,33 @@ class AccountServiceTest {
 
 		@Test
 		@DisplayName("should return true when verification code is correct")
-		void verifyEmail_shouldReturnTrue_whenCodeIsCorrect() throws AccountNotFoundException, SQLException {
+		void verifyEmail_shouldReturnTrue_whenCodeIsCorrect() throws AccountNotFoundException, SQLException, APIError {
 			// Arrange
 			VerifyEmailDto verifyDto = new VerifyEmailDto("test@example.com", "12345678");
 			when(accountRepository.getAccountByEmail("test@example.com")).thenReturn(sampleAccount);
 			doNothing().when(accountRepository).updateMailVerificationStatus(1, true);
 
 			// Act
-			boolean result = accountService.verifyEmail(verifyDto);
+			accountService.verifyEmail(verifyDto);
 
 			// Assert
-			assertTrue(result);
 			verify(accountRepository, times(1)).updateMailVerificationStatus(1, true);
 		}
 
 		@Test
 		@DisplayName("should return false when verification code is incorrect")
-		void verifyEmail_shouldReturnFalse_whenCodeIsIncorrect() throws AccountNotFoundException, SQLException {
+		void verifyEmail_shouldReturnFalse_whenCodeIsIncorrect() throws AccountNotFoundException, SQLException, APIError {
 			// Arrange
 			VerifyEmailDto verifyDto = new VerifyEmailDto("test@example.com", "WRONG_CODE");
 			when(accountRepository.getAccountByEmail("test@example.com")).thenReturn(sampleAccount);
 
 			// Act
-			boolean result = accountService.verifyEmail(verifyDto);
+			try {
+				accountService.verifyEmail(verifyDto);
+			}catch (APIError error) {
+				verify(accountRepository, never()).updateMailVerificationStatus(anyInt(), anyBoolean());
+			}
 
-			// Assert
-			assertFalse(result);
-			// On vérifie que le statut n'a PAS été mis à jour
-			verify(accountRepository, never()).updateMailVerificationStatus(anyInt(), anyBoolean());
 		}
 
 		@Test

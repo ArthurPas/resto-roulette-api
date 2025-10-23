@@ -1,5 +1,6 @@
 package com.roulette.resto.business.social.controllers;
 
+import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.social.controllers.AuthController;
 import com.roulette.resto.social.dto.in.LoginDto;
 import com.roulette.resto.social.dto.in.RegisterDto;
@@ -8,7 +9,9 @@ import com.roulette.resto.social.dto.out.AuthResponse;
 import com.roulette.resto.social.dto.out.UserInfoDto;
 import com.roulette.resto.social.entity.Account;
 import com.roulette.resto.social.entity.UserInfo;
+import com.roulette.resto.social.repository.AccountRepository;
 import com.roulette.resto.social.services.AccountService;
+import com.roulette.resto.social.services.AuthService;
 import com.roulette.resto.social.services.UserService;
 import com.roulette.resto.common.configuration.JwtService;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,8 +57,12 @@ class AuthControllerTest {
 	private AccountService accountService;
 	@Mock
 	private UserService userService;
+	@Mock
+	private AccountRepository accountRepository;
 	@Mock // On mock aussi l'objet Authentication qui est retourné par le manager
 	private Authentication authentication;
+	@Mock
+	private AuthService authService;
 
 	// On injecte les mocks dans le contrôleur
 	@InjectMocks
@@ -79,7 +86,8 @@ class AuthControllerTest {
 		sampleAccount.setUserInfo(sampleUserInfo);
 
 		sampleAuthResponse = new AuthResponse();
-		sampleAccount.setAccountId(1);
+		sampleAuthResponse.setUserInfo(sampleUserInfo);
+
 
 		// Simuler le contexte de la requête HTTP pour les tests qui en ont besoin (comme /login)
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -91,15 +99,12 @@ class AuthControllerTest {
 	class LoginTests {
 		@Test
 		@DisplayName("should return 200 OK with AuthResponse when credentials are valid")
-		void login_shouldReturnOkAndAuthResponse_whenCredentialsAreValid() throws AccountNotFoundException {
+		void login_shouldReturnOkAndAuthResponse_whenCredentialsAreValid() throws AccountNotFoundException, APIError {
 			// Arrange
 			LoginDto loginDto = new LoginDto("testuser", "password");
 			UserInfoDto userInfoDto = new UserInfoDto();
 			userInfoDto.setUserInfo(sampleUserInfo);
 
-			when(authenticationManager.authenticate(any())).thenReturn(authentication);
-			when(accountService.getAccountByLogin("testuser")).thenReturn(sampleAccount);
-			when(userService.getUserInfoById(1)).thenReturn(userInfoDto);
 			when(jwtService.buildAuthResponse(any())).thenReturn(sampleAuthResponse);
 
 			// Act
@@ -109,15 +114,15 @@ class AuthControllerTest {
 			assertEquals(HttpStatus.OK, response.getStatusCode());
 			assertNotNull(response.getBody());
 			assertEquals(sampleAuthResponse, response.getBody());
-			verify(authenticationManager).authenticate(any());
 		}
 
 		@Test
 		@DisplayName("should return 401 Unauthorized when credentials are bad")
-		void login_shouldReturnUnauthorized_whenCredentialsAreInvalid() {
+		void login_shouldReturnUnauthorized_whenCredentialsAreInvalid() throws APIError {
 			// Arrange
 			LoginDto loginDto = new LoginDto("testuser", "wrongpassword");
-			when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
+			when(authService.authenticate(any(), any(), any())).thenThrow(new APIError("Bad credentials",
+					HttpStatus.UNAUTHORIZED));
 
 			// Act
 			ResponseEntity<?> response = authController.login(loginDto, new MockHttpServletRequest());
@@ -129,12 +134,10 @@ class AuthControllerTest {
 
 		@Test
 		@DisplayName("should return 404 Not Found when account is not found after auth")
-		void login_shouldReturnNotFound_whenAccountIsMissing() throws AccountNotFoundException {
+		void login_shouldReturnNotFound_whenAccountIsMissing() throws AccountNotFoundException, APIError {
 			// Arrange
 			LoginDto loginDto = new LoginDto("testuser", "password");
-			when(authenticationManager.authenticate(any())).thenReturn(authentication);
-			when(accountService.getAccountByLogin("testuser")).thenThrow(new AccountNotFoundException());
-
+			when(authService.getAccountFromLoginRequest(loginDto)).thenThrow(new APIError("Account not found", HttpStatus.NOT_FOUND));
 			// Act
 			ResponseEntity<?> response = authController.login(loginDto, new MockHttpServletRequest());
 
@@ -149,11 +152,9 @@ class AuthControllerTest {
 	class SignUpTests {
 		@Test
 		@DisplayName("should return 201 Created with AuthResponse for successful registration")
-		void registerUser_shouldReturnCreatedAndAuthResponse_whenDataIsValid() throws AccountNotFoundException {
+		void registerUser_shouldReturnCreatedAndAuthResponse_whenDataIsValid() throws AccountNotFoundException, APIError {
 			// Arrange
 			RegisterDto registerDto = new RegisterDto("newuser", "password", "new@example.com", "Jane", "Doe");
-			when(accountService.existsByLogin("newuser")).thenReturn(false);
-			when(accountService.existsByEmail("new@example.com")).thenReturn(false);
 			when(accountService.registerAccount(registerDto)).thenReturn(sampleAccount);
 			when(jwtService.buildAuthResponse(any())).thenReturn(sampleAuthResponse);
 
@@ -167,10 +168,11 @@ class AuthControllerTest {
 
 		@Test
 		@DisplayName("should return 400 Bad Request when login already exists")
-		void registerUser_shouldReturnBadRequest_whenLoginExists() {
+		void registerUser_shouldReturnBadRequest_whenLoginExists() throws APIError {
 			// Arrange
 			RegisterDto registerDto = new RegisterDto("existinguser", "password", "new@example.com", "Jane", "Doe");
-			when(accountService.existsByLogin("existinguser")).thenReturn(true);
+			when(authService.checkIfExists(registerDto)).thenThrow(new APIError("Login already exist",
+					HttpStatus.BAD_REQUEST));
 
 			// Act
 			ResponseEntity<?> response = authController.registerUser(registerDto);
@@ -183,11 +185,11 @@ class AuthControllerTest {
 
 		@Test
 		@DisplayName("should return 400 Bad Request when email already exists")
-		void registerUser_shouldReturnBadRequest_whenEmailExists() {
+		void registerUser_shouldReturnBadRequest_whenEmailExists() throws APIError {
 			// Arrange
 			RegisterDto registerDto = new RegisterDto("newuser", "password", "existing@example.com", "Jane", "Doe");
-			when(accountService.existsByLogin("newuser")).thenReturn(false);
-			when(accountService.existsByEmail("existing@example.com")).thenReturn(true);
+			when(authService.checkIfExists(any())).thenThrow(new APIError("Email already exist",
+					HttpStatus.BAD_REQUEST));
 
 			// Act
 			ResponseEntity<?> response = authController.registerUser(registerDto);
@@ -199,13 +201,10 @@ class AuthControllerTest {
 
 		@Test
 		@DisplayName("should return 400 Bad Request on DuplicateKeyException")
-		void registerUser_shouldReturnBadRequest_onDuplicateKeyException() {
+		void registerUser_shouldReturnBadRequest_onDuplicateKeyException() throws APIError {
 			// Arrange
 			RegisterDto registerDto = new RegisterDto("newuser", "password", "new@example.com", "Jane", "Doe");
-			when(accountService.existsByLogin(anyString())).thenReturn(false);
-			when(accountService.existsByEmail(anyString())).thenReturn(false);
-			when(accountService.registerAccount(any(RegisterDto.class))).thenThrow(new DuplicateKeyException("Duplicate key"));
-
+			when(accountService.registerAccount(registerDto)).thenThrow(new DuplicateKeyException("Duplicate value"));
 			// Act
 			ResponseEntity<?> response = authController.registerUser(registerDto);
 
@@ -221,11 +220,9 @@ class AuthControllerTest {
 
 		@Test
 		@DisplayName("should return 204 No Content when verification is successful")
-		void verifyMail_shouldReturnNoContent_whenVerificationSucceeds() throws AccountNotFoundException, SQLException {
+		void verifyMail_shouldReturnNoContent_whenVerificationSucceeds() throws AccountNotFoundException, SQLException, APIError {
 			// Arrange
 			VerifyEmailDto verifyDto = new VerifyEmailDto("test@example.com", "code");
-			when(accountService.verifyEmail(verifyDto)).thenReturn(true);
-
 			// Act
 			ResponseEntity<?> response = authController.verifyMail(verifyDto);
 
@@ -238,7 +235,7 @@ class AuthControllerTest {
 		void verifyMail_shouldReturnBadRequest_whenTokenIsIncorrect() throws AccountNotFoundException, SQLException {
 			// Arrange
 			VerifyEmailDto verifyDto = new VerifyEmailDto("test@example.com", "wrong-code");
-			when(accountService.verifyEmail(verifyDto)).thenReturn(false);
+			when(authController.verifyMail(verifyDto)).thenThrow(new APIError("Tokens didnt match",HttpStatus.BAD_REQUEST));
 
 			// Act
 			ResponseEntity<?> response = authController.verifyMail(verifyDto);
@@ -250,10 +247,10 @@ class AuthControllerTest {
 
 		@Test
 		@DisplayName("should return 404 Not Found when account is not found")
-		void verifyMail_shouldReturnNotFound_whenAccountNotFound() throws AccountNotFoundException, SQLException {
+		void verifyMail_shouldReturnNotFound_whenAccountNotFound() throws AccountNotFoundException, SQLException, APIError {
 			// Arrange
 			VerifyEmailDto verifyDto = new VerifyEmailDto("notfound@example.com", "code");
-			when(accountService.verifyEmail(verifyDto)).thenThrow(new AccountNotFoundException());
+			when(accountService.verifyEmail(verifyDto)).thenThrow(new APIError("Account not found", HttpStatus.NOT_FOUND));
 
 			// Act
 			ResponseEntity<?> response = authController.verifyMail(verifyDto);

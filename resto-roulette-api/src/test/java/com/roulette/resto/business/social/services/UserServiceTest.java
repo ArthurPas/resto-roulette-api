@@ -259,7 +259,7 @@ class UserServiceTest {
 			when(accountRepository.getAccountByEmail(anyString())).thenThrow(new DataAccessException("..."){});
 
 			// Act & Assert
-			assertThrows(AccountNotFoundException.class, () -> userService.resetPassword(resetDto));
+			assertThrows(APIError.class, () -> userService.resetPassword(resetDto));
 		}
 	}
 }

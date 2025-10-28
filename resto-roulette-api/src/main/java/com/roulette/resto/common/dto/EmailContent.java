@@ -1,4 +1,4 @@
-package com.roulette.resto.common.dao;
+package com.roulette.resto.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

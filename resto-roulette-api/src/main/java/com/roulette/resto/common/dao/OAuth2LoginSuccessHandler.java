@@ -8,7 +8,6 @@ import com.roulette.resto.social.dto.in.RegisterDto;
 import com.roulette.resto.social.dto.out.AuthResponse;
 import com.roulette.resto.social.entity.Account;
 import com.roulette.resto.social.services.AccountService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	private final JwtService jwtService;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
-	// Injectez vos services
 	public OAuth2LoginSuccessHandler(AccountService accountService, JwtService jwtService) {
 		this.accountService = accountService;
 		this.jwtService = jwtService;
@@ -38,7 +36,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request,
 										HttpServletResponse response,
-										Authentication authentication) throws IOException, ServletException {
+										Authentication authentication) throws IOException {
 
 		OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 		String email = oAuth2User.getAttribute("email");

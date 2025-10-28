@@ -1,5 +1,6 @@
 package com.roulette.resto.common.dao;
 
+import com.roulette.resto.common.dto.EmailContent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 @Repository
 @Slf4j
-public class SendEmail {
+public class SendEmailDao {
 	private static final String DOMAIN = "test-eqvygm0mwkzl0p7w.mlsender.net";
 	private static final String ISSUER_NAME = "Resto-roulette Admin";
 	private static final String ISSUER_ADDRESS = "arthur.pascal33@gmail.com"; //TODO replace with custom domain

@@ -1,6 +1,5 @@
 package com.roulette.resto.social.services;
 
-import com.roulette.resto.common.dao.SendEmail;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.service.MailService;
 import com.roulette.resto.social.dto.in.RegisterDto;

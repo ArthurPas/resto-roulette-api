@@ -1,5 +1,6 @@
 package com.roulette.resto.administration.services;
 
+import com.roulette.resto.administration.dao.KpiDao;
 import com.roulette.resto.administration.dto.UserRegistrationHistory;
 import com.roulette.resto.administration.dto.out.TrendDto;
 import com.roulette.resto.administration.dto.out.VARIATION;
@@ -26,11 +27,13 @@ public class KpiService {
 
 	private final JwtService jwtService;
 	private final AccountService accountService;
+	private final KpiDao kpiDao;
 
-	public KpiService(KpiRepository kpiRepository, JwtService jwtService, AccountService accountService) {
+	public KpiService(KpiRepository kpiRepository, JwtService jwtService, AccountService accountService, KpiDao kpiDao) {
 		this.kpiRepository = kpiRepository;
 		this.jwtService = jwtService;
 		this.accountService = accountService;
+		this.kpiDao = kpiDao;
 	}
 
 	public long[] getUsersRegistrationHistoric(String year) {
@@ -60,7 +63,7 @@ public class KpiService {
 
 	public TrendDto getWheelTrend() {
 		TrendDto trendDto = new TrendDto();
-		trendDto.setTotal(kpiRepository.getWheelLaunched());
+		trendDto.setTotal(kpiDao.getWheelLaunched());
 		int currentMonth = YearMonth.now().getMonthValue();
 		int lastMonth = YearMonth.now().minusMonths(1).getMonthValue();
 		int currentYear = YearMonth.now().getYear();

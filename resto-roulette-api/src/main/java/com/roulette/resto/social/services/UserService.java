@@ -1,5 +1,6 @@
 package com.roulette.resto.social.services;
 
+import com.roulette.resto.administration.dto.out.AccountsInfos;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.social.dto.in.ChangePasswordDto;
 import com.roulette.resto.social.dto.in.ResetPasswordDto;
@@ -23,6 +24,7 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -118,5 +120,13 @@ public class UserService {
 		} catch (AccountNotFoundException e) {
 			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
 		}
+	}
+
+	public List<AccountsInfos> getAccounts(int offset) {
+		int nbResult = 25;
+		return accountRepository.getAll(nbResult, offset*nbResult)
+								.stream()
+								.map(AccountsInfos::new)
+								.collect(Collectors.toList());
 	}
 }

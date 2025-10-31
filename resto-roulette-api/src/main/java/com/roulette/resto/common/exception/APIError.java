@@ -17,4 +17,5 @@ public class APIError extends Throwable {
 	public APIError(String message) {
 		this.message = message;
 	}
+
 }

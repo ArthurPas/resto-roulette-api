@@ -2,10 +2,8 @@ package com.roulette.resto.social.services;
 
 import com.roulette.resto.administration.dto.out.AccountsInfos;
 import com.roulette.resto.common.exception.APIError;
-import com.roulette.resto.social.dao.AccountDao;
 import com.roulette.resto.social.dto.in.ChangePasswordDto;
 import com.roulette.resto.social.dto.in.ResetPasswordDto;
-import com.roulette.resto.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.social.dto.out.UserInfoDto;
 import com.roulette.resto.social.dto.out.UserInteraction;
@@ -38,9 +36,7 @@ public class UserService {
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
 
-	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository,
-					   AccountService accountService, AuthenticationManager authenticationManager,
-					   PasswordEncoder passwordEncoder,AccountDao accountDao) {
+	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository, AccountService accountService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
 		this.accountRepository = accountRepository;
 		this.interactionRepository = interactionRepository;
 		this.accountService = accountService;
@@ -71,7 +67,7 @@ public class UserService {
 		return userInfoDto;
 	}
 
-	public UserInfo updateUserPersonalInfo(int userId, UpdateUserInfo newUserInfo) throws AccountNotFoundException,
+	public UserInfo updateUserInfo(int userId, UpdateUserInfo newUserInfo) throws AccountNotFoundException,
 			SQLException {
 		try {
 			UserInfo olduserInfo = accountRepository.getUserInfoById(userId);
@@ -132,9 +128,5 @@ public class UserService {
 								.stream()
 								.map(AccountsInfos::new)
 								.collect(Collectors.toList());
-	}
-	public int updateUserRole(UpdateAccountInfo updateAccountInfo) throws AccountNotFoundException {
-		accountRepository.updateAccountRole(updateAccountInfo);
-		return accountRepository.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();
 	}
 }

@@ -217,4 +217,14 @@ public class AccountDao {
 		jdbcTemplate.update(query, roleId, accountId);
 
 	}
+
+	public void deleteAccount(int accountId) {
+
+		String query = "DELETE FROM user_info " +
+				" WHERE user_info_id = ( "+
+				"  SELECT user_info_id FROM account WHERE account_id = ?)";
+		jdbcTemplate.update(query, accountId);
+		query = " DELETE FROM account WHERE account_id = ?";
+		jdbcTemplate.update(query, accountId);
+	}
 }

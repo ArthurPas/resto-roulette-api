@@ -2,6 +2,7 @@ package com.roulette.resto.social.services;
 
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.service.MailService;
+import com.roulette.resto.social.dto.in.DeleteAccount;
 import com.roulette.resto.social.dto.in.RegisterDto;
 import com.roulette.resto.social.dto.in.VerifyEmailDto;
 import com.roulette.resto.social.entity.Account;
@@ -153,5 +154,9 @@ public class AccountService implements UserDetailsService {
 
 	public Account getAccountByEmail(String email) throws AccountNotFoundException {
 		return accountRepository.getAccountByEmail(email);
+	}
+
+	public void deteleUser(DeleteAccount deleteAccount) throws APIError, AccountNotFoundException {
+		accountRepository.deleteAccount(deleteAccount);
 	}
 }

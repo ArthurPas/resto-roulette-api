@@ -131,7 +131,7 @@ class UserServiceTest {
 			when(accountRepository.getUserInfoById(userId)).thenReturn(sampleUserInfo).thenReturn(updatedUserInfo);
 			when(accountRepository.updateUserInfo(String.valueOf(userId), newUserInfo)).thenReturn(1);
 			// Act
-			UserInfo result = userService.updateUserInfo(userId, newUserInfo);
+			UserInfo result = userService.updateUserPersonalInfo(userId, newUserInfo);
 
 			// Assert
 			assertNotNull(result);
@@ -149,7 +149,7 @@ class UserServiceTest {
 			when(accountRepository.updateUserInfo(String.valueOf(userId), newUserInfo)).thenReturn(1);
 
 			// Act
-			userService.updateUserInfo(userId, newUserInfo);
+			userService.updateUserPersonalInfo(userId, newUserInfo);
 
 			// Assert
 			verify(accountRepository, times(1)).updateMailVerificationStatus(userId, false);
@@ -165,7 +165,7 @@ class UserServiceTest {
 			when(accountRepository.updateUserInfo(String.valueOf(userId), newUserInfo)).thenReturn(0); // 0 ligne mise à jour
 
 			// Act & Assert
-			assertThrows(SQLException.class, () -> userService.updateUserInfo(userId, newUserInfo));
+			assertThrows(SQLException.class, () -> userService.updateUserPersonalInfo(userId, newUserInfo));
 		}
 	}
 

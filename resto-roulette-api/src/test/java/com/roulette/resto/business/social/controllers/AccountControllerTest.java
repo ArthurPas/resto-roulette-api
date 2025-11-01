@@ -118,7 +118,7 @@ class AccountControllerTest {
 			UserInfo expectedUserInfo = new UserInfo(); // L'objet retourné par le service
 			expectedUserInfo.setFirstName("Jane");
 
-			when(userService.updateUserInfo(MOCK_ACCOUNT_ID, requestDto)).thenReturn(expectedUserInfo);
+			when(userService.updateUserPersonalInfo(MOCK_ACCOUNT_ID, requestDto)).thenReturn(expectedUserInfo);
 
 			// Act
 			ResponseEntity<?> response = accountController.updateUserInfo(requestDto, authentication);
@@ -126,7 +126,7 @@ class AccountControllerTest {
 			// Assert
 			assertEquals(HttpStatus.OK, response.getStatusCode());
 			assertEquals(expectedUserInfo, response.getBody());
-			verify(userService).updateUserInfo(MOCK_ACCOUNT_ID, requestDto);
+			verify(userService).updateUserPersonalInfo(MOCK_ACCOUNT_ID, requestDto);
 		}
 
 		@Test
@@ -134,7 +134,7 @@ class AccountControllerTest {
 		void updateUserInfo_shouldReturnNotFound_whenAccountNotFoundExceptionIsThrown() throws AccountNotFoundException, SQLException {
 			// Arrange
 			UpdateUserInfo requestDto = new UpdateUserInfo();
-			when(userService.updateUserInfo(anyInt(), any(UpdateUserInfo.class))).thenThrow(new AccountNotFoundException());
+			when(userService.updateUserPersonalInfo(anyInt(), any(UpdateUserInfo.class))).thenThrow(new AccountNotFoundException());
 
 			// Act
 			ResponseEntity<?> response = accountController.updateUserInfo(requestDto, authentication);
@@ -148,7 +148,7 @@ class AccountControllerTest {
 		void updateUserInfo_shouldReturnInternalServerError_onSqlException() throws AccountNotFoundException, SQLException {
 			// Arrange
 			UpdateUserInfo requestDto = new UpdateUserInfo();
-			when(userService.updateUserInfo(anyInt(), any(UpdateUserInfo.class))).thenThrow(new SQLException("DB error"));
+			when(userService.updateUserPersonalInfo(anyInt(), any(UpdateUserInfo.class))).thenThrow(new SQLException("DB error"));
 
 			// Act
 			ResponseEntity<?> response = accountController.updateUserInfo(requestDto, authentication);

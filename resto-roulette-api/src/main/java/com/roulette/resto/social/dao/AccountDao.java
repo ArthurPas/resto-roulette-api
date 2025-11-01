@@ -17,6 +17,7 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Objects;
 @Repository
 @Log4j2
@@ -74,7 +75,7 @@ public class AccountDao {
 
 	public Account getAccountByLogin(String login) throws AccountNotFoundException {
 		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified " +
+				"first_name, email_verified, account.created_at, user_info.last_login_at " +
 				"FROM account " +
 				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE login = ?";
@@ -88,7 +89,7 @@ public class AccountDao {
 
 	public Account getAccountByEmail(String email) throws AccountNotFoundException {
 		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified " +
+				"first_name, email_verified,account.created_at, user_info.last_login_at " +
 				"FROM account " +
 				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE email = ? ";
@@ -135,7 +136,7 @@ public class AccountDao {
 
 	public Account getAccountById(int id) {
 		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified " +
+				"first_name, email_verified,account.created_at, user_info.last_login_at " +
 				"FROM account " +
 				"JOIN resto_roulette.user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE account.account_id = ?";
@@ -190,6 +191,30 @@ public class AccountDao {
 			log.error(e.getMessage());
 			throw e;
 		}
+
+	}
+	public List<Account> getall(int limit, int offset) {
+		log.warn("Limit {}, Offset {}", limit, offset);
+		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
+				"first_name, email_verified, last_login_at, account.created_at " +
+				"FROM account " +
+				"JOIN user_info on account.user_info_id = user_info.user_info_id "+
+				"ORDER BY account_id " +
+				"LIMIT ? "+
+				"OFFSET ? ";
+		try {
+			return jdbcTemplate.query(query, new AccountUserRowMapper(),  limit, offset);
+		}catch (EmptyResultDataAccessException e){
+			log.warn(e.getMessage());
+			return null;
+		}
+	}
+	public void updateAccountRole(int roleId, int accountId) {
+
+		String query = "UPDATE user_info " +
+				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
+				" SET user_info.type_id = ? WHERE account_id = ?";
+		jdbcTemplate.update(query, roleId, accountId);
 
 	}
 }

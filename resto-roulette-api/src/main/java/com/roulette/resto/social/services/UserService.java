@@ -2,6 +2,7 @@ package com.roulette.resto.social.services;
 
 import com.roulette.resto.administration.dto.out.AccountsInfos;
 import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.social.dao.AccountDao;
 import com.roulette.resto.social.dto.in.ChangePasswordDto;
 import com.roulette.resto.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.social.dto.in.UpdateAccountInfo;
@@ -10,7 +11,6 @@ import com.roulette.resto.social.dto.out.UserInfoDto;
 import com.roulette.resto.social.dto.out.UserInteraction;
 import com.roulette.resto.social.entity.Account;
 import com.roulette.resto.social.entity.UserInfo;
-import com.roulette.resto.social.entity.UserRole;
 import com.roulette.resto.social.repository.AccountRepository;
 import com.roulette.resto.social.repository.InteractionRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -37,15 +37,15 @@ public class UserService {
 	private final AccountService accountService;
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
-	private final AuthService authService;
 
-	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository, AccountService accountService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, AuthService authService) {
+	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository,
+					   AccountService accountService, AuthenticationManager authenticationManager,
+					   PasswordEncoder passwordEncoder,AccountDao accountDao) {
 		this.accountRepository = accountRepository;
 		this.interactionRepository = interactionRepository;
 		this.accountService = accountService;
 		this.authenticationManager = authenticationManager;
 		this.passwordEncoder = passwordEncoder;
-		this.authService = authService;
 	}
 
 
@@ -87,18 +87,6 @@ public class UserService {
 		} catch (SQLException e) {
 			log.error(e.getMessage());
 			throw new SQLException(e);
-		}
-	}
-
-	public int updateAccountInfo(UpdateAccountInfo updateAccountInfo) throws APIError {
-		try {
-
-			int accountId = accountRepository.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();
-			UserRole newRole = updateAccountInfo.getNewRole();
-			accountRepository.updateAccountRole(accountId,newRole.roleId);
-			return accountId;
-		} catch (AccountNotFoundException e) {
-			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -144,5 +132,9 @@ public class UserService {
 								.stream()
 								.map(AccountsInfos::new)
 								.collect(Collectors.toList());
+	}
+	public int updateUserRole(UpdateAccountInfo updateAccountInfo) throws AccountNotFoundException {
+		accountRepository.updateAccountRole(updateAccountInfo);
+		return accountRepository.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();
 	}
 }

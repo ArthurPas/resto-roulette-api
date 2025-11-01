@@ -1,8 +1,12 @@
 package com.roulette.resto.social.controllers;
 
+import com.roulette.resto.administration.dto.out.AccountsInfos;
+import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.common.exception.ErrorResponse;
 import com.roulette.resto.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.social.dto.out.BasicAuthDto;
 import com.roulette.resto.social.dto.out.UserInfoDto;
@@ -33,10 +37,12 @@ import java.sql.SQLException;
 public class AccountController {
 	private final UserService userService;
 	private final JwtService jwtService;
+	private final AdminService adminService;
 
-	public AccountController(UserService userService, JwtService jwtService) {
+	public AccountController(UserService userService, JwtService jwtService, AdminService adminService) {
 		this.userService = userService;
 		this.jwtService = jwtService;
+		this.adminService = adminService;
 	}
 
 	@GetMapping("/me")
@@ -96,7 +102,7 @@ public class AccountController {
 	public ResponseEntity<?> updateUserInfo(@RequestBody UpdateUserInfo userInfo, Authentication authentication) {
 		try {
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);
-			UserInfo updateUserInfo = userService.updateUserInfo(accountId, userInfo);
+			UserInfo updateUserInfo = userService.updateUserPersonalInfo(accountId, userInfo);
 			return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<>(new APIError("Account not found"), HttpStatus.NOT_FOUND);
@@ -142,5 +148,42 @@ public class AccountController {
 		}
 	}
 
+	@GetMapping("/admin/get-all")
+	@Operation(summary = "Get all users accounts info")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Accounts info",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountsInfos.class)))})
+	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication, @RequestParam(required = false
+			,defaultValue = "0")int page) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(userService.getAccounts(page), HttpStatus.OK);
+		} catch (APIError e) {
+			return new ResponseEntity<>(new ErrorResponse(e.getMessage()), e.getStatus());
+		}
+	}
 
+	@PatchMapping("/admin/update-role")
+	@Operation(summary = "Change account role", description = "Change the role of the account" +
+			" The role values available are : ROLE_USER, ROLE_RESTAURANT_OWNER, ROLE_MODERATOR, ROLE_ADMIN")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Total and trend data",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = UserInfoDto.class)))})
+	public ResponseEntity<?> modifyAccountRole (Authentication authentication,
+												@RequestBody UpdateAccountInfo updateAccountInfo) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			int accountId = userService.updateUserRole(updateAccountInfo);
+			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
+			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
+		} catch (APIError e) {
+			return new ResponseEntity<>(new ErrorResponse(e.getMessage()), e.getStatus());
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.NOT_FOUND);
+		}
+	}
 }

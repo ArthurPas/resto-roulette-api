@@ -1,6 +1,7 @@
 package com.roulette.resto.social.repository;
 
 import com.roulette.resto.social.dao.AccountDao;
+import com.roulette.resto.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.social.entity.Account;
 import com.roulette.resto.social.entity.UserInfo;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
+import java.util.List;
 
 @Slf4j
 @Repository
@@ -70,5 +72,13 @@ public class AccountRepository {
 	public void updateVerificationToken(String token, int accountId) {
 		accountDao.updateVerificationToken(token, accountId);
 
+	}
+
+	public List<Account> getAll(int nbResult, int offset) {
+		return accountDao.getall(nbResult,offset);
+	}
+	public void updateAccountRole(UpdateAccountInfo updateAccountInfo) throws AccountNotFoundException {
+		int accountId = accountDao.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();;
+		accountDao.updateAccountRole(updateAccountInfo.getNewRole().roleId, accountId);
 	}
 }

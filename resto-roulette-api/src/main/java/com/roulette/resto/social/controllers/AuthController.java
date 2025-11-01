@@ -2,6 +2,7 @@ package com.roulette.resto.social.controllers;
 
 import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.common.exception.ErrorResponse;
 import com.roulette.resto.social.dto.in.*;
 import com.roulette.resto.social.dto.out.AuthResponse;
 import com.roulette.resto.social.entity.Account;
@@ -120,11 +121,13 @@ public class AuthController {
 		} catch (DuplicateKeyException e) {
 			return new ResponseEntity<>((new APIError("Duplicate value that should be unique")),
 					HttpStatus.BAD_REQUEST);
-		} catch (Exception e) {
-			return new ResponseEntity<>(new APIError("Server error while creating account"),
-					HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (APIError e) {
-			return new ResponseEntity<>(e, e.getStatus());
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, e.getStatus());
+		} catch (Exception e) {
+			ErrorResponse errorResponse = new ErrorResponse(new APIError("Server error while creating account",
+					HttpStatus.INTERNAL_SERVER_ERROR));
+			return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -162,7 +165,8 @@ public class AuthController {
 			accountService.verifyEmail(verifyEmailDto);
 			return new ResponseEntity<>("{\"Message\": \"email verification succeed\"}", HttpStatus.NO_CONTENT);
 		} catch (APIError e) {
-			return new ResponseEntity<>(e, e.getStatus());
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, e.getStatus());
 		}
 	}
 
@@ -188,7 +192,8 @@ public class AuthController {
 			accountService.verifyEmail(new VerifyEmailDto(resetPasswordDto.getEmail(), resetPasswordDto.getVerificationToken()));
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (APIError e) {
-			return new ResponseEntity<>(e, e.getStatus());
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, e.getStatus());
 		}
 	}
 
@@ -210,7 +215,8 @@ public class AuthController {
 			accountService.sendVerificationCode(emailDto.getEmail());
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (APIError e) {
-			return new ResponseEntity<>(e, e.getStatus());
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, e.getStatus());
 		}
 	}
 }

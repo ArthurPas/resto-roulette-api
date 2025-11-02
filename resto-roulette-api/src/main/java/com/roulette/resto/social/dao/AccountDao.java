@@ -227,4 +227,15 @@ public class AccountDao {
 		query = " DELETE FROM account WHERE account_id = ?";
 		jdbcTemplate.update(query, accountId);
 	}
+	
+	public int getAccountId(Account account) throws AccountNotFoundException {
+		String query = "SELECT account_id FROM account WHERE login = ? LIMIT 1";
+		try {
+			return jdbcTemplate.queryForObject(query, Integer.class, account.getLogin());
+		}catch (NullPointerException e){
+			log.warn(e.getMessage());
+			throw new AccountNotFoundException(e.getMessage());
+		}
+
+	}
 }

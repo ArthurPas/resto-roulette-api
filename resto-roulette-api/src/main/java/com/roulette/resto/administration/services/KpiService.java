@@ -3,7 +3,7 @@ package com.roulette.resto.administration.services;
 import com.roulette.resto.administration.dao.KpiDao;
 import com.roulette.resto.administration.dto.UserRegistrationHistory;
 import com.roulette.resto.administration.dto.out.TrendDto;
-import com.roulette.resto.administration.dto.out.VARIATION;
+import com.roulette.resto.administration.dto.out.Variation;
 import com.roulette.resto.administration.repository.KpiRepository;
 import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
@@ -54,10 +54,10 @@ public class KpiService {
 		Float variation = kpiRepository.getRegistrationTrend(currentMonth, lastMonth, currentYear);
 		trendDto.setPercentageVariation(Math.abs(variation));
 		if(variation > 0) {
-			trendDto.setVariationType(VARIATION.UP);
+			trendDto.setVariationType(Variation.UP);
 		} else if(variation < 0) {
-			trendDto.setVariationType(VARIATION.DOWN);
-		} else trendDto.setVariationType(VARIATION.EQUAL);
+			trendDto.setVariationType(Variation.DOWN);
+		} else trendDto.setVariationType(Variation.EQUAL);
 		return trendDto;
 	}
 
@@ -70,10 +70,10 @@ public class KpiService {
 		Float variation = kpiRepository.getWheelTrend(currentMonth, lastMonth, currentYear);
 		trendDto.setPercentageVariation(variation);
 		if(variation > 0) {
-			trendDto.setVariationType(VARIATION.UP);
+			trendDto.setVariationType(Variation.UP);
 		} else if(variation < 0) {
-			trendDto.setVariationType(VARIATION.DOWN);
-		} else trendDto.setVariationType(VARIATION.EQUAL);
+			trendDto.setVariationType(Variation.DOWN);
+		} else trendDto.setVariationType(Variation.EQUAL);
 		return trendDto;
 	}
 

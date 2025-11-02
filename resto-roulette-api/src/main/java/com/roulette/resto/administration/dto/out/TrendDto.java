@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class TrendDto {
 	private long total;
 	private float percentageVariation;
-	private VARIATION variationType;
+	private Variation variationType;
 }

@@ -1,7 +1,9 @@
 package com.roulette.resto.resto.dao;
 
+import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.entity.Food;
 import com.roulette.resto.resto.entity.Restaurant;
+import com.roulette.resto.resto.entity.mapper.RestoRowMapper;
 import com.roulette.resto.social.dao.AccountDao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -11,7 +13,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -28,7 +29,7 @@ public class RestoDao {
 		this.accountDao = accountDao;
 	}
 
-	public Date createResto(Restaurant restaurant) {
+	public int createResto(Restaurant restaurant) {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		Date createdDate = new Date(System.currentTimeMillis());
 		String query = "INSERT INTO resto (display_name, owner_id, created_at) " +
@@ -47,7 +48,7 @@ public class RestoDao {
 			this.createRestoInfos(restaurant, restoId);
 			log.warn(restaurant.getFoodType().toString());
 			this.linkFoodsType(restaurant.getFoodType(), restoId);
-			return createdDate;
+			return restoId;
 		} catch (DuplicateKeyException e) {
 			throw e;
 		}
@@ -80,8 +81,8 @@ public class RestoDao {
 					PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 					preparedStatement.setString(1, restaurant.getName());
 					preparedStatement.setString(2, restaurant.getAddress());
-					preparedStatement.setBigDecimal(3, BigDecimal.valueOf(restaurant.getLongitude()));
-					preparedStatement.setBigDecimal(4, BigDecimal.valueOf(restaurant.getLatitude()));
+					preparedStatement.setBigDecimal(3, restaurant.getLongitude());
+					preparedStatement.setBigDecimal(4, restaurant.getLatitude());
 					preparedStatement.setInt(5,restoId);
 					return preparedStatement;
 				});
@@ -90,5 +91,32 @@ public class RestoDao {
 		}
 
 	}
-	
+
+	public Restaurant getRestoById(int restoId) throws RestoNotFoundException {
+/*		String query = "SELECT resto_info.resto_id, name, address, lon, lat, resto.resto_id, display_name, owner_id, " +
+				"created_at, GROUP_CONCAT(food_table.food_type SEPARATOR ',') AS aggregated_food_types " +
+				"FROM resto "+
+				" LEFT JOIN resto_info ON resto.resto_id = resto_info.resto_id " +
+				" LEFT JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
+				" LEFT JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
+				"WHERE resto.resto_id = ?";*/
+		String query = "SELECT  resto.resto_id, display_name, owner_id, created_at, name, address, lon, lat,GROUP_CONCAT" +
+				"(food_table" +
+				".food_type SEPARATOR ',') AS aggregated_food_types " +
+				"FROM " +
+				"resto " +
+				"JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
+				" JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
+				" JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
+				" WHERE resto.resto_id = ?";
+		try {
+			return jdbcTemplate.queryForObject(query, new RestoRowMapper(accountDao), restoId);
+		}catch (NullPointerException e){
+			log.warn(e.getMessage());
+			throw new RestoNotFoundException("Restaurant not found");
+		}catch (Exception e) {
+			log.warn(e.getMessage());
+			throw e;
+		}
+	}
 }

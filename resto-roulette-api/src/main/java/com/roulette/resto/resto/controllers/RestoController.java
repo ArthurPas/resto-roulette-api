@@ -1,9 +1,10 @@
 package com.roulette.resto.resto.controllers;
 
-import com.roulette.resto.administration.dto.out.AccountsInfos;
+import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
+import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.services.RestoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,9 +24,11 @@ import org.springframework.web.bind.annotation.*;
 public class RestoController {
 
 	final private RestoService restoService;
+	private final AdminService adminService;
 
-	public RestoController(RestoService restoService) {
+	public RestoController(RestoService restoService, AdminService adminService) {
 		this.restoService = restoService;
+		this.adminService = adminService;
 	}
 
 	@PostMapping("/create")
@@ -34,13 +37,31 @@ public class RestoController {
 			@ApiResponse(responseCode = "200",
 					description = "Accounts info",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = AccountsInfos.class)))})
+							schema = @Schema(implementation = Restaurant.class)))})
 	public ResponseEntity<?> create(Authentication authentication, @RequestBody NewRestaurant newRestaurant) {
 		try {
+			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.createResto(newRestaurant),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
+	@GetMapping("/{id}")
+	@Operation(summary = "Get a restaurant")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Accounts info",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Restaurant.class)))})
+	public ResponseEntity<?> getById(Authentication authentication, @PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.getRestoById(id),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+
 }

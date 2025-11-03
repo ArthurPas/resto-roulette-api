@@ -1,6 +1,7 @@
 package com.roulette.resto.resto.services;
 
 import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
 import com.roulette.resto.resto.entity.Food;
 import com.roulette.resto.resto.entity.Restaurant;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +29,8 @@ public class RestoService {
 	public Restaurant createResto(NewRestaurant newRestaurant) throws APIError {
 		Restaurant restaurant = new Restaurant();
 		restaurant.setAddress(newRestaurant.getAddress());
-		restaurant.setLatitude(newRestaurant.getLatitude());
-		restaurant.setLongitude(newRestaurant.getLongitude());
+		restaurant.setLatitude(BigDecimal.valueOf(newRestaurant.getLatitude()));
+		restaurant.setLongitude(BigDecimal.valueOf(newRestaurant.getLongitude()));
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setDisplayName(newRestaurant.getDisplayName());
@@ -47,8 +49,20 @@ public class RestoService {
 			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 		try {
-			restoRepository.createResto(restaurant);
+			int restoId = restoRepository.createResto(restaurant);
+			restaurant.setId(restoId);
 			return restaurant;
+		}catch (Exception e) {
+			throw new APIError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	public Restaurant getRestoById(String id) throws APIError {
+		try {
+			return restoRepository.getRestoById(id);
+		}catch (RestoNotFoundException e){
+			log.error(e.getMessage());
+			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
 		}catch (Exception e) {
 			throw new APIError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

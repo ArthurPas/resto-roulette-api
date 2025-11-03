@@ -66,6 +66,7 @@ public class SecurityConfig {
 				.requestMatchers("/users/**").authenticated()
 				.requestMatchers("/kpi/**").authenticated()
 				.requestMatchers("/admin/**").authenticated()
+				.requestMatchers("/resto/**").authenticated()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 		).oauth2Login(oauth2 -> oauth2
 				.successHandler(oAuth2LoginSuccessHandler)

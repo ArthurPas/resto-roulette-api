@@ -14,7 +14,6 @@ import java.util.List;
 public class Restaurant {
 	String displayName;
 	String name;
-	String type;
 	List<Food> foodType;
 	String address;
 	Float longitude;

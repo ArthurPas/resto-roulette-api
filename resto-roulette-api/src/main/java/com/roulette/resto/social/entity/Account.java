@@ -1,5 +1,6 @@
 package com.roulette.resto.social.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,20 +16,25 @@ import java.util.List;
 @NoArgsConstructor
 public class Account implements UserDetails {
 	//account
+	@JsonIgnore
 	private int accountId;
 	private String login;
+	@JsonIgnore
 	private String password;
+	@JsonIgnore
 	private String verificationToken;
+	@JsonIgnore
 	private Timestamp createdAt;
 
 	//user_info
 	private UserInfo userInfo;
 
+	@JsonIgnore
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return List.of();
 	}
-
+	@JsonIgnore
 	@Override
 	public String getUsername() {
 		return this.login;

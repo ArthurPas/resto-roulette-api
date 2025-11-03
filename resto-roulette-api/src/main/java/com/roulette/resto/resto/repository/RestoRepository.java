@@ -19,6 +19,11 @@ public class RestoRepository {
 	}
 
 	public Date createResto(Restaurant restaurant) {
-		return restoDao.createResto(restaurant);
+		try {
+			return restoDao.createResto(restaurant);
+		}catch (Exception e) {
+			log.error(e.getMessage());
+			throw  e;
+		}
 	}
 }

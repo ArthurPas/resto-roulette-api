@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -25,7 +24,7 @@ public class RestoService {
 		this.restoRepository = restoRepository;
 	}
 
-	public Date createResto(NewRestaurant newRestaurant) throws APIError {
+	public Restaurant createResto(NewRestaurant newRestaurant) throws APIError {
 		Restaurant restaurant = new Restaurant();
 		restaurant.setAddress(newRestaurant.getAddress());
 		restaurant.setLatitude(newRestaurant.getLatitude());
@@ -35,12 +34,23 @@ public class RestoService {
 		restaurant.setDisplayName(newRestaurant.getDisplayName());
 		List<Food> foods = new ArrayList<>();
 		for (String food : newRestaurant.getFoodTypes())
-			foods.add(Food.fromValue(food));
+			try {
+				foods.add(Food.fromValue(food));
+			}catch (Exception e) {
+				log.error(e.getMessage());
+				throw new APIError(e.getMessage(), HttpStatus.BAD_REQUEST);
+			}
 		try{
+			restaurant.setFoodType(foods);
 			restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
 		}catch (AccountNotFoundException e) {
 			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
-		return restoRepository.createResto(restaurant);
+		try {
+			restoRepository.createResto(restaurant);
+			return restaurant;
+		}catch (Exception e) {
+			throw new APIError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 }

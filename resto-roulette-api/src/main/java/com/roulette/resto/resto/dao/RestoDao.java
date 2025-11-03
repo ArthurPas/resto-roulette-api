@@ -44,7 +44,8 @@ public class RestoDao {
 				return preparedStatement;
 			}, generatedKeyHolder);
 			int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
-			this.createRestoInfos(restaurant);
+			this.createRestoInfos(restaurant, restoId);
+			log.warn(restaurant.getFoodType().toString());
 			this.linkFoodsType(restaurant.getFoodType(), restoId);
 			return createdDate;
 		} catch (DuplicateKeyException e) {
@@ -58,22 +59,22 @@ public class RestoDao {
 	private void linkFoodsType(List<Food> food, int restoId) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		for (Food foodItem : food) {
-			String query = "INSERT INTO resto_resto_type (resto_id,food_type_id) " +
-					"VALUES (?, ?)";
+			String query = "INSERT INTO resto_resto_type (resto_id,type_id) " +
+					"VALUES (?, (SELECT id FROM resto_type WHERE food_type = ?))";
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setInt(1, restoId);
-				preparedStatement.setInt(2, foodItem.foodId);
+				preparedStatement.setString(2, foodItem.toString());
+				log.warn(preparedStatement.toString());
 				return preparedStatement;
 			}, generatedKeyHolder);
 		}
 
 	}
 
-	private void createRestoInfos(Restaurant restaurant) {
-		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		String query = "INSERT INTO resto_info (name, address, lon, lat) " +
-				"VALUES (?, ?, ?, ?)";
+	private void createRestoInfos(Restaurant restaurant, int restoId){
+		String query = "INSERT INTO resto_info (name, address, lon, lat, resto_id) " +
+				"VALUES (?, ?, ?, ?, ?)";
 		try {
 				jdbcTemplate.update(conn -> {
 					PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -81,9 +82,9 @@ public class RestoDao {
 					preparedStatement.setString(2, restaurant.getAddress());
 					preparedStatement.setBigDecimal(3, BigDecimal.valueOf(restaurant.getLongitude()));
 					preparedStatement.setBigDecimal(4, BigDecimal.valueOf(restaurant.getLatitude()));
+					preparedStatement.setInt(5,restoId);
 					return preparedStatement;
-				}, generatedKeyHolder);
-				int restoInfos = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
+				});
 		} catch (DataAccessException e) {
 			throw new RuntimeException(e);
 		}

@@ -14,10 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/resto")
@@ -38,9 +35,9 @@ public class RestoController {
 					description = "Accounts info",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountsInfos.class)))})
-	public ResponseEntity<?> create(Authentication authentication, NewRestaurant newRestaurant) {
+	public ResponseEntity<?> create(Authentication authentication, @RequestBody NewRestaurant newRestaurant) {
 		try {
-			return new ResponseEntity<>(restoService.createResto(newRestaurant), HttpStatus.OK);
+			return new ResponseEntity<>(restoService.createResto(newRestaurant),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

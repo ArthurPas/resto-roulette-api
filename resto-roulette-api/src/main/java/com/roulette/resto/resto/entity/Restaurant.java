@@ -16,7 +16,7 @@ public class Restaurant {
 	int id;
 	String displayName;
 	String name;
-	List<Food> foodType;
+	List<String> foodType;
 	String address;
 	BigDecimal longitude;
 	BigDecimal latitude;

@@ -1,7 +1,6 @@
 package com.roulette.resto.resto.dao;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
-import com.roulette.resto.resto.entity.Food;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.entity.mapper.RestoRowMapper;
 import com.roulette.resto.social.dao.AccountDao;
@@ -57,15 +56,15 @@ public class RestoDao {
 		}
 	}
 
-	private void linkFoodsType(List<Food> food, int restoId) throws DuplicateKeyException {
+	private void linkFoodsType(List<String> foodTypes, int restoId) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		for (Food foodItem : food) {
+		for (String foodType: foodTypes) {
 			String query = "INSERT INTO resto_resto_type (resto_id,type_id) " +
 					"VALUES (?, (SELECT id FROM resto_type WHERE food_type = ?))";
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setInt(1, restoId);
-				preparedStatement.setString(2, foodItem.toString());
+				preparedStatement.setString(2, foodType);
 				log.warn(preparedStatement.toString());
 				return preparedStatement;
 			}, generatedKeyHolder);
@@ -116,6 +115,37 @@ public class RestoDao {
 			throw new RestoNotFoundException("Restaurant not found");
 		}catch (Exception e) {
 			log.warn(e.getMessage());
+			throw e;
+		}
+	}
+
+	public void createFoodType(String foodType) {
+		String query = "INSERT INTO resto_type (food_type) " +
+				"VALUES (?)";
+		try {
+			jdbcTemplate.update(query, foodType);
+		}catch (NullPointerException e){
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	public List<String> getFoodTypes() {
+		String query = "SELECT food_type FROM resto_type";
+		try {
+			return jdbcTemplate.queryForList(query, String.class);
+		}catch (NullPointerException e){
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	public List<String> getFoodType(String foodType) {
+		String query = "SELECT food_type FROM resto_type where food_type like ?";
+		try {
+			return jdbcTemplate.queryForList(query,String.class, '%'+foodType+'%');
+		}catch (NullPointerException e){
+			log.error(e.getMessage());
 			throw e;
 		}
 	}

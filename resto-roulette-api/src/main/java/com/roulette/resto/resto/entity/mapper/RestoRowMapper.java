@@ -1,6 +1,5 @@
 package com.roulette.resto.resto.entity.mapper;
 
-import com.roulette.resto.resto.entity.Food;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.social.dao.AccountDao;
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +29,13 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setLatitude(rs.getBigDecimal("lat"));
 		restaurant.setAddress(rs.getString("address"));
 		String aggregatedTypes = rs.getString("aggregated_food_types");
-		List<Food> types = new ArrayList<>();
+		List<String> types = new ArrayList<>();
 
 		if (aggregatedTypes != null && !aggregatedTypes.isEmpty()) {
 			String[] typeArray = aggregatedTypes.split(",");
 			for (String typeStr : typeArray) {
 				try {
-					types.add(Food.valueOf(typeStr.trim().toUpperCase()));
+					types.add(typeStr.trim().toUpperCase());
 				} catch (IllegalArgumentException e) {
 					log.error(e.getMessage());
 				}

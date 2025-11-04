@@ -2,8 +2,8 @@ package com.roulette.resto.resto.services;
 
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
+import com.roulette.resto.resto.dto.in.NewFoodType;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
-import com.roulette.resto.resto.entity.Food;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.repository.RestoRepository;
 import com.roulette.resto.social.repository.AccountRepository;
@@ -34,16 +34,11 @@ public class RestoService {
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setDisplayName(newRestaurant.getDisplayName());
-		List<Food> foods = new ArrayList<>();
-		for (String food : newRestaurant.getFoodTypes())
-			try {
-				foods.add(Food.fromValue(food));
-			}catch (Exception e) {
-				log.error(e.getMessage());
-				throw new APIError(e.getMessage(), HttpStatus.BAD_REQUEST);
-			}
+
 		try{
-			restaurant.setFoodType(foods);
+			//Remove from newRestaurant payload food type that not exists in db
+			List<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
+			restaurant.setFoodType(existingFoodtype);
 			restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
 		}catch (AccountNotFoundException e) {
 			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -66,5 +61,48 @@ public class RestoService {
 		}catch (Exception e) {
 			throw new APIError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	public List<String> foodTypeList() throws APIError {
+		try {
+			return restoRepository.getFoodTypes();
+		}catch (Exception e){
+			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+	}
+
+	public boolean existByFoodType(String foodType) throws APIError {
+		return !restoRepository.getFoodTypeByName(foodType.toUpperCase().trim()).isEmpty();
+	}
+
+	public List<String> getFoodTypes(String foodType) throws APIError {
+		try {
+			return restoRepository.getFoodTypeByName(foodType.toUpperCase().trim());
+		}catch (Exception e){
+			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+	}
+
+	public List<String> existingFoodTypesList(List<String> foodTypes) {
+		List<String> existingFoodTypes = new ArrayList<>();
+		foodTypes.forEach(foodType -> {if (existingFoodTypes.contains(foodType)) {existingFoodTypes.add(foodType);}});
+		return existingFoodTypes;
+	}
+
+	public NewFoodType createFoodType(NewFoodType newFoodType) throws APIError {
+		if(existByFoodType(newFoodType.getFoodType())) {
+				throw new APIError("This type already exists", HttpStatus.BAD_REQUEST);
+		}
+		try {
+			String cleanedFoodType = newFoodType.getFoodType().toUpperCase().trim()
+					.replaceAll("é","e")
+					.replaceAll("è","e")
+					.replaceAll("[^a-zA" +"-Z]","");
+			restoRepository.createNewFoodType(cleanedFoodType);
+			return new NewFoodType(cleanedFoodType);
+		}catch (Exception e) {
+			throw new APIError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
 	}
 }

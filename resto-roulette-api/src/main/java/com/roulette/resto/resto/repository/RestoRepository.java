@@ -6,6 +6,8 @@ import com.roulette.resto.resto.entity.Restaurant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @Slf4j
 public class RestoRepository {
@@ -32,5 +34,17 @@ public class RestoRepository {
 		} catch (RestoNotFoundException e) {
 			throw e;
 		}
+	}
+
+	public void createNewFoodType(String foodType) {
+		restoDao.createFoodType(foodType);
+	}
+
+	public List<String> getFoodTypes() {
+			return restoDao.getFoodTypes();
+	}
+
+	public List<String> getFoodTypeByName(String foodType) {
+		return restoDao.getFoodType(foodType);
 	}
 }

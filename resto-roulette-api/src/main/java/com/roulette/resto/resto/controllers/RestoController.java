@@ -3,6 +3,7 @@ package com.roulette.resto.resto.controllers;
 import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
+import com.roulette.resto.resto.dto.in.NewFoodType;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.services.RestoService;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/resto")
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "Bearer Authentication")
+@Slf4j
 public class RestoController {
 
 	final private RestoService restoService;
@@ -35,7 +38,7 @@ public class RestoController {
 	@Operation(summary = "Create a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
-					description = "Accounts info",
+					description = "Restaurant info",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = Restaurant.class)))})
 	public ResponseEntity<?> create(Authentication authentication, @RequestBody NewRestaurant newRestaurant) {
@@ -51,13 +54,29 @@ public class RestoController {
 	@Operation(summary = "Get a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
-					description = "Accounts info",
+					description = "Restaurant info",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = Restaurant.class)))})
 	public ResponseEntity<?> getById(Authentication authentication, @PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.getRestoById(id),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@PostMapping("/food-type/create")
+	@Operation(summary = "Add a new food type")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Void.class)))})
+	public ResponseEntity<?> newFoodType(Authentication authentication, @RequestBody NewFoodType foodType) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.createFoodType(foodType),HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

@@ -29,11 +29,7 @@ public class RestoRepository {
 	}
 
 	public Restaurant getRestoById(String id) throws RestoNotFoundException {
-		try {
-			return restoDao.getRestoById(Integer.valueOf(id));
-		} catch (RestoNotFoundException e) {
-			throw e;
-		}
+		return restoDao.getRestoById(Integer.parseInt(id));
 	}
 
 	public void createNewFoodType(String foodType) {
@@ -46,5 +42,9 @@ public class RestoRepository {
 
 	public List<String> getFoodTypeByName(String foodType) {
 		return restoDao.getFoodType(foodType);
+	}
+
+	public List<Restaurant> getAllRestos(int limit, int offset) {
+		return restoDao.getAllRestos(limit, offset);
 	}
 }

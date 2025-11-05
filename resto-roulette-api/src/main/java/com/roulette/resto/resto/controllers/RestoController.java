@@ -19,8 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/resto")
+@RequestMapping("/restos")
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "Bearer Authentication")
 @Slf4j
@@ -50,6 +52,24 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
+	@GetMapping("")
+	@Operation(summary = "Get all restaurants")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Restaurant info",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = List.class)))})
+	public ResponseEntity<?> getAll(Authentication authentication, @RequestParam(required = false
+			,defaultValue = "0") int page) {
+		try {
+			log.error("coucou");
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.getRestos(page),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
 	@GetMapping("/{id}")
 	@Operation(summary = "Get a restaurant")
 	@ApiResponses(value = {
@@ -66,7 +86,8 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PostMapping("/food-type/create")
+
+	@PostMapping("/food-types/create")
 	@Operation(summary = "Add a new food type")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "201",
@@ -77,6 +98,22 @@ public class RestoController {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.createFoodType(foodType),HttpStatus.CREATED);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@GetMapping("/food-types")
+	@Operation(summary = "Get all food types available")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = List.class)))})
+	public ResponseEntity<?> getAllFoodTypes(Authentication authentication) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.foodTypeList(),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

@@ -142,8 +142,8 @@ public class AccountDao {
 				"WHERE account.account_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), id);
-		} catch (DataAccessException e) {
-			log.error("failed to acces users" + e.getMessage());
+		} catch (EmptyResultDataAccessException e) {
+			log.error("failed to get account id : {}, error :{}",id, e.getMessage());
 			throw e;
 		}
 	}

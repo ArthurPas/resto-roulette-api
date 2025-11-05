@@ -7,6 +7,7 @@ import com.roulette.resto.social.dao.AccountDao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -58,6 +59,7 @@ public class RestoDao {
 
 	private void linkFoodsType(List<String> foodTypes, int restoId) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+		log.warn(foodTypes.toString());
 		for (String foodType: foodTypes) {
 			String query = "INSERT INTO resto_resto_type (resto_id,type_id) " +
 					"VALUES (?, (SELECT id FROM resto_type WHERE food_type = ?))";
@@ -99,23 +101,22 @@ public class RestoDao {
 				" LEFT JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
 				" LEFT JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
 				"WHERE resto.resto_id = ?";*/
-		String query = "SELECT  resto.resto_id, display_name, owner_id, created_at, name, address, lon, lat,GROUP_CONCAT" +
+		String query = "SELECT  resto.resto_id, resto.owner_id, display_name, owner_id, created_at, name, address, " +
+				"lon, lat," +
+				"GROUP_CONCAT" +
 				"(food_table" +
 				".food_type SEPARATOR ',') AS aggregated_food_types " +
 				"FROM " +
 				"resto " +
-				"JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
-				" JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
-				" JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
-				" WHERE resto.resto_id = ?";
+				"INNER JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
+				"INNER JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
+				"INNER JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
+				"WHERE resto.resto_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new RestoRowMapper(accountDao), restoId);
 		}catch (NullPointerException e){
 			log.warn(e.getMessage());
 			throw new RestoNotFoundException("Restaurant not found");
-		}catch (Exception e) {
-			log.warn(e.getMessage());
-			throw e;
 		}
 	}
 
@@ -149,4 +150,25 @@ public class RestoDao {
 			throw e;
 		}
 	}
-}
+
+	public List<Restaurant> getAllRestos(int limit, int offset) {
+			log.warn("Limit {}, Offset {}", limit, offset);
+			String query =
+				"SELECT  resto.resto_id, resto.owner_id, display_name, owner_id, created_at, name, " +
+				"address,lon, lat,GROUP_CONCAT(food_table.food_type SEPARATOR ',') AS aggregated_food_types " +
+				"FROM resto " +
+				"INNER JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
+				"INNER JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
+				"INNER JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
+				" GROUP BY resto_roulette.resto.resto_id "+
+				"ORDER BY resto.resto_id " +
+				"LIMIT ? "+
+				"OFFSET ? ";
+			try {
+				return jdbcTemplate.query(query, new RestoRowMapper(accountDao),  limit, offset);
+			}catch (EmptyResultDataAccessException e){
+				log.warn(e.getMessage());
+				return null;
+			}
+		}
+	}

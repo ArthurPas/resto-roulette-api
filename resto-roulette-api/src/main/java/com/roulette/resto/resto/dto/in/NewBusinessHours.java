@@ -12,6 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 public class NewBusinessHours {
 	int restoId;
-	boolean isLunch;
 	List<BusinessHour> businessHours;
 }

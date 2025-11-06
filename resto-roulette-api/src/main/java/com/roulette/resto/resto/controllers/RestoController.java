@@ -6,6 +6,7 @@ import com.roulette.resto.common.exception.ErrorResponse;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.resto.dto.in.NewFoodType;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
+import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.services.RestoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,12 +73,14 @@ public class RestoController {
 		}
 	}
 	@PostMapping("/new-business-hours")
-	@Operation(summary = "Add a new food type")
+	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
+			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
+			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = Void.class)))})
+							schema = @Schema(implementation = BusinessHour.class)))})
 	public ResponseEntity<?> newBusinessHours(Authentication authentication, @RequestBody NewBusinessHours businessHours) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);

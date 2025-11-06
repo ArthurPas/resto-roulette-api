@@ -102,13 +102,6 @@ public class RestoDao {
 	}
 
 	public Restaurant getRestoById(int restoId) throws RestoNotFoundException {
-/*		String query = "SELECT resto_info.resto_id, name, address, lon, lat, resto.resto_id, display_name, owner_id, " +
-				"created_at, GROUP_CONCAT(food_table.food_type SEPARATOR ',') AS aggregated_food_types " +
-				"FROM resto "+
-				" LEFT JOIN resto_info ON resto.resto_id = resto_info.resto_id " +
-				" LEFT JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
-				" LEFT JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
-				"WHERE resto.resto_id = ?";*/
 		String query = "SELECT  resto.resto_id, resto.owner_id, display_name, owner_id, created_at, name, address, " +
 				"lon, lat," +
 				"GROUP_CONCAT" +

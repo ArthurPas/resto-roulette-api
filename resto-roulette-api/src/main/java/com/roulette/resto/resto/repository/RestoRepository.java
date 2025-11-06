@@ -31,7 +31,9 @@ public class RestoRepository {
 	}
 
 	public Restaurant getRestoById(String id) throws RestoNotFoundException {
-		return restoDao.getRestoById(Integer.parseInt(id));
+		Restaurant restaurant = restoDao.getRestoById(Integer.parseInt(id));
+		restaurant.setBusinessHours(restoDao.getBusinessHoursByRestoId(Integer.parseInt(id)));
+		return restaurant;
 	}
 
 	public void createNewFoodType(String foodType) {

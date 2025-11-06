@@ -20,6 +20,7 @@ public class Restaurant {
 	String address;
 	BigDecimal longitude;
 	BigDecimal latitude;
-	Account owner;
+	List<BusinessHour> businessHours;
 	Date creationDate;
+	Account owner;
 }

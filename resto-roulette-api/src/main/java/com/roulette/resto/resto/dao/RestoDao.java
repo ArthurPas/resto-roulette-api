@@ -2,6 +2,7 @@ package com.roulette.resto.resto.dao;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
+import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.entity.mapper.BusinessHoursRowMapper;
@@ -199,5 +200,20 @@ public class RestoDao {
 				.atZone(ZoneId.of("Europe/Paris"))
 				.toLocalTime();
 		return hours.truncatedTo(ChronoUnit.MINUTES);
+	}
+
+	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours updateBusinessHours) {
+		//If its lunch you only want the first opening hours, if its not you want the last opening hours
+		String filter = updateBusinessHours.isLunch() ? "DESC" :  "ASC";
+		String query = "UPDATE business_hour " +
+				" SET opening_hour = ?, closing_hour = ? " +
+				" WHERE week_day = ? AND resto_id = ? " +
+				" ORDER BY opening_hour "  + filter +
+				" LIMIT 1 ";
+		jdbcTemplate.update(query, 
+				updateBusinessHours.getOpeningHour(), updateBusinessHours.getClosingHour(), 
+				updateBusinessHours.getWeekDay(), updateBusinessHours.getRestoId());
+		return getBusinessHoursByRestoId(updateBusinessHours.getRestoId());
+
 	}
 }

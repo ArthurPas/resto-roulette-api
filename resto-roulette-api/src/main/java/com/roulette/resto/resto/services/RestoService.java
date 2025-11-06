@@ -5,6 +5,7 @@ import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.resto.dto.in.NewFoodType;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
+import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.repository.RestoRepository;
@@ -128,5 +129,14 @@ public class RestoService {
 		}catch (Exception e){
 			throw e;
 		}
+	}
+
+	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours newBusinessHours) {
+		try{
+			return restoRepository.changeBusinessHours(newBusinessHours);
+		}catch (Exception e){
+			throw e;
+		}
+
 	}
 }

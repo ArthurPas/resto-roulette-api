@@ -6,6 +6,7 @@ import com.roulette.resto.common.exception.ErrorResponse;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.resto.dto.in.NewFoodType;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
+import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.services.RestoService;
@@ -85,6 +86,25 @@ public class RestoController {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.addBusinessHoursToResto(businessHours),HttpStatus.CREATED);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@PutMapping("/update-business-hours")
+	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
+			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
+			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = BusinessHour.class)))})
+	public ResponseEntity<?> updateBusinessHours(Authentication authentication,
+											@RequestBody UpdateBusinessHours newBusinessHours) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.changeBusinessHours(newBusinessHours),HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

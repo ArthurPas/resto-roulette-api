@@ -3,6 +3,7 @@ package com.roulette.resto.resto.repository;
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dao.RestoDao;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
+import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
 import lombok.extern.slf4j.Slf4j;
@@ -54,5 +55,9 @@ public class RestoRepository {
 
 	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours) {
 		return restoDao.addBusinessHoursToResto(businessHours);
+	}
+
+	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours newBusinessHours) {
+		return restoDao.changeBusinessHours(newBusinessHours);
 	}
 }

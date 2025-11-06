@@ -1,7 +1,10 @@
 package com.roulette.resto.resto.dao;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
+import com.roulette.resto.resto.dto.in.NewBusinessHours;
+import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
+import com.roulette.resto.resto.entity.mapper.BusinessHoursRowMapper;
 import com.roulette.resto.resto.entity.mapper.RestoRowMapper;
 import com.roulette.resto.social.dao.AccountDao;
 import lombok.extern.slf4j.Slf4j;
@@ -11,11 +14,16 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -152,7 +160,6 @@ public class RestoDao {
 	}
 
 	public List<Restaurant> getAllRestos(int limit, int offset) {
-			log.warn("Limit {}, Offset {}", limit, offset);
 			String query =
 				"SELECT  resto.resto_id, resto.owner_id, display_name, owner_id, created_at, name, " +
 				"address,lon, lat,GROUP_CONCAT(food_table.food_type SEPARATOR ',') AS aggregated_food_types " +
@@ -171,4 +178,33 @@ public class RestoDao {
 				return null;
 			}
 		}
+	
+	public List<BusinessHour> getBusinessHoursByRestoId(int restoId) {
+		String query = "SELECT * FROM business_hour WHERE resto_id = ?";
+		return jdbcTemplate.query(query, new BusinessHoursRowMapper(), restoId);
 	}
+		
+	@Transactional
+	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours) {
+		log.warn(businessHours.toString());
+		int restoId = businessHours.getRestoId();
+		List<String> queries = new ArrayList<>();
+		for (BusinessHour businessHour: businessHours.getBusinessHours()){
+
+			LocalTime openHours = convertToLocalTime(businessHour.getOpeningHour());
+			LocalTime closingHours = convertToLocalTime(businessHour.getClosingHour());
+			String query = "INSERT INTO resto_roulette.business_hour (resto_id, week_day, opening_hour, closing_hour)" +
+					"VALUES (?, ?, ?, ?)";
+			jdbcTemplate.update(query, restoId, businessHour.getWeekDay(), openHours, closingHours);
+		}
+		return getBusinessHoursByRestoId(restoId);
+	}
+
+	private static LocalTime convertToLocalTime(
+			java.util.Date businessHour) {
+		LocalTime hours = businessHour.toInstant()
+				.atZone(ZoneId.of("Europe/Paris"))
+				.toLocalTime();
+		return hours.truncatedTo(ChronoUnit.MINUTES);
+	}
+}

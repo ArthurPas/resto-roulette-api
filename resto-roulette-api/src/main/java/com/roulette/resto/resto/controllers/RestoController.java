@@ -3,6 +3,7 @@ package com.roulette.resto.resto.controllers;
 import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
+import com.roulette.resto.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.resto.dto.in.NewFoodType;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
 import com.roulette.resto.resto.entity.Restaurant;
@@ -70,6 +71,23 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
+	@PostMapping("/new-business-hours")
+	@Operation(summary = "Add a new food type")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Void.class)))})
+	public ResponseEntity<?> newBusinessHours(Authentication authentication, @RequestBody NewBusinessHours businessHours) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.addBusinessHoursToResto(businessHours),HttpStatus.CREATED);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+
 	@GetMapping("/{id}")
 	@Operation(summary = "Get a restaurant")
 	@ApiResponses(value = {

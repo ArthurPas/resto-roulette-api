@@ -2,8 +2,10 @@ package com.roulette.resto.resto.services;
 
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
+import com.roulette.resto.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.resto.dto.in.NewFoodType;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
+import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.repository.RestoRepository;
 import com.roulette.resto.social.repository.AccountRepository;
@@ -21,6 +23,7 @@ import java.util.List;
 public class RestoService {
 	private final AccountRepository accountRepository;
 	private final RestoRepository restoRepository;
+
 	public RestoService(AccountRepository accountRepository, RestoRepository restoRepository) {
 		this.accountRepository = accountRepository;
 		this.restoRepository = restoRepository;
@@ -116,6 +119,14 @@ public class RestoService {
 			return new ArrayList<>(restoRepository.getAllRestos(nbResult, offset * nbResult));
 		}catch (Exception e) {
 			throw new APIError("server error", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours) {
+		try{
+			return restoRepository.addBusinessHoursToResto(businessHours);
+		}catch (Exception e){
+			throw e;
 		}
 	}
 }

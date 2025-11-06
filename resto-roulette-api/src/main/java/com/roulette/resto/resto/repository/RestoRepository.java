@@ -2,6 +2,8 @@ package com.roulette.resto.resto.repository;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dao.RestoDao;
+import com.roulette.resto.resto.dto.in.NewBusinessHours;
+import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -46,5 +48,9 @@ public class RestoRepository {
 
 	public List<Restaurant> getAllRestos(int limit, int offset) {
 		return restoDao.getAllRestos(limit, offset);
+	}
+
+	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours) {
+		return restoDao.addBusinessHoursToResto(businessHours);
 	}
 }

@@ -1,6 +1,7 @@
 package com.roulette.resto.social.repository;
 
 import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.resto.dao.RestoDao;
 import com.roulette.resto.social.dao.AccountDao;
 import com.roulette.resto.social.dto.in.DeleteAccount;
 import com.roulette.resto.social.dto.in.UpdateAccountInfo;
@@ -23,7 +24,7 @@ public class AccountRepository {
 	final JdbcTemplate jdbcTemplate;
 	final AccountDao accountDao;
 
-	public AccountRepository(JdbcTemplate jdbcTemplate, AccountDao accountDao) {
+	public AccountRepository(JdbcTemplate jdbcTemplate, AccountDao accountDao, RestoDao restoDao) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.accountDao = accountDao;
 	}

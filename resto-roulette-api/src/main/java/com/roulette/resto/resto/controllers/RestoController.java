@@ -144,6 +144,23 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
+	@PostMapping("/admin/new-label")
+	@Operation(summary = "Add a label in database")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Label",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Restaurant.class)))})
+	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody String label ) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.addNewLabel(label),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+
 
 	@PostMapping("/food-types/create")
 	@Operation(summary = "Add a new food type")
@@ -177,5 +194,6 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
+
 
 }

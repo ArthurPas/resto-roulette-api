@@ -147,4 +147,13 @@ public class RestoService {
 			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
 		}
 	}
+
+	public String addNewLabel(String label) throws APIError {
+		try {
+
+			return restoRepository.newLabel(label);
+		}catch (Exception e) {
+			throw new APIError(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
 }

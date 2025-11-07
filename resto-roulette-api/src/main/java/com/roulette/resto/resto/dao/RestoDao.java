@@ -71,7 +71,7 @@ public class RestoDao {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		log.warn(foodTypes.toString());
 		for (String foodType: foodTypes) {
-			String query = "INSERT INTO resto_resto_type (resto_id,type_id) " +
+			String query = "INSERT INTO resto_resto_types (resto_id,type_id) " +
 					"VALUES (?, (SELECT id FROM resto_type WHERE food_type = ?))";
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -112,8 +112,8 @@ public class RestoDao {
 				"FROM " +
 				"resto " +
 				"INNER JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
-				"INNER JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
-				"INNER JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
+				"INNER JOIN  resto_resto_types ON resto.resto_id = resto_resto_types.resto_id " +
+				"INNER JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id "+
 				"WHERE resto.resto_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new RestoRowMapper(accountDao), restoId);
@@ -160,8 +160,8 @@ public class RestoDao {
 				"address,lon, lat,GROUP_CONCAT(food_table.food_type SEPARATOR ',') AS aggregated_food_types " +
 				"FROM resto " +
 				"INNER JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
-				"INNER JOIN  resto_resto_type ON resto.resto_id = resto_resto_type.resto_id " +
-				"INNER JOIN resto_type as food_table ON resto_resto_type.type_id = food_table.id "+
+				"INNER JOIN  resto_resto_types ON resto.resto_id = resto_resto_types.resto_id " +
+				"INNER JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id "+
 				" GROUP BY resto_roulette.resto.resto_id "+
 				"ORDER BY resto.resto_id " +
 				"LIMIT ? "+
@@ -229,6 +229,28 @@ public class RestoDao {
 			return this.getRestoById(restoId);
 		} catch (DataAccessException | RestoNotFoundException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	public String newLabel(String label) {
+		String query = "INSERT INTO resto_label (name) " +
+				"VALUES (?)";
+		try {
+			jdbcTemplate.update(query, label);
+			return label;
+		}catch (NullPointerException e){
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	public int labelExist(String label) {
+		String query = "SELECT label_id FROM resto_label WHERE name = ?";
+		try {
+			return jdbcTemplate.queryForObject(query, Integer.class, label);
+		}catch (EmptyResultDataAccessException e){
+			log.error(e.getMessage());
+			return 0;
 		}
 	}
 }

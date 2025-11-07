@@ -70,4 +70,11 @@ public class RestoRepository {
 		int ownerId = accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()).getAccountId();
 		return restoDao.updateResto(Integer.parseInt(id),ownerId, newRestaurant);
 	}
+
+	public String newLabel(String label) {
+		if(restoDao.labelExist(label)>0){
+			throw new RuntimeException("Label already exists");
+		};
+		return restoDao.newLabel(label);
+	}
 }

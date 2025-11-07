@@ -139,4 +139,12 @@ public class RestoService {
 		}
 
 	}
+
+	public Restaurant updateRestoInfoById(String id, NewRestaurant newRestaurant) throws APIError {
+		try {
+			return restoRepository.updateRestoById(id, newRestaurant);
+		} catch (AccountNotFoundException e) {
+			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
+		}
+	}
 }

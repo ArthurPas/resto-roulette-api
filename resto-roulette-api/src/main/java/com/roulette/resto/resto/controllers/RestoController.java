@@ -91,7 +91,7 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PutMapping("/update-business-hours")
+	@PatchMapping("/update-business-hours")
 	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
 			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
 			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
@@ -122,6 +122,23 @@ public class RestoController {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.getRestoById(id),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@PatchMapping("/{id}")
+	@Operation(summary = "Modify restaurant infos")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Restaurant info",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Restaurant.class)))})
+	public ResponseEntity<?> updateInfo(Authentication authentication, @PathVariable String id,
+										@RequestBody NewRestaurant newRestaurant) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.updateRestoInfoById(id,newRestaurant),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

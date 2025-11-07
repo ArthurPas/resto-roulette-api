@@ -3,12 +3,15 @@ package com.roulette.resto.resto.repository;
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dao.RestoDao;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
+import com.roulette.resto.resto.dto.in.NewRestaurant;
 import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
+import com.roulette.resto.social.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 
 @Repository
@@ -17,9 +20,11 @@ public class RestoRepository {
 
 
 	private final RestoDao restoDao;
+	private final AccountRepository accountRepository;
 
-	public RestoRepository(RestoDao restoDao, RestoDao restoDao1) {
+	public RestoRepository(RestoDao restoDao, RestoDao restoDao1, AccountRepository accountRepository) {
 		this.restoDao = restoDao1;
+		this.accountRepository = accountRepository;
 	}
 
 	public int createResto(Restaurant restaurant) {
@@ -59,5 +64,10 @@ public class RestoRepository {
 
 	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours newBusinessHours) {
 		return restoDao.changeBusinessHours(newBusinessHours);
+	}
+
+	public Restaurant updateRestoById(String id, NewRestaurant newRestaurant) throws AccountNotFoundException {
+		int ownerId = accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()).getAccountId();
+		return restoDao.updateResto(Integer.parseInt(id),ownerId, newRestaurant);
 	}
 }

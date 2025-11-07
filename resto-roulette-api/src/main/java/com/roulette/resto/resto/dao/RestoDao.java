@@ -2,6 +2,7 @@ package com.roulette.resto.resto.dao;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
+import com.roulette.resto.resto.dto.in.NewRestaurant;
 import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Restaurant;
@@ -215,5 +216,19 @@ public class RestoDao {
 				updateBusinessHours.getWeekDay(), updateBusinessHours.getRestoId());
 		return getBusinessHoursByRestoId(updateBusinessHours.getRestoId());
 
+	}
+
+	public Restaurant updateResto(int restoId, int ownerId , NewRestaurant newRestaurant) {
+		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ?, lon = ?,  lat = ? WHERE resto_id = ?";
+		String queryResto = "UPDATE resto SET display_name = ?, resto.owner_id = ? WHERE resto_id = ?";
+		try {
+			jdbcTemplate.update(queryRestoInfo,newRestaurant.getName(),newRestaurant.getAddress(), newRestaurant.getLongitude(),
+					newRestaurant.getLatitude(), restoId);
+			jdbcTemplate.update(queryResto,newRestaurant.getDisplayName(), ownerId,
+					restoId);
+			return this.getRestoById(restoId);
+		} catch (DataAccessException | RestoNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

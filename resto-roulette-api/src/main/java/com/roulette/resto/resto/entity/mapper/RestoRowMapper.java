@@ -29,21 +29,25 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setLatitude(rs.getBigDecimal("lat"));
 		restaurant.setAddress(rs.getString("address"));
 		String aggregatedTypes = rs.getString("aggregated_food_types");
-		List<String> types = new ArrayList<>();
+		restaurant.setFoodType(aggregatedToList(aggregatedTypes));
+		String aggregatedLabels = rs.getString("aggregated_labels");
+		restaurant.setLabels(aggregatedToList(aggregatedLabels));
+		log.warn(restaurant.toString());
+		return restaurant;
+	}
 
-		if (aggregatedTypes != null && !aggregatedTypes.isEmpty()) {
-			String[] typeArray = aggregatedTypes.split(",");
-			for (String typeStr : typeArray) {
+	private List<String> aggregatedToList(String aggregatedResult) {
+		List<String> result = new ArrayList<>();
+		if (aggregatedResult != null && !aggregatedResult.isEmpty()) {
+			String[] aggregatedResultAsArr = aggregatedResult.split(",");
+			for (String resultStr : aggregatedResultAsArr) {
 				try {
-					types.add(typeStr.trim().toUpperCase());
+					result.add(resultStr.trim().toUpperCase());
 				} catch (IllegalArgumentException e) {
 					log.error(e.getMessage());
 				}
 			}
 		}
-
-		restaurant.setFoodType(types);
-		log.warn(restaurant.toString());
-		return restaurant;
+		return result;
 	}
 }

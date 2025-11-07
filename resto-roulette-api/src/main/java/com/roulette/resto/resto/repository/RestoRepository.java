@@ -83,14 +83,20 @@ public class RestoRepository {
 
 	public List<String> addLabelsToResto(AddLabels labels) {
 		List<String> labelsToAdd = getOnlyExistingLabels(labels.getLabels());
-		return restoDao.addLabelsToResto(labels.getRestoId(),labelsToAdd);
+		log.warn("Labels to add "+labelsToAdd);
+		try {
+			return restoDao.addLabelsToResto(Integer.parseInt(labels.getRestoId()),labelsToAdd);
+		}catch (RuntimeException e) {
+			log.error(e.getMessage());
+			throw  e;
+		}
 	}
-	private List<String> getOnlyExistingLabels(List<Label> labels){
+	private List<String> getOnlyExistingLabels(List<String> labels){
 		List<String> result = new ArrayList<>();
 		List<String> existingLabels = restoDao.getAllLabels();
-		for (String existingLabel : existingLabels) {
-			if (labels.contains(existingLabel)) {
-				result.add(existingLabel);
+		for (String label : labels) {
+			if (existingLabels.contains(label)) {
+				result.add(label);
 			}
 		}
 		return result;

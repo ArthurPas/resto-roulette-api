@@ -17,6 +17,7 @@ public class Restaurant {
 	String displayName;
 	String name;
 	List<String> foodType;
+	List<String> labels;
 	String address;
 	BigDecimal longitude;
 	BigDecimal latitude;

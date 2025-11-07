@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -39,9 +41,7 @@ public class RestoService {
 
 		try{
 			//Remove from newRestaurant payload food type that not exists in db
-			log.warn("yooooo"+newRestaurant.getFoodTypes());
 			List<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
-			log.warn("yaaaa"+existingFoodtype.toString());
 			restaurant.setFoodType(existingFoodtype);
 			restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
 		}catch (AccountNotFoundException e) {
@@ -154,13 +154,17 @@ public class RestoService {
 		}
 	}
 
-	public AddLabels addLabelsResto(AddLabels labels) {
-		AddLabels addedLabels = new AddLabels();
-		addedLabels.setRestoId(labels.getRestoId());
-		List<Label> addLabelsList = new ArrayList<>();
-		restoRepository.addLabelsToResto(labels).forEach(
-				label -> {addLabelsList.add((new Label(label)));});
-		return addedLabels;
+	public Map<String, List<String>> addLabelsResto(AddLabels labels) throws APIError {
+		try {
+
+			List<String> labelsNames = restoRepository.addLabelsToResto(labels);
+			Map<String, List<String>> labelsResto = new HashMap<>();
+			labelsResto.put("labels", labelsNames);
+			return labelsResto;
+		}catch (RuntimeException e){
+			throw new APIError(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+
 	}
 
 	public List<String> getLabels() {

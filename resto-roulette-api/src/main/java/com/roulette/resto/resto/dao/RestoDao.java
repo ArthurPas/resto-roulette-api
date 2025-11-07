@@ -104,17 +104,30 @@ public class RestoDao {
 	}
 
 	public Restaurant getRestoById(int restoId) throws RestoNotFoundException {
-		String query = "SELECT  resto.resto_id, resto.owner_id, display_name, owner_id, created_at, name, address, " +
-				"lon, lat," +
-				"GROUP_CONCAT" +
-				"(food_table" +
-				".food_type SEPARATOR ',') AS aggregated_food_types " +
-				"FROM " +
-				"resto " +
-				"INNER JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
-				"INNER JOIN  resto_resto_types ON resto.resto_id = resto_resto_types.resto_id " +
-				"INNER JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id "+
-				"WHERE resto.resto_id = ?";
+		String query = "SELECT" +
+					"    resto.resto_id," +
+					"    resto.owner_id," +
+					"    display_name," +
+					"    created_at," +
+					"    name," +
+					"    address," +
+					"    lon," +
+					"    lat," +
+					"    (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
+					"     FROM resto_resto_types" +
+					"     JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
+					"     WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
+					"    ) AS aggregated_food_types," +
+					"    (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
+					"     FROM resto_resto_labels" +
+					"     JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
+					"     WHERE resto_resto_labels.resto_id = resto.resto_id" +
+					"    ) AS aggregated_labels " +
+					" FROM resto_roulette.resto " +
+					"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
+				".resto_id" +
+					" WHERE" +
+					"    resto_roulette.resto.resto_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new RestoRowMapper(accountDao), restoId);
 		}catch (NullPointerException e){
@@ -261,13 +274,31 @@ public class RestoDao {
 			return Collections.emptyList();
 		}
 	}
-
-	public List<String> addLabelsToResto(String restoId, List<String> labels) {
-		for (String label: labels){
-			String query = "INSERT INTO resto_resto_labels (resto_id,label_id) " +
-					"VALUES (?, (SELECT label_id FROM resto_label WHERE label_name = ?))";
-			jdbcTemplate.update(query, restoId, label);
+	
+	public List<String> getLabelByRestoId(int restoId) {
+		String query = "SELECT label_name FROM resto_label " +
+				"JOIN resto_roulette.resto_resto_labels ON resto_label.label_id = resto_resto_labels.label_id " +
+				"JOIN resto_roulette.resto r on resto_resto_labels.resto_id = r.resto_id "+
+				"WHERE r.resto_id = ?";
+		try {
+			return jdbcTemplate.queryForList(query, String.class, restoId);
+		}catch (EmptyResultDataAccessException e){
+			return Collections.emptyList();
 		}
+	}
+
+	public List<String> addLabelsToResto(int restoId, List<String> labels) {
+		try {
+			for (String label: labels){
+				String query = "INSERT INTO resto_resto_labels (resto_id,label_id) " +
+						"VALUES (?, (SELECT label_id FROM resto_label WHERE label_name = ?))";
+				jdbcTemplate.update(query, restoId, label);
+			}
+		}catch (Exception e){
+			throw new RuntimeException("Label already exists");
+		}
+		List<String> restoLabels = getLabelByRestoId(restoId);
+		log.info(restoLabels.toString());
 		return labels;
 	}
 }

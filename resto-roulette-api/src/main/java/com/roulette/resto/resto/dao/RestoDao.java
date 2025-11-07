@@ -25,7 +25,7 @@ import java.sql.Statement;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -183,7 +183,6 @@ public class RestoDao {
 	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours) {
 		log.warn(businessHours.toString());
 		int restoId = businessHours.getRestoId();
-		List<String> queries = new ArrayList<>();
 		for (BusinessHour businessHour: businessHours.getBusinessHours()){
 
 			LocalTime openHours = convertToLocalTime(businessHour.getOpeningHour());
@@ -233,7 +232,7 @@ public class RestoDao {
 	}
 
 	public String newLabel(String label) {
-		String query = "INSERT INTO resto_label (name) " +
+		String query = "INSERT INTO resto_label (label_name) " +
 				"VALUES (?)";
 		try {
 			jdbcTemplate.update(query, label);
@@ -245,12 +244,30 @@ public class RestoDao {
 	}
 
 	public int labelExist(String label) {
-		String query = "SELECT label_id FROM resto_label WHERE name = ?";
+		String query = "SELECT label_id FROM resto_label WHERE label_name = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, Integer.class, label);
 		}catch (EmptyResultDataAccessException e){
 			log.error(e.getMessage());
 			return 0;
 		}
+	}
+
+	public List<String> getAllLabels() {
+		String query = "SELECT label_name FROM  resto_label";
+		try {
+			return jdbcTemplate.queryForList(query, String.class);
+		}catch (EmptyResultDataAccessException e){
+			return Collections.emptyList();
+		}
+	}
+
+	public List<String> addLabelsToResto(String restoId, List<String> labels) {
+		for (String label: labels){
+			String query = "INSERT INTO resto_resto_labels (resto_id,label_id) " +
+					"VALUES (?, (SELECT label_id FROM resto_label WHERE label_name = ?))";
+			jdbcTemplate.update(query, restoId, label);
+		}
+		return labels;
 	}
 }

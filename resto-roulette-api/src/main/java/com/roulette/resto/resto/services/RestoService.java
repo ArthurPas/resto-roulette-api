@@ -2,11 +2,9 @@ package com.roulette.resto.resto.services;
 
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
-import com.roulette.resto.resto.dto.in.NewBusinessHours;
-import com.roulette.resto.resto.dto.in.NewFoodType;
-import com.roulette.resto.resto.dto.in.NewRestaurant;
-import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
+import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
+import com.roulette.resto.resto.entity.Label;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.repository.RestoRepository;
 import com.roulette.resto.social.repository.AccountRepository;
@@ -148,12 +146,24 @@ public class RestoService {
 		}
 	}
 
-	public String addNewLabel(String label) throws APIError {
+	public Label addNewLabel(Label label) throws APIError {
 		try {
-
-			return restoRepository.newLabel(label);
+			return new Label(restoRepository.newLabel(label));
 		}catch (Exception e) {
 			throw new APIError(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
+	}
+
+	public AddLabels addLabelsResto(AddLabels labels) {
+		AddLabels addedLabels = new AddLabels();
+		addedLabels.setRestoId(labels.getRestoId());
+		List<Label> addLabelsList = new ArrayList<>();
+		restoRepository.addLabelsToResto(labels).forEach(
+				label -> {addLabelsList.add((new Label(label)));});
+		return addedLabels;
+	}
+
+	public List<String> getLabels() {
+		return restoRepository.getLabels();
 	}
 }

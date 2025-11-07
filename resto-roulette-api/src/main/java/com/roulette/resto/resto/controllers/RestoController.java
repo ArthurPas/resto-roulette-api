@@ -3,11 +3,9 @@ package com.roulette.resto.resto.controllers;
 import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
-import com.roulette.resto.resto.dto.in.NewBusinessHours;
-import com.roulette.resto.resto.dto.in.NewFoodType;
-import com.roulette.resto.resto.dto.in.NewRestaurant;
-import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
+import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
+import com.roulette.resto.resto.entity.Label;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.services.RestoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -144,17 +142,49 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PostMapping("/admin/new-label")
+	@PostMapping("/labels/admin/new-label")
 	@Operation(summary = "Add a label in database")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Label",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = Restaurant.class)))})
-	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody String label ) {
+	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody Label label ) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.addNewLabel(label),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@PostMapping("/labels/new-label")
+	@Operation(summary = "Add a labels for restaurant")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Label",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Restaurant.class)))})
+	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody AddLabels labels) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.addLabelsResto(labels),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@GetMapping("/labels")
+	@Operation(summary = "Get existing labels")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Label",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Restaurant.class)))})
+	public ResponseEntity<?> getAll(Authentication authentication) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			return new ResponseEntity<>(restoService.getLabels(),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

@@ -2,16 +2,19 @@ package com.roulette.resto.resto.repository;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dao.RestoDao;
+import com.roulette.resto.resto.dto.in.AddLabels;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
 import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.resto.entity.BusinessHour;
+import com.roulette.resto.resto.entity.Label;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.social.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -71,10 +74,29 @@ public class RestoRepository {
 		return restoDao.updateResto(Integer.parseInt(id),ownerId, newRestaurant);
 	}
 
-	public String newLabel(String label) {
-		if(restoDao.labelExist(label)>0){
+	public String newLabel(Label label) {
+		if(restoDao.labelExist(label.getLabelName())>0){
 			throw new RuntimeException("Label already exists");
 		};
-		return restoDao.newLabel(label);
+		return restoDao.newLabel(label.getLabelName());
+	}
+
+	public List<String> addLabelsToResto(AddLabels labels) {
+		List<String> labelsToAdd = getOnlyExistingLabels(labels.getLabels());
+		return restoDao.addLabelsToResto(labels.getRestoId(),labelsToAdd);
+	}
+	private List<String> getOnlyExistingLabels(List<Label> labels){
+		List<String> result = new ArrayList<>();
+		List<String> existingLabels = restoDao.getAllLabels();
+		for (String existingLabel : existingLabels) {
+			if (labels.contains(existingLabel)) {
+				result.add(existingLabel);
+			}
+		}
+		return result;
+	}
+
+	public List<String> getLabels() {
+		return restoDao.getAllLabels();
 	}
 }

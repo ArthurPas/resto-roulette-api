@@ -122,15 +122,15 @@ public class AccountService implements UserDetailsService {
 		try {
 			Account account = accountRepository.getAccountByEmail(verifyEmailDto.getEmail());
 			if(!(Objects.equals(account.getVerificationToken(), verifyEmailDto.getVerificationCode()))) {
-				throw new APIError("Tokens didnt match", HttpStatus.BAD_REQUEST);
+				throw new APIError(700, HttpStatus.BAD_REQUEST);
 			} else {
 				accountRepository.updateMailVerificationStatus(account.getAccountId(), true);
 				accountRepository.updateVerificationToken(generateVerificationToken(8), account.getAccountId());
 			}
 		} catch (SQLException e) {
-			throw new APIError("Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (AccountNotFoundException e) {
-			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 		return true;
 	}
@@ -145,10 +145,10 @@ public class AccountService implements UserDetailsService {
 			mailService.sendSecurityCode(account);
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
-			throw new APIError("Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (AccountNotFoundException e) {
 			log.error(e.getMessage());
-			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 	}
 

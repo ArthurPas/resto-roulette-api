@@ -1,5 +1,6 @@
 package com.roulette.resto.business.social.controllers;
 
+import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.social.controllers.AuthController;
 import com.roulette.resto.social.dto.in.LoginDto;
@@ -13,17 +14,19 @@ import com.roulette.resto.social.repository.AccountRepository;
 import com.roulette.resto.social.services.AccountService;
 import com.roulette.resto.social.services.AuthService;
 import com.roulette.resto.social.services.UserService;
-import com.roulette.resto.common.configuration.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -33,15 +36,7 @@ import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-
-// Pour tester un contrôleur, il est souvent plus simple d'utiliser l'approche @InjectMocks
-// comme pour les services, afin de ne pas monter tout le contexte web.
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -121,7 +116,7 @@ class AuthControllerTest {
 		void login_shouldReturnUnauthorized_whenCredentialsAreInvalid() throws APIError {
 			// Arrange
 			LoginDto loginDto = new LoginDto("testuser", "wrongpassword");
-			when(authService.authenticate(any(), any(), any())).thenThrow(new APIError("Bad credentials",
+			when(authService.authenticate(any(), any(), any())).thenThrow(new APIError(70,
 					HttpStatus.UNAUTHORIZED));
 
 			// Act
@@ -137,7 +132,7 @@ class AuthControllerTest {
 		void login_shouldReturnNotFound_whenAccountIsMissing() throws AccountNotFoundException, APIError {
 			// Arrange
 			LoginDto loginDto = new LoginDto("testuser", "password");
-			when(authService.getAccountFromLoginRequest(loginDto)).thenThrow(new APIError("Account not found", HttpStatus.NOT_FOUND));
+			when(authService.getAccountFromLoginRequest(loginDto)).thenThrow(new APIError(64, HttpStatus.NOT_FOUND));
 			// Act
 			ResponseEntity<?> response = authController.login(loginDto, new MockHttpServletRequest());
 
@@ -171,7 +166,7 @@ class AuthControllerTest {
 		void registerUser_shouldReturnBadRequest_whenLoginExists() throws APIError {
 			// Arrange
 			RegisterDto registerDto = new RegisterDto("existinguser", "password", "new@example.com", "Jane", "Doe");
-			when(authService.checkIfExists(registerDto)).thenThrow(new APIError("Login already exist",
+			when(authService.checkIfExists(registerDto)).thenThrow(new APIError(601,
 					HttpStatus.BAD_REQUEST));
 
 			// Act
@@ -188,7 +183,7 @@ class AuthControllerTest {
 		void registerUser_shouldReturnBadRequest_whenEmailExists() throws APIError {
 			// Arrange
 			RegisterDto registerDto = new RegisterDto("newuser", "password", "existing@example.com", "Jane", "Doe");
-			when(authService.checkIfExists(any())).thenThrow(new APIError("Email already exist",
+			when(authService.checkIfExists(any())).thenThrow(new APIError(600,
 					HttpStatus.BAD_REQUEST));
 
 			// Act
@@ -235,7 +230,7 @@ class AuthControllerTest {
 		void verifyMail_shouldReturnBadRequest_whenTokenIsIncorrect() throws AccountNotFoundException, SQLException {
 			// Arrange
 			VerifyEmailDto verifyDto = new VerifyEmailDto("test@example.com", "wrong-code");
-			when(authController.verifyMail(verifyDto)).thenThrow(new APIError("Tokens didnt match",HttpStatus.BAD_REQUEST));
+			when(authController.verifyMail(verifyDto)).thenThrow(new APIError(700,HttpStatus.BAD_REQUEST));
 
 			// Act
 			ResponseEntity<?> response = authController.verifyMail(verifyDto);
@@ -250,7 +245,7 @@ class AuthControllerTest {
 		void verifyMail_shouldReturnNotFound_whenAccountNotFound() throws AccountNotFoundException, SQLException, APIError {
 			// Arrange
 			VerifyEmailDto verifyDto = new VerifyEmailDto("notfound@example.com", "code");
-			when(accountService.verifyEmail(verifyDto)).thenThrow(new APIError("Account not found", HttpStatus.NOT_FOUND));
+			when(accountService.verifyEmail(verifyDto)).thenThrow(new APIError(64, HttpStatus.NOT_FOUND));
 
 			// Act
 			ResponseEntity<?> response = authController.verifyMail(verifyDto);

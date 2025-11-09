@@ -120,9 +120,9 @@ public class UserService {
 			accountRepository.changePassword(account.getAccountId(), encodedNewPassword);
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
-			throw new APIError("server error", HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (AccountNotFoundException e) {
-			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 	}
 

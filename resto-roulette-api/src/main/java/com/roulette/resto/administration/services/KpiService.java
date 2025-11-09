@@ -6,16 +6,10 @@ import com.roulette.resto.administration.dto.out.TrendDto;
 import com.roulette.resto.administration.dto.out.Variation;
 import com.roulette.resto.administration.repository.KpiRepository;
 import com.roulette.resto.common.configuration.JwtService;
-import com.roulette.resto.common.exception.APIError;
-import com.roulette.resto.social.entity.Account;
-import com.roulette.resto.social.entity.UserRole;
 import com.roulette.resto.social.services.AccountService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -75,18 +69,5 @@ public class KpiService {
 			trendDto.setVariationType(Variation.DOWN);
 		} else trendDto.setVariationType(Variation.EQUAL);
 		return trendDto;
-	}
-
-	public void checkRight(Authentication authentication) throws APIError {
-		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		try {
-			Account account = accountService.getAccountById(accountId);
-			if(account.getUserInfo().getRole() != UserRole.ROLE_ADMIN) {
-				throw new APIError("You are not allowed to see this resource, only admin " +
-						"profile can", HttpStatus.UNAUTHORIZED);
-			}
-		} catch (AccountNotFoundException e) {
-			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
-		}
 	}
 }

@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -25,6 +27,13 @@ public class AuthService {
 	private final AccountService accountService;
 	private final AuthenticationManager authenticationManager;
 
+	public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+			Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+
+	public static boolean validate(String emailStr) {
+		Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
+		return matcher.matches();
+	}
 	public AuthService(AccountService accountService, AuthenticationManager authenticationManager) {
 		this.accountService = accountService;
 		this.authenticationManager = authenticationManager;
@@ -32,16 +41,16 @@ public class AuthService {
 
 	public Account getAccountFromLoginRequest(LoginDto loginDto) throws APIError {
 		try {
-
-			if(loginDto.getLogin() != null) {
-				return accountService.getAccountByLogin(loginDto.getLogin());
-			} else if(loginDto.getEmail() != null) {
-				return accountService.getAccountByEmail(loginDto.getEmail());
-			} else {
-				throw new APIError("Login request must have at least login or email", HttpStatus.BAD_REQUEST);
+			if(loginDto.getLogin().isEmpty()){
+				throw new APIError(20, HttpStatus.BAD_REQUEST);
 			}
+			boolean isEmailUsedAsLogin = validate(loginDto.getLogin());
+			if(isEmailUsedAsLogin) {
+				return accountService.getAccountByEmail(loginDto.getLogin());
+			}
+			return accountService.getAccountByLogin(loginDto.getLogin());
 		} catch (AccountNotFoundException e) {
-			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
+			throw new APIError(14, HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -55,17 +64,17 @@ public class AuthService {
 			HttpSession session = request.getSession();
 			session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
 		} catch (AuthenticationException e) {
-			throw new APIError(e.getMessage(), HttpStatus.UNAUTHORIZED);
+			throw new APIError(70, HttpStatus.UNAUTHORIZED);
 		}
 		return true;
 	}
 
 	public boolean checkIfExists(RegisterDto registerDto) throws APIError {
 		if(accountService.existsByLogin(registerDto.getLogin())) {
-			throw new APIError("Login already exist", HttpStatus.BAD_REQUEST);
+			throw new APIError(601, HttpStatus.BAD_REQUEST);
 		}
 		if(accountService.existsByEmail(registerDto.getEmail())) {
-			throw new APIError("Email already exist", HttpStatus.BAD_REQUEST);
+			throw new APIError(600, HttpStatus.BAD_REQUEST);
 		}
 		return true;
 	}

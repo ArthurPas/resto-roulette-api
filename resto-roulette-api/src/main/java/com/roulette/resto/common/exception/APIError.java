@@ -11,11 +11,11 @@ import org.springframework.http.HttpStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 public class APIError extends Throwable {
-	private String message;
+	private int errorCode;
 	private HttpStatus status;
 
-	public APIError(String message) {
-		this.message = message;
+	public APIError(int message) {
+		this.errorCode = message;
 	}
 
 }

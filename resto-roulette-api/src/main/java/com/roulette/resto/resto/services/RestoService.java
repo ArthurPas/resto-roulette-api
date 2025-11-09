@@ -45,14 +45,14 @@ public class RestoService {
 			restaurant.setFoodType(existingFoodtype);
 			restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
 		}catch (AccountNotFoundException e) {
-			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 		try {
 			int restoId = restoRepository.createResto(restaurant);
 			restaurant.setId(restoId);
 			return restaurant;
 		}catch (Exception e) {
-			throw new APIError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -61,9 +61,10 @@ public class RestoService {
 			return restoRepository.getRestoById(id);
 		}catch (RestoNotFoundException e){
 			log.error(e.getMessage());
-			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
+			throw new APIError(84, HttpStatus.NOT_FOUND);
 		}catch (Exception e) {
-			throw new APIError("server error", HttpStatus.INTERNAL_SERVER_ERROR);
+			log.error(e.getMessage());
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -71,20 +72,12 @@ public class RestoService {
 		try {
 			return restoRepository.getFoodTypes();
 		}catch (Exception e){
-			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	public boolean existByFoodType(String foodType) throws APIError {
 		return !restoRepository.getFoodTypeByName(foodType.toUpperCase().trim()).isEmpty();
-	}
-
-	public List<String> getFoodTypes(String foodType) throws APIError {
-		try {
-			return restoRepository.getFoodTypeByName(foodType.toUpperCase().trim());
-		}catch (Exception e){
-			throw new APIError(e.getMessage(), HttpStatus.NOT_FOUND);
-		}
 	}
 
 	public List<String> existingFoodTypesList(List<String> foodTypes) {
@@ -97,7 +90,7 @@ public class RestoService {
 
 	public NewFoodType createFoodType(NewFoodType newFoodType) throws APIError {
 		if(existByFoodType(newFoodType.getFoodType())) {
-				throw new APIError("This type already exists", HttpStatus.BAD_REQUEST);
+				throw new APIError(80, HttpStatus.BAD_REQUEST);
 		}
 		try {
 			String cleanedFoodType = newFoodType.getFoodType().toUpperCase().trim()
@@ -107,7 +100,7 @@ public class RestoService {
 			restoRepository.createNewFoodType(cleanedFoodType);
 			return new NewFoodType(cleanedFoodType);
 		}catch (Exception e) {
-			throw new APIError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}
@@ -117,7 +110,8 @@ public class RestoService {
 			int nbResult = 25;
 			return new ArrayList<>(restoRepository.getAllRestos(nbResult, offset * nbResult));
 		}catch (Exception e) {
-			throw new APIError("server error", HttpStatus.INTERNAL_SERVER_ERROR);
+			log.error(e.getMessage());
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -142,7 +136,7 @@ public class RestoService {
 		try {
 			return restoRepository.updateRestoById(id, newRestaurant);
 		} catch (AccountNotFoundException e) {
-			throw new APIError("Account not found", HttpStatus.NOT_FOUND);
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -150,7 +144,7 @@ public class RestoService {
 		try {
 			return new Label(restoRepository.newLabel(label));
 		}catch (Exception e) {
-			throw new APIError(e.getMessage(), HttpStatus.BAD_REQUEST);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -162,7 +156,7 @@ public class RestoService {
 			labelsResto.put("labels", labelsNames);
 			return labelsResto;
 		}catch (RuntimeException e){
-			throw new APIError(e.getMessage(), HttpStatus.BAD_REQUEST);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}

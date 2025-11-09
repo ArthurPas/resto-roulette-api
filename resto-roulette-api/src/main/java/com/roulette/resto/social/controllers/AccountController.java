@@ -75,7 +75,7 @@ public class AccountController {
 			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
 		}catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError("Account not found", HttpStatus.NOT_FOUND));
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
@@ -106,10 +106,10 @@ public class AccountController {
 			UserInfo updateUserInfo = userService.updateUserPersonalInfo(accountId, userInfo);
 			return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError("Account not found", HttpStatus.NOT_FOUND));
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		} catch (SQLException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError("Database error",
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(500,
 					HttpStatus.INTERNAL_SERVER_ERROR));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
@@ -143,7 +143,7 @@ public class AccountController {
 			final BasicAuthDto authResponse = jwtService.buildAuthResponse(account);
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError("Account not found", HttpStatus.NOT_FOUND));
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
@@ -182,7 +182,7 @@ public class AccountController {
 			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError("Account not found", HttpStatus.NOT_FOUND));
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
@@ -198,7 +198,7 @@ public class AccountController {
 			accountService.deteleUser(deleteAccount);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError("Account not found", HttpStatus.NOT_FOUND));
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);

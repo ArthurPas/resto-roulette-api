@@ -119,13 +119,13 @@ public class AuthController {
 			Account newAccount = accountService.registerAccount(registerDto);
 			return new ResponseEntity<>(jwtService.buildAuthResponse(newAccount), HttpStatus.CREATED);
 		} catch (DuplicateKeyException e) {
-			return new ResponseEntity<>((new APIError("Duplicate value that should be unique")),
+			return new ResponseEntity<>((new APIError(6000)),
 					HttpStatus.BAD_REQUEST);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, e.getStatus());
 		} catch (Exception e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError("Server error while creating account",
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(500,
 					HttpStatus.INTERNAL_SERVER_ERROR));
 			return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

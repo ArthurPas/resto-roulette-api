@@ -40,9 +40,15 @@ public class RestoRepository {
 	}
 
 	public Restaurant getRestoById(String id) throws RestoNotFoundException {
-		Restaurant restaurant = restoDao.getRestoById(Integer.parseInt(id));
-		restaurant.setBusinessHours(restoDao.getBusinessHoursByRestoId(Integer.parseInt(id)));
-		return restaurant;
+		try {
+
+			Restaurant restaurant = restoDao.getRestoById(Integer.parseInt(id));
+			restaurant.setBusinessHours(restoDao.getBusinessHoursByRestoId(Integer.parseInt(id)));
+			return restaurant;
+		}catch (RestoNotFoundException e){
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	public void createNewFoodType(String foodType) {

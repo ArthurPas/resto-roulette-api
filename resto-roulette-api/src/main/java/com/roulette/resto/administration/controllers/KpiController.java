@@ -1,6 +1,7 @@
 package com.roulette.resto.administration.controllers;
 
 import com.roulette.resto.administration.dto.out.TrendDto;
+import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.administration.services.KpiService;
 import com.roulette.resto.common.exception.APIError;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,9 +24,11 @@ import org.springframework.web.bind.annotation.*;
 public class KpiController {
 
 	final KpiService kpiService;
+	private final AdminService adminService;
 
-	public KpiController(KpiService kpiService) {
+	public KpiController(KpiService kpiService, AdminService adminService) {
 		this.kpiService = kpiService;
+		this.adminService = adminService;
 	}
 
 	@GetMapping("/yearlyRegistrations")
@@ -52,7 +55,7 @@ public class KpiController {
 									"]")))})
 	public ResponseEntity<?> getUsersRegistrationsByYear(@RequestParam String year, Authentication authentication) {
 		try {
-			kpiService.checkRight(authentication);
+			adminService.rightCheckIsAdmin(authentication);
 			long[] history = kpiService.getUsersRegistrationHistoric(year);
 			return new ResponseEntity<>(history, HttpStatus.OK);
 		} catch (APIError e) {
@@ -70,7 +73,7 @@ public class KpiController {
 							schema = @Schema(implementation = TrendDto.class)))})
 	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication) {
 		try {
-			kpiService.checkRight(authentication);
+			adminService.rightCheckIsAdmin(authentication);
 			TrendDto trendDto = kpiService.getRegistrationTrend();
 			return new ResponseEntity<>(trendDto, HttpStatus.OK);
 		} catch (APIError e) {
@@ -89,7 +92,7 @@ public class KpiController {
 							schema = @Schema(implementation = TrendDto.class)))})
 	public ResponseEntity<?> getLaunchedWheels(Authentication authentication) {
 		try {
-			kpiService.checkRight(authentication);
+			adminService.rightCheckIsAdmin(authentication);
 			TrendDto trendDto = kpiService.getWheelTrend();
 			return new ResponseEntity<>(trendDto, HttpStatus.OK);
 		} catch (APIError e) {

@@ -104,33 +104,33 @@ public class RestoDao {
 	}
 
 	public Restaurant getRestoById(int restoId) throws RestoNotFoundException {
-		String query = "SELECT" +
-					"    resto.resto_id," +
-					"    resto.owner_id," +
-					"    display_name," +
-					"    created_at," +
-					"    name," +
-					"    address," +
-					"    lon," +
-					"    lat," +
-					"    (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
-					"     FROM resto_resto_types" +
-					"     JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
-					"     WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
-					"    ) AS aggregated_food_types," +
-					"    (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
-					"     FROM resto_resto_labels" +
-					"     JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
-					"     WHERE resto_resto_labels.resto_id = resto.resto_id" +
-					"    ) AS aggregated_labels " +
+		String query = "SELECT " +
+					" resto.resto_id," +
+					" resto.owner_id," +
+					" display_name," +
+					" created_at," +
+					" name," +
+					" address," +
+					" lon," +
+					" lat," +
+					" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
+					"  FROM resto_resto_types" +
+					"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
+					"  WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
+					" ) AS aggregated_food_types," +
+					" (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
+					"  FROM resto_resto_labels" +
+					"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
+					"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
+					" ) AS aggregated_labels " +
 					" FROM resto_roulette.resto " +
 					"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
 				".resto_id" +
 					" WHERE" +
-					"    resto_roulette.resto.resto_id = ?";
+					" resto_roulette.resto.resto_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, new RestoRowMapper(accountDao), restoId);
-		}catch (NullPointerException e){
+		}catch (DataAccessException e){
 			log.warn(e.getMessage());
 			throw new RestoNotFoundException("Restaurant not found");
 		}
@@ -168,13 +168,27 @@ public class RestoDao {
 	}
 
 	public List<Restaurant> getAllRestos(int limit, int offset) {
-			String query =
-				"SELECT  resto.resto_id, resto.owner_id, display_name, owner_id, created_at, name, " +
-				"address,lon, lat,GROUP_CONCAT(food_table.food_type SEPARATOR ',') AS aggregated_food_types " +
-				"FROM resto " +
-				"INNER JOIN resto_roulette.resto_info ON resto.resto_id = resto_info.resto_id " +
-				"INNER JOIN  resto_resto_types ON resto.resto_id = resto_resto_types.resto_id " +
-				"INNER JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id "+
+			String query ="SELECT resto.resto_id," +
+				" resto.owner_id," +
+				" display_name," +
+				" created_at," +
+				" name," +
+				" address," +
+				" lon," +
+				" lat," +
+				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
+				"  FROM resto_resto_types" +
+				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
+				"  WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
+				" ) AS aggregated_food_types," +
+				" (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
+				"  FROM resto_resto_labels" +
+				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
+				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
+				" ) AS aggregated_labels " +
+				" FROM resto_roulette.resto " +
+				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
+				".resto_id" +
 				" GROUP BY resto_roulette.resto.resto_id "+
 				"ORDER BY resto.resto_id " +
 				"LIMIT ? "+

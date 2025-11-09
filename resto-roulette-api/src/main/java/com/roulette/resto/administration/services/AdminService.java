@@ -28,14 +28,12 @@ public class AdminService {
 			Account account = accountService.getAccountById(accountId);
 			log.warn("Account role : {}", account.getUserInfo().getRole().toString());
 			if(account.getUserInfo().getRole()!= UserRole.ROLE_ADMIN){
-				throw new APIError("You are not allowed to see this resource, only admin " +
-						"profile can",
+				throw new APIError(71,
 						HttpStatus.UNAUTHORIZED);
 			}
 		}catch (AccountNotFoundException e) {
-			 throw new APIError("You are not allowed to see this resource, only admin " +
-					"profile can",
-					HttpStatus.UNAUTHORIZED);
+			 throw new APIError(64,
+					HttpStatus.NOT_FOUND);
 		}
 	}
 }

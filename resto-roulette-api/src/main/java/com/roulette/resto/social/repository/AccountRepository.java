@@ -90,7 +90,7 @@ public class AccountRepository {
 		int accountIdLogin = accountDao.getAccountByLogin(deleteAccount.getLogin()).getAccountId();
 		int accountIdEmail = accountDao.getAccountByEmail(deleteAccount.getEmail()).getAccountId();
 		if(accountIdLogin != accountIdEmail) {
-			throw new APIError("Login and email didnt match the same account, verify which one you want to delete",
+			throw new APIError(604,
 					HttpStatus.BAD_REQUEST);
 		}else {
 			accountDao.deleteAccount(accountIdEmail);

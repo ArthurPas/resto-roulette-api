@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ErrorResponse {
-	String message;
+	int errorCode;
 	HttpStatus status;
 	public ErrorResponse(APIError error) {
-		this.message = error.getMessage();
+		this.errorCode = error.getErrorCode();
 		this.status = error.getStatus();
 	}
 }

@@ -142,7 +142,7 @@ class AccountControllerTest {
 
 				// Assert
 				assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-				assertTrue(response.getBody().toString().contains("Database error"));
+				assertTrue(response.getBody().toString().contains("errorCode=500"));
 			}
 		}
 

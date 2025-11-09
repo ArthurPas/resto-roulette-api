@@ -124,7 +124,7 @@ class AuthControllerTest {
 
 			// Assert
 			assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-			assertTrue(response.getBody().toString().contains("Bad credentials"));
+			assertTrue(response.getBody().toString().contains("errorCode=70"));
 		}
 
 		@Test
@@ -138,7 +138,7 @@ class AuthControllerTest {
 
 			// Assert
 			assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-			assertTrue(response.getBody().toString().contains("Account not found"));
+			assertTrue(response.getBody().toString().contains("errorCode=64"));
 		}
 	}
 
@@ -174,7 +174,7 @@ class AuthControllerTest {
 
 			// Assert
 			assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-			assertTrue(response.getBody().toString().contains("Login already exist"));
+			assertTrue(response.getBody().toString().contains("errorCode=601"));
 			verify(accountService, never()).registerAccount(any()); // On vérifie que la création n'a pas été tentée
 		}
 
@@ -191,7 +191,7 @@ class AuthControllerTest {
 
 			// Assert
 			assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-			assertTrue(response.getBody().toString().contains("Email already exist"));
+			assertTrue(response.getBody().toString().contains("errorCode=600"));
 		}
 
 		@Test
@@ -205,7 +205,7 @@ class AuthControllerTest {
 
 			// Assert
 			assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-			assertTrue(response.getBody().toString().contains("Duplicate value"));
+			assertTrue(response.getBody().toString().contains("errorCode=6000"));
 		}
 	}
 
@@ -237,7 +237,7 @@ class AuthControllerTest {
 
 			// Assert
 			assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-			assertTrue(response.getBody().toString().contains("Tokens didnt match"));
+			assertTrue(response.getBody().toString().contains("errorCode=700"));
 		}
 
 		@Test
@@ -252,7 +252,7 @@ class AuthControllerTest {
 
 			// Assert
 			assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-			assertTrue(response.getBody().toString().contains("Account not found"));
+			assertTrue(response.getBody().toString().contains("errorCode=64"));
 		}
 	}
 }

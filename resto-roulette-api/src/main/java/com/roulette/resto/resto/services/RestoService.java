@@ -109,6 +109,8 @@ public class RestoService {
 		try {
 			int nbResult = 25;
 			return new ArrayList<>(restoRepository.getAllRestos(nbResult, offset * nbResult));
+		}catch (RestoNotFoundException e) {
+			throw new APIError(84, HttpStatus.NOT_FOUND);
 		}catch (Exception e) {
 			log.error(e.getMessage());
 			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);

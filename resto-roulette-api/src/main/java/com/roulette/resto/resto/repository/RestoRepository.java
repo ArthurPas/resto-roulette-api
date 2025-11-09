@@ -63,8 +63,13 @@ public class RestoRepository {
 		return restoDao.getFoodType(foodType);
 	}
 
-	public List<Restaurant> getAllRestos(int limit, int offset) {
-		return restoDao.getAllRestos(limit, offset);
+	public List<Restaurant> getAllRestos(int limit, int offset) throws RestoNotFoundException {
+		try {
+			return restoDao.getAllRestos(limit, offset);
+		} catch (RestoNotFoundException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours) {

@@ -167,7 +167,7 @@ public class RestoDao {
 		}
 	}
 
-	public List<Restaurant> getAllRestos(int limit, int offset) {
+	public List<Restaurant> getAllRestos(int limit, int offset) throws RestoNotFoundException {
 			String query ="SELECT resto.resto_id," +
 				" resto.owner_id," +
 				" display_name," +
@@ -197,7 +197,7 @@ public class RestoDao {
 				return jdbcTemplate.query(query, new RestoRowMapper(accountDao),  limit, offset);
 			}catch (EmptyResultDataAccessException e){
 				log.warn(e.getMessage());
-				return null;
+				throw  new RestoNotFoundException("Resto not found");
 			}
 		}
 	

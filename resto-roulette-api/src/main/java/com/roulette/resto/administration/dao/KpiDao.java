@@ -46,8 +46,11 @@ public class KpiDao {
 			for (Map<String, Object> row : rows) {
 				UserRegistrationHistory users = new UserRegistrationHistory();
 				users.setTotal((Long) row.get("total"));
+				users.setMonth((Long) row.get("month"));
 				userRegistrationHistory.add(users);
+				log.info(userRegistrationHistory.toString());
 			}
+			log.warn("Users registered : {}", userRegistrationHistory);
 			return userRegistrationHistory;
 		} catch (EmptyResultDataAccessException e) {
 			log.error(e.getMessage());
@@ -135,6 +138,6 @@ public class KpiDao {
 
 		Map<String, Object> data = namedParameterJdbcTemplate.queryForMap(query, params);
 		BigDecimal percentage = (BigDecimal) data.get("percentage_change");
-		return percentage != null ? percentage.floatValue() : null;
+		return percentage != null ? percentage.floatValue() : 0;
 	}
 }

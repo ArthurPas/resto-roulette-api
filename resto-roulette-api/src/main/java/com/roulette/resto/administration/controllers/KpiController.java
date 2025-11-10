@@ -1,5 +1,7 @@
 package com.roulette.resto.administration.controllers;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.roulette.resto.administration.dto.out.TrendDto;
 import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.administration.services.KpiService;
@@ -15,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -56,8 +60,9 @@ public class KpiController {
 	public ResponseEntity<?> getUsersRegistrationsByYear(@RequestParam String year, Authentication authentication) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			long[] history = kpiService.getUsersRegistrationHistoric(year);
-			return new ResponseEntity<>(history, HttpStatus.OK);
+			List<Long> results = kpiService.getUsersRegistrationHistoric(year);
+			Gson gson= new GsonBuilder().create();
+			return new ResponseEntity<>(gson.toJson(results), HttpStatus.OK);
 		} catch (APIError e) {
 			return new ResponseEntity<>(e.getMessage(), e.getStatus());
 		}

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,11 +31,11 @@ public class KpiService {
 		this.kpiDao = kpiDao;
 	}
 
-	public long[] getUsersRegistrationHistoric(String year) {
+	public List<Long> getUsersRegistrationHistoric(String year) {
 		List<UserRegistrationHistory> historic = kpiRepository.getNewUsersByYear(year);
-		long[] result = new long[historic.size()];
-		for (int i = 0; i < historic.size(); i++) {
-			result[i] = historic.get(i).getTotal();
+		List<Long> result = new ArrayList<>();
+		for (UserRegistrationHistory historicUser : historic) {
+			result.add(historicUser.getTotal());
 		}
 		return result;
 	}

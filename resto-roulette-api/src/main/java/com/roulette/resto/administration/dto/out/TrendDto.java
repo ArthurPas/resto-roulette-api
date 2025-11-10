@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TrendDto {
-	private long total;
+	private long total; // All time total
 	private float percentageVariation;
 	private Variation variationType;
 }

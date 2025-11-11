@@ -156,7 +156,10 @@ public class AccountService implements UserDetailsService {
 		return accountRepository.getAccountByEmail(email);
 	}
 
-	public void deteleUser(DeleteAccount deleteAccount) throws APIError, AccountNotFoundException {
+	public void deleteUser(DeleteAccount deleteAccount) throws APIError, AccountNotFoundException {
 		accountRepository.deleteAccount(deleteAccount);
+	}
+	public void recoverUser(DeleteAccount deleteAccount) throws APIError, AccountNotFoundException {
+		accountRepository.recoverAccount(deleteAccount);
 	}
 }

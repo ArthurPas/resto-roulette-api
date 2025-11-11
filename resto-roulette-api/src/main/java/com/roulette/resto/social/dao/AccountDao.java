@@ -78,7 +78,7 @@ public class AccountDao {
 				"first_name, email_verified, account.created_at, user_info.last_login_at " +
 				"FROM account " +
 				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
-				"WHERE login = ?";
+				"WHERE login = ? ";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), login);
 		} catch (EmptyResultDataAccessException e) {
@@ -139,7 +139,7 @@ public class AccountDao {
 				"first_name, email_verified,account.created_at, user_info.last_login_at " +
 				"FROM account " +
 				"JOIN resto_roulette.user_info on account.user_info_id = user_info.user_info_id " +
-				"WHERE account.account_id = ?";
+				"WHERE account.account_id = ? ";
 		try {
 			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), id);
 		} catch (EmptyResultDataAccessException e) {
@@ -193,12 +193,13 @@ public class AccountDao {
 		}
 
 	}
-	public List<Account> getall(int limit, int offset) {
+	public List<Account> getAll(int limit, int offset) {
 		log.warn("Limit {}, Offset {}", limit, offset);
 		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
 				"first_name, email_verified, last_login_at, account.created_at " +
 				"FROM account " +
 				"JOIN user_info on account.user_info_id = user_info.user_info_id "+
+				"WHERE is_deleted = false "+
 				"ORDER BY account_id " +
 				"LIMIT ? "+
 				"OFFSET ? ";
@@ -219,12 +220,11 @@ public class AccountDao {
 	}
 
 	public void deleteAccount(int accountId) {
-
-		String query = "DELETE FROM user_info " +
-				" WHERE user_info_id = ( "+
-				"  SELECT user_info_id FROM account WHERE account_id = ?)";
+		String query = "UPDATE account SET account.is_deleted = true WHERE account_id = ?";
 		jdbcTemplate.update(query, accountId);
-		query = " DELETE FROM account WHERE account_id = ?";
+	}
+	public void recoverAccount(int accountId) {
+		String query = "UPDATE account SET account.is_deleted = false WHERE account_id = ?";
 		jdbcTemplate.update(query, accountId);
 	}
 	
@@ -236,6 +236,5 @@ public class AccountDao {
 			log.warn(e.getMessage());
 			throw new AccountNotFoundException(e.getMessage());
 		}
-
 	}
 }

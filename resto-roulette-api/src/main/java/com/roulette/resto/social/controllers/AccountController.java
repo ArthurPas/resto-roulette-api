@@ -195,7 +195,22 @@ public class AccountController {
 	public ResponseEntity<?> deleteAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			accountService.deteleUser(deleteAccount);
+			accountService.deleteUser(deleteAccount);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@PatchMapping("/admin/recover-deleted-account")
+	@Operation(summary = "Recover deleted account")
+	public ResponseEntity<?> recoverAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			accountService.recoverUser(deleteAccount);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));

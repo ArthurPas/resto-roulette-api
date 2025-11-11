@@ -79,7 +79,7 @@ public class AccountRepository {
 	}
 
 	public List<Account> getAll(int nbResult, int offset) {
-		return accountDao.getall(nbResult,offset);
+		return accountDao.getAll(nbResult,offset);
 	}
 	public void updateAccountRole(UpdateAccountInfo updateAccountInfo) throws AccountNotFoundException {
 		int accountId = accountDao.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();;
@@ -94,6 +94,16 @@ public class AccountRepository {
 					HttpStatus.BAD_REQUEST);
 		}else {
 			accountDao.deleteAccount(accountIdEmail);
+		}
+	}
+	public void recoverAccount(DeleteAccount deleteAccount) throws AccountNotFoundException, APIError {
+		int accountIdLogin = accountDao.getAccountByLogin(deleteAccount.getLogin()).getAccountId();
+		int accountIdEmail = accountDao.getAccountByEmail(deleteAccount.getEmail()).getAccountId();
+		if(accountIdLogin != accountIdEmail) {
+			throw new APIError(604,
+					HttpStatus.BAD_REQUEST);
+		}else {
+			accountDao.recoverAccount(accountIdEmail);
 		}
 	}
 }

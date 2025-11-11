@@ -19,6 +19,7 @@ public class AccountUserRowMapper implements RowMapper<Account> {
 		account.setPassword(rs.getString("password"));
 		account.setVerificationToken(rs.getString("verification_token"));
 		account.setCreatedAt(rs.getTimestamp("created_at"));
+		account.setDeleted(rs.getBoolean("is_deleted"));
 		UserInfo userInfo = userInfoRowMapper.mapRow(rs, rowNum);
 		account.setUserInfo(userInfo);
 		return account;

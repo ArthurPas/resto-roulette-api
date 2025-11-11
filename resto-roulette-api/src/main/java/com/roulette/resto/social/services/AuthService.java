@@ -55,6 +55,9 @@ public class AuthService {
 	}
 
 	public boolean authenticate(LoginDto loginDto, HttpServletRequest request, Account account) throws APIError {
+		if(account.isDeleted()){
+			throw new APIError(14, HttpStatus.NOT_FOUND);
+		}
 		try {
 			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(account.getLogin(),
 					loginDto.getPassword());

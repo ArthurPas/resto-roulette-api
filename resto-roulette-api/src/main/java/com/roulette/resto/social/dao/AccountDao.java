@@ -75,7 +75,7 @@ public class AccountDao {
 
 	public Account getAccountByLogin(String login) throws AccountNotFoundException {
 		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified, account.created_at, user_info.last_login_at " +
+				"first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted " +
 				"FROM account " +
 				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE login = ? ";
@@ -89,7 +89,7 @@ public class AccountDao {
 
 	public Account getAccountByEmail(String email) throws AccountNotFoundException {
 		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified,account.created_at, user_info.last_login_at " +
+				"first_name, email_verified,account.created_at, user_info.last_login_at,is_deleted " +
 				"FROM account " +
 				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE email = ? ";
@@ -136,7 +136,7 @@ public class AccountDao {
 
 	public Account getAccountById(int id) {
 		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified,account.created_at, user_info.last_login_at " +
+				"first_name, email_verified,account.created_at, user_info.last_login_at,is_deleted " +
 				"FROM account " +
 				"JOIN resto_roulette.user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE account.account_id = ? ";
@@ -196,7 +196,7 @@ public class AccountDao {
 	public List<Account> getAll(int limit, int offset) {
 		log.warn("Limit {}, Offset {}", limit, offset);
 		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified, last_login_at, account.created_at " +
+				"first_name, email_verified, last_login_at, account.created_at, account.is_deleted " +
 				"FROM account " +
 				"JOIN user_info on account.user_info_id = user_info.user_info_id "+
 				"WHERE is_deleted = false "+

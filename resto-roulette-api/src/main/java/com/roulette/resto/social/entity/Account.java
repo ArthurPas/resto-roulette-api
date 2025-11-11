@@ -28,6 +28,7 @@ public class Account implements UserDetails {
 
 	//user_info
 	private UserInfo userInfo;
+	private boolean isDeleted;
 
 	@JsonIgnore
 	@Override

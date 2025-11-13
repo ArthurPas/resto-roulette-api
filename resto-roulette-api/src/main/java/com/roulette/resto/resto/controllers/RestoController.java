@@ -102,13 +102,12 @@ public class RestoController {
 											@RequestBody UpdateBusinessHours newBusinessHours) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			return new ResponseEntity<>(restoService.changeBusinessHours(newBusinessHours),HttpStatus.CREATED);
+			return new ResponseEntity<>(restoService.updateBusinessHours(newBusinessHours),HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-
 	@GetMapping("/{id}")
 	@Operation(summary = "Get a restaurant")
 	@ApiResponses(value = {
@@ -164,7 +163,7 @@ public class RestoController {
 			@ApiResponse(responseCode = "200",
 					description = "Label",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = Restaurant.class)))})
+							schema = @Schema(implementation = List.class)))})
 	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody AddLabels labels) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
@@ -180,7 +179,7 @@ public class RestoController {
 			@ApiResponse(responseCode = "200",
 					description = "Label",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = Restaurant.class)))})
+							schema = @Schema(implementation = List.class)))})
 	public ResponseEntity<?> getAll(Authentication authentication) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);

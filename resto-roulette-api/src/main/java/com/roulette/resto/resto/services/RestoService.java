@@ -125,7 +125,7 @@ public class RestoService {
 		}
 	}
 
-	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours newBusinessHours) {
+	public List<BusinessHour> updateBusinessHours(UpdateBusinessHours newBusinessHours) {
 		try{
 			return restoRepository.changeBusinessHours(newBusinessHours);
 		}catch (Exception e){
@@ -165,5 +165,9 @@ public class RestoService {
 
 	public List<String> getLabels() {
 		return restoRepository.getLabels();
+	}
+
+	public List<Restaurant> getRestosByOwnerId(int accountId) {
+		return restoRepository.getRestoByOwner(accountId);
 	}
 }

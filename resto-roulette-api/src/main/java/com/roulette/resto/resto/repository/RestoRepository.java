@@ -116,4 +116,8 @@ public class RestoRepository {
 	public List<String> getLabels() {
 		return restoDao.getAllLabels();
 	}
+
+	public List<Restaurant> getRestoByOwner(int accountId) {
+		return restoDao.getRestoByOwner(accountId);
+	}
 }

@@ -5,6 +5,8 @@ import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.configuration.JwtService;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
+import com.roulette.resto.resto.entity.Restaurant;
+import com.roulette.resto.resto.services.RestoService;
 import com.roulette.resto.social.dto.in.ChangePasswordDto;
 import com.roulette.resto.social.dto.in.DeleteAccount;
 import com.roulette.resto.social.dto.in.UpdateAccountInfo;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -41,12 +44,14 @@ public class AccountController {
 	private final JwtService jwtService;
 	private final AdminService adminService;
 	private final AccountService accountService;
+	private final RestoService restoService;
 
-	public AccountController(UserService userService, JwtService jwtService, AdminService adminService, AccountService accountService) {
+	public AccountController(UserService userService, JwtService jwtService, AdminService adminService, AccountService accountService, RestoService restoService) {
 		this.userService = userService;
 		this.jwtService = jwtService;
 		this.adminService = adminService;
 		this.accountService = accountService;
+		this.restoService = restoService;
 	}
 
 	@GetMapping("/me")
@@ -78,6 +83,13 @@ public class AccountController {
 			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
+	}
+	@GetMapping("/owned-restaurants")
+	@Operation(summary = "Get restaurant(s) that user owns")
+	public ResponseEntity<?> getOwnedRestos(Authentication authentication) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		List<Restaurant> restaurants = restoService.getRestosByOwnerId(accountId);
+		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
 	@PatchMapping("info")

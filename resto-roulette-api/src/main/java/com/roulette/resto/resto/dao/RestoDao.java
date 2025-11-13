@@ -315,4 +315,32 @@ public class RestoDao {
 		log.info(restoLabels.toString());
 		return labels;
 	}
+
+	public List<Restaurant> getRestoByOwner(int accountId) {
+		String query = "SELECT " +
+				" resto.resto_id," +
+				" resto.owner_id," +
+				" display_name," +
+				" created_at," +
+				" name," +
+				" address," +
+				" lon," +
+				" lat," +
+				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
+				"  FROM resto_resto_types" +
+				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
+				"  WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
+				" ) AS aggregated_food_types," +
+				" (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
+				"  FROM resto_resto_labels" +
+				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
+				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
+				" ) AS aggregated_labels " +
+				" FROM resto_roulette.resto " +
+				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
+				".resto_id" +
+				" WHERE" +
+				" resto_roulette.resto.owner_id = ?";
+		return jdbcTemplate.query(query, new RestoRowMapper(accountDao), accountId);
+	}
 }

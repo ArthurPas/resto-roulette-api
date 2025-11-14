@@ -1,0 +1,44 @@
+services:
+  db:
+    container_name: resto-mysql-dev
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: "resto_roulette"
+    volumes:
+      - .dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - resto-network
+
+  backend:
+    container_name: resto-api
+    image: resto-roulette-api:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+      DB_URL: "jdbc:mysql://db:3306/resto_roulette"
+      DB_USER: "${DB_USER}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+    restart: always
+    networks:
+      - resto-network
+    depends_on:
+      db:
+        condition: service_healthy
+    
+networks:
+  resto-network:
+    driver: bridge

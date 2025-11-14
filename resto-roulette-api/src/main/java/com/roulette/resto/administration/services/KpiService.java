@@ -63,7 +63,7 @@ public class KpiService {
 		int lastMonth = YearMonth.now().minusMonths(1).getMonthValue();
 		int currentYear = YearMonth.now().getYear();
 		Float variation = kpiRepository.getWheelTrend(currentMonth, lastMonth, currentYear);
-		trendDto.setPercentageVariation(variation);
+		trendDto.setPercentageVariation(Math.abs(variation));
 		if(variation > 0) {
 			trendDto.setVariationType(Variation.UP);
 		} else if(variation < 0) {

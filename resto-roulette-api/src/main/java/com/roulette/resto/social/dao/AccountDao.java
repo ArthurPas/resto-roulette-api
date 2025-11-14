@@ -17,6 +17,8 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 @Repository
@@ -236,5 +238,18 @@ public class AccountDao {
 			log.warn(e.getMessage());
 			throw new AccountNotFoundException(e.getMessage());
 		}
+	}
+
+	public void updateLoginDate(int accountId) throws SQLException {
+		String query = "UPDATE user_info " +
+				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
+				" SET user_info.last_login_at = ? WHERE account_id = ?";
+		try {
+			jdbcTemplate.update(query, Timestamp.from(Instant.now()), accountId);
+		} catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
+			throw new SQLException(e);
+		}
+
 	}
 }

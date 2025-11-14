@@ -29,14 +29,16 @@ public class AuthService {
 
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
 			Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+	private final UserService userService;
 
 	public static boolean validate(String emailStr) {
 		Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
 		return matcher.matches();
 	}
-	public AuthService(AccountService accountService, AuthenticationManager authenticationManager) {
+	public AuthService(AccountService accountService, AuthenticationManager authenticationManager, UserService userService) {
 		this.accountService = accountService;
 		this.authenticationManager = authenticationManager;
+		this.userService = userService;
 	}
 
 	public Account getAccountFromLoginRequest(LoginDto loginDto) throws APIError {
@@ -66,6 +68,7 @@ public class AuthService {
 			sc.setAuthentication(auth);
 			HttpSession session = request.getSession();
 			session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+			userService.updateLoginDate(account);
 		} catch (AuthenticationException e) {
 			throw new APIError(70, HttpStatus.UNAUTHORIZED);
 		}

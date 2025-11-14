@@ -137,4 +137,13 @@ public class UserService {
 		accountRepository.updateAccountRole(updateAccountInfo);
 		return accountRepository.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();
 	}
+
+	public void updateLoginDate(Account account) {
+		try {
+
+			accountRepository.updateLoginDate(account);
+		}catch (Exception e) {
+			log.error(e.getMessage());
+		}
+	}
 }

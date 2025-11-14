@@ -106,4 +106,8 @@ public class AccountRepository {
 			accountDao.recoverAccount(accountIdEmail);
 		}
 	}
+
+	public void updateLoginDate(Account account) throws SQLException {
+		accountDao.updateLoginDate(account.getAccountId());
+	}
 }

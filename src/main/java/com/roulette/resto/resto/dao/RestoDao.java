@@ -18,7 +18,11 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
 import javax.security.auth.login.AccountNotFoundException;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -28,6 +32,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Repository
 @Slf4j
@@ -343,4 +348,26 @@ public class RestoDao {
 				" resto_roulette.resto.owner_id = ?";
 		return jdbcTemplate.query(query, new RestoRowMapper(accountDao), accountId);
 	}
+
+	public void saveImageInDb(int restoId, String uuid) {
+		try {
+			String query = "INSERT INTO resto_resto_resources (resto_id,resource_id) " +
+					"VALUES (?, ?)";
+			jdbcTemplate.update(query, restoId, uuid);
+		} catch (DataAccessException e) {
+			log.error(e.getMessage());
+			throw new RuntimeException(e);
+		}
+	}
+	public String saveImage(int restoId, BufferedImage newImage){
+		try{
+			String uuid = UUID.randomUUID().toString();
+			saveImageInDb(restoId, uuid);
+			ImageIO.write(newImage, "jpg", new File("/tmp/"+uuid+".jpg"));
+			return uuid;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }

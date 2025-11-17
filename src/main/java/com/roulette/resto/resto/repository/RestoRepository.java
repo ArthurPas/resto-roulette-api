@@ -13,7 +13,11 @@ import com.roulette.resto.social.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import javax.imageio.ImageIO;
 import javax.security.auth.login.AccountNotFoundException;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,5 +123,16 @@ public class RestoRepository {
 
 	public List<Restaurant> getRestoByOwner(int accountId) {
 		return restoDao.getRestoByOwner(accountId);
+	}
+
+	public String saveMenuPicture(int restoId, byte[] bytes) {
+
+		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+		try {
+			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
+			return restoDao.saveImage(restoId, newImage);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -19,8 +19,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @RestController
 @RequestMapping("/restos")
@@ -218,6 +223,28 @@ public class RestoController {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.foodTypeList(),HttpStatus.OK);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+
+	@PostMapping(path = "/{id}/upload-menu-pictures", consumes = MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Add a new picture for the menu")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> addMenuPicture(Authentication authentication,
+											@RequestParam() MultipartFile menuPicture,
+											@PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			String resourceId = restoService.addMenuPicture(id,menuPicture);
+			Map<String, String> response = new HashMap<>();
+			response.put("resourceId",resourceId);
+			return new ResponseEntity<>(response,HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

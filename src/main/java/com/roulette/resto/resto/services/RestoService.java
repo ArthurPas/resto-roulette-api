@@ -11,8 +11,10 @@ import com.roulette.resto.social.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -169,5 +171,14 @@ public class RestoService {
 
 	public List<Restaurant> getRestosByOwnerId(int accountId) {
 		return restoRepository.getRestoByOwner(accountId);
+	}
+
+	public String addMenuPicture(String restoId, MultipartFile menuPicture) throws APIError {
+		try{
+			return restoRepository.saveMenuPicture(Integer.parseInt(restoId),menuPicture.getBytes());
+		}catch (IOException e){
+			log.error(e.getMessage());
+			throw new APIError();
+		}
 	}
 }

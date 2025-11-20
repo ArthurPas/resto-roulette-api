@@ -1,0 +1,73 @@
+- name: Init MariaDB VM for Resto Roulette
+  hosts: db
+  become: yes
+  vars:
+    db_name: "resto_roulette"
+    db_user: "root"
+    db_password: "root"
+    dump_local_path: "../dump.sql"
+    dump_remote_path: "/tmp/resto_dump.sql"
+    dump_marker_path: "/var/lib/mysql/.resto_dump_imported"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install MariaDB server
+      apt:
+        name:
+          - mariadb-server
+        state: present
+
+    - name: Ensure MariaDB is running
+      systemd:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Install PyMySQL needed for community.mysql
+      apt:
+        name:
+          - python3-pymysql
+        state: present
+
+    - name: Copy dump file to VM
+      copy:
+        src: "{{ dump_local_path }}"
+        dest: "{{ dump_remote_path }}"
+        mode: "0644"
+
+    - name: Check if dump already imported
+      stat:
+        path: "{{ dump_marker_path }}"
+      register: dump_marker
+
+    - name: Create database {{ db_name }}
+      community.mysql.mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Create user and grant access
+      community.mysql.mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "{{ db_name }}.*:ALL"
+        host: "%"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Import dump (first time only)
+      community.mysql.mysql_db:
+        name: "{{ db_name }}"
+        state: import
+        target: "{{ dump_remote_path }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: not dump_marker.stat.exists
+
+    - name: Mark dump as imported
+      file:
+        path: "{{ dump_marker_path }}"
+        state: touch
+      when: not dump_marker.stat.exists

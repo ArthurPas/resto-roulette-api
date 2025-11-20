@@ -1,0 +1,43 @@
+- name: Init Spring Boot backend VM
+  hosts: app
+  become: yes
+  vars_files:
+    - ../group_vars/app/vault.yml
+
+  tasks:
+    - name: Install Java 21
+      apt:
+        name: openjdk-21-jdk
+        state: present
+        update_cache: yes
+
+    - name: Install Doppler CLI
+      shell: |
+        curl -Ls https://cli.doppler.com/install.sh | sh
+      args:
+        executable: /bin/bash
+
+    - name: Ensure app directory exists
+      file:
+        path: "/home/{{ ansible_user }}/apps/resto"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Configure Doppler service token
+      become: no
+      shell: |
+        DOPPLER_TOKEN="{{ doppler_service_token }}" doppler configure set token "$DOPPLER_TOKEN" --scope "/home/{{ ansible_user }}"
+      args:
+        executable: /bin/bash
+
+    - name: Install systemd service
+      copy:
+        src: "../files/resto-backend.service"
+        dest: "/etc/systemd/system/resto-backend.service"
+      notify: Reload systemd
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes

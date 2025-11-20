@@ -370,4 +370,7 @@ public class RestoDao {
 		}
 	}
 
+	public List<String> getRestoPictureByRestoId(String id) {
+		return null;
+	}
 }

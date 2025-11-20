@@ -251,5 +251,21 @@ public class RestoController {
 		}
 	}
 
+	@PostMapping(path = "/{id}/get-menu-pictures")
+	@Operation(summary = "Add a new picture for the menu")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> getMenuPictures(Authentication authentication,@PathVariable String id) {
+		List<String> pictures = restoService.getMenusByRestoId(id);
+		for (String picture : pictures ){
+			ResponseEntity.ok()
+					.header("X-Accel-Redirect", "/protected_storage/" + picture)
+					.build();
+		}
+
+	}
 
 }

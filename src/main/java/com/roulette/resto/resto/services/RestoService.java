@@ -181,4 +181,8 @@ public class RestoService {
 			throw new APIError();
 		}
 	}
+
+	public List<MenuPicture> getMenusByRestoId(String id) {
+		return restoRepository.getRestoPicture();
+	}
 }

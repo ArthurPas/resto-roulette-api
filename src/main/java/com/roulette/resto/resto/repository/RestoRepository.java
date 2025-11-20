@@ -2,10 +2,7 @@ package com.roulette.resto.resto.repository;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dao.RestoDao;
-import com.roulette.resto.resto.dto.in.AddLabels;
-import com.roulette.resto.resto.dto.in.NewBusinessHours;
-import com.roulette.resto.resto.dto.in.NewRestaurant;
-import com.roulette.resto.resto.dto.in.UpdateBusinessHours;
+import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
 import com.roulette.resto.resto.entity.Restaurant;
@@ -60,7 +57,7 @@ public class RestoRepository {
 	}
 
 	public List<String> getFoodTypes() {
-			return restoDao.getFoodTypes();
+		return restoDao.getFoodTypes();
 	}
 
 	public List<String> getFoodTypeByName(String foodType) {
@@ -134,5 +131,16 @@ public class RestoRepository {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public List<MenuPicture> getRestoPictureByRestoId(String id) {
+		List<String> pictureIds = restoDao.getRestoPictureByRestoId(id);
+		log.warn(pictureIds.toString());
+		List<MenuPicture> result = new ArrayList<>();
+		for (String pictureId : pictureIds){
+			MenuPicture menuPicture = new MenuPicture();
+			menuPicture.setUuid(pictureId);
+		}
+		return result;
 	}
 }

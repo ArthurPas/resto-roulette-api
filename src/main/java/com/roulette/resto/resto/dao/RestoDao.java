@@ -215,9 +215,8 @@ public class RestoDao {
 	}
 		
 	@Transactional
-	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours) {
+	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours, int restoId) {
 		log.warn(businessHours.toString());
-		int restoId = businessHours.getRestoId();
 		for (BusinessHour businessHour: businessHours.getBusinessHours()){
 
 			LocalTime openHours = convertToLocalTime(businessHour.getOpeningHour());
@@ -237,7 +236,7 @@ public class RestoDao {
 		return hours.truncatedTo(ChronoUnit.MINUTES);
 	}
 
-	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours updateBusinessHours) {
+	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours updateBusinessHours, int restoId) {
 		//If its lunch you only want the first opening hours, if its not you want the last opening hours
 		String filter = updateBusinessHours.isLunch() ? "DESC" :  "ASC";
 		String query = "UPDATE business_hour " +
@@ -247,8 +246,8 @@ public class RestoDao {
 				" LIMIT 1 ";
 		jdbcTemplate.update(query, 
 				updateBusinessHours.getOpeningHour(), updateBusinessHours.getClosingHour(), 
-				updateBusinessHours.getWeekDay(), updateBusinessHours.getRestoId());
-		return getBusinessHoursByRestoId(updateBusinessHours.getRestoId());
+				updateBusinessHours.getWeekDay(), restoId);
+		return getBusinessHoursByRestoId(restoId);
 
 	}
 

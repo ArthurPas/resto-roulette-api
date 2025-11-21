@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @CrossOrigin(origins = "*") //TODO: add strict origin
 @SecurityRequirement(name = "Bearer Authentication")
 @Slf4j
-public class ImageController {
+public class MediaController {
 	@GetMapping("/{uuid}")
 	public ResponseEntity<Void> getSinglePicture(@PathVariable String uuid, Authentication auth) {
 		return ResponseEntity.ok()

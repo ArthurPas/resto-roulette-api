@@ -12,7 +12,6 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateBusinessHours {
-	int restoId;
 	int weekDay;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm",timezone="Europe/Paris")
 	@Schema(example = "11:30")

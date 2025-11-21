@@ -10,6 +10,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddLabels {
-	String restoId;
 	List<String> labels;
 }

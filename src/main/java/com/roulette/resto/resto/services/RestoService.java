@@ -2,6 +2,7 @@ package com.roulette.resto.resto.services;
 
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
+import com.roulette.resto.resto.dto.MenuPicture;
 import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
@@ -119,17 +120,17 @@ public class RestoService {
 		}
 	}
 
-	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours) {
+	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours, String id) {
 		try{
-			return restoRepository.addBusinessHoursToResto(businessHours);
+			return restoRepository.addBusinessHoursToResto(businessHours, id);
 		}catch (Exception e){
 			throw e;
 		}
 	}
 
-	public List<BusinessHour> updateBusinessHours(UpdateBusinessHours newBusinessHours) {
+	public List<BusinessHour> updateBusinessHours(UpdateBusinessHours newBusinessHours, String id) {
 		try{
-			return restoRepository.changeBusinessHours(newBusinessHours);
+			return restoRepository.changeBusinessHours(newBusinessHours, id);
 		}catch (Exception e){
 			throw e;
 		}
@@ -152,10 +153,10 @@ public class RestoService {
 		}
 	}
 
-	public Map<String, List<String>> addLabelsResto(AddLabels labels) throws APIError {
+	public Map<String, List<String>> addLabelsResto(AddLabels labels, String id) throws APIError {
 		try {
 
-			List<String> labelsNames = restoRepository.addLabelsToResto(labels);
+			List<String> labelsNames = restoRepository.addLabelsToResto(labels, id);
 			Map<String, List<String>> labelsResto = new HashMap<>();
 			labelsResto.put("labels", labelsNames);
 			return labelsResto;

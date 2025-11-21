@@ -2,6 +2,7 @@ package com.roulette.resto.resto.repository;
 
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dao.RestoDao;
+import com.roulette.resto.resto.dto.MenuPicture;
 import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
@@ -73,12 +74,12 @@ public class RestoRepository {
 		}
 	}
 
-	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours) {
-		return restoDao.addBusinessHoursToResto(businessHours);
+	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours, String id) {
+		return restoDao.addBusinessHoursToResto(businessHours, Integer.parseInt(id));
 	}
 
-	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours newBusinessHours) {
-		return restoDao.changeBusinessHours(newBusinessHours);
+	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours newBusinessHours, String id) {
+		return restoDao.changeBusinessHours(newBusinessHours, Integer.parseInt(id));
 	}
 
 	public Restaurant updateRestoById(String id, NewRestaurant newRestaurant) throws AccountNotFoundException {
@@ -93,11 +94,11 @@ public class RestoRepository {
 		return restoDao.newLabel(label.getLabelName());
 	}
 
-	public List<String> addLabelsToResto(AddLabels labels) {
+	public List<String> addLabelsToResto(AddLabels labels, String id) {
 		List<String> labelsToAdd = getOnlyExistingLabels(labels.getLabels());
 		log.warn("Labels to add "+labelsToAdd);
 		try {
-			return restoDao.addLabelsToResto(Integer.parseInt(labels.getRestoId()),labelsToAdd);
+			return restoDao.addLabelsToResto(Integer.parseInt(id),labelsToAdd);
 		}catch (RuntimeException e) {
 			log.error(e.getMessage());
 			throw  e;

@@ -3,6 +3,7 @@ package com.roulette.resto.resto.controllers;
 import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
+import com.roulette.resto.resto.dto.MenuPicture;
 import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
@@ -78,25 +79,24 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PostMapping("/new-business-hours")
-	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
-			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
-			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
+	@PostMapping("/{id}/new-business-hours")
+	@Operation(summary = "Update opening and closing hours for resto")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = BusinessHour.class)))})
-	public ResponseEntity<?> newBusinessHours(Authentication authentication, @RequestBody NewBusinessHours businessHours) {
+	public ResponseEntity<?> newBusinessHours(Authentication authentication,
+											  @RequestBody NewBusinessHours businessHours, @PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			return new ResponseEntity<>(restoService.addBusinessHoursToResto(businessHours),HttpStatus.CREATED);
+			return new ResponseEntity<>(restoService.addBusinessHoursToResto(businessHours, id),HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PatchMapping("/update-business-hours")
+	@PatchMapping("/{id}/update-business-hours")
 	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
 			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
 			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
@@ -106,10 +106,11 @@ public class RestoController {
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = BusinessHour.class)))})
 	public ResponseEntity<?> updateBusinessHours(Authentication authentication,
-											@RequestBody UpdateBusinessHours newBusinessHours) {
+												 @RequestBody UpdateBusinessHours newBusinessHours,
+												 @PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			return new ResponseEntity<>(restoService.updateBusinessHours(newBusinessHours),HttpStatus.CREATED);
+			return new ResponseEntity<>(restoService.updateBusinessHours(newBusinessHours, id),HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
@@ -164,17 +165,18 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PostMapping("/labels/new-label")
+	@PostMapping("/{id}/labels/new-label")
 	@Operation(summary = "Add a labels for restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
-					description = "Label",
+					description = "Labels",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = List.class)))})
-	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody AddLabels labels) {
+	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody AddLabels labels,
+									  @PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			return new ResponseEntity<>(restoService.addLabelsResto(labels),HttpStatus.OK);
+			return new ResponseEntity<>(restoService.addLabelsResto(labels, id),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());

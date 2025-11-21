@@ -183,6 +183,6 @@ public class RestoService {
 	}
 
 	public List<MenuPicture> getMenusByRestoId(String id) {
-		return restoRepository.getRestoPicture();
+		return restoRepository.getRestoPictureByRestoId(id);
 	}
 }

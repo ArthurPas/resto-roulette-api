@@ -20,10 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
@@ -252,20 +254,28 @@ public class RestoController {
 	}
 
 	@PostMapping(path = "/{id}/get-menu-pictures")
-	@Operation(summary = "Add a new picture for the menu")
+	@Operation(summary = "Get resto menu pictures ")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = Integer.class)))})
 	public ResponseEntity<?> getMenuPictures(Authentication authentication,@PathVariable String id) {
-		List<String> pictures = restoService.getMenusByRestoId(id);
-		for (String picture : pictures ){
-			ResponseEntity.ok()
-					.header("X-Accel-Redirect", "/protected_storage/" + picture)
-					.build();
-		}
 
+		record PictureResponseDto(String type, String url) {}
+		List<MenuPicture> pictures = restoService.getMenusByRestoId(id);
+		List<PictureResponseDto> response = pictures.stream()
+				.map(pic -> {
+					String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+							.path("/images/")
+							.path(pic.getUuid())
+							.toUriString();
+
+					return new PictureResponseDto("MENU",downloadUrl);
+				})
+				.collect(Collectors.toList());
+
+		return ResponseEntity.ok(response);
 	}
 
 }

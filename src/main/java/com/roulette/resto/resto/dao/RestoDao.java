@@ -10,6 +10,7 @@ import com.roulette.resto.resto.entity.mapper.BusinessHoursRowMapper;
 import com.roulette.resto.resto.entity.mapper.RestoRowMapper;
 import com.roulette.resto.social.dao.AccountDao;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -39,6 +40,8 @@ import java.util.UUID;
 public class RestoDao {
 	final JdbcTemplate jdbcTemplate;
 	final AccountDao accountDao;
+	@Value("${app.storage.images.location}")
+	private String imageDir;
 	public RestoDao(JdbcTemplate jdbcTemplate, AccountDao accountDao) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.accountDao = accountDao;
@@ -363,7 +366,7 @@ public class RestoDao {
 		try{
 			String uuid = UUID.randomUUID().toString();
 			saveImageInDb(restoId, uuid);
-			ImageIO.write(newImage, "jpg", new File("/tmp/"+uuid+".jpg"));
+			ImageIO.write(newImage, "jpg", new File(imageDir+"/"+uuid+".jpg"));
 			return uuid;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -371,6 +374,13 @@ public class RestoDao {
 	}
 
 	public List<String> getRestoPictureByRestoId(String id) {
-		return null;
+		String query = "SELECT resource_id FROM resto_resto_resources " +
+				"JOIN resto_roulette.resto r on resto_resto_resources.resto_id = r.resto_id "+
+				"WHERE r.resto_id = ?";
+		try {
+			return jdbcTemplate.queryForList(query, String.class, id);
+		}catch (EmptyResultDataAccessException e){
+			return Collections.emptyList();
+		}
 	}
 }

@@ -140,6 +140,7 @@ public class RestoRepository {
 		for (String pictureId : pictureIds){
 			MenuPicture menuPicture = new MenuPicture();
 			menuPicture.setUuid(pictureId);
+			result.add(menuPicture);
 		}
 		return result;
 	}

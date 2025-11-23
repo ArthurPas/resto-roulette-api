@@ -1,5 +1,6 @@
 package com.roulette.resto.resto.services;
 
+import com.roulette.resto.common.entity.MediaType;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dto.MenuPicture;
@@ -187,7 +188,7 @@ public class RestoService {
 	}
 
 	public List<MenuPicture> getMenusByRestoId(String id) {
-		return restoRepository.getRestoPictureByRestoId(id);
+		return restoRepository.getRestoPictureByRestoIdByMediaType(id, MediaType.MENU);
 	}
 
 	public void deleteResto(String id) throws APIError {

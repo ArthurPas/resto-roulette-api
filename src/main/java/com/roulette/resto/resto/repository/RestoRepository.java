@@ -1,6 +1,9 @@
 package com.roulette.resto.resto.repository;
 
+import com.roulette.resto.common.entity.MediaResource;
+import com.roulette.resto.common.entity.MediaType;
 import com.roulette.resto.common.exception.RestoNotFoundException;
+import com.roulette.resto.common.service.MediaService;
 import com.roulette.resto.resto.dao.RestoDao;
 import com.roulette.resto.resto.dto.MenuPicture;
 import com.roulette.resto.resto.dto.in.*;
@@ -26,10 +29,11 @@ public class RestoRepository {
 
 	private final RestoDao restoDao;
 	private final AccountRepository accountRepository;
-
-	public RestoRepository(RestoDao restoDao, RestoDao restoDao1, AccountRepository accountRepository) {
+	private final MediaService mediaService;
+	public RestoRepository(RestoDao restoDao, RestoDao restoDao1, AccountRepository accountRepository, MediaService mediaService) {
 		this.restoDao = restoDao1;
 		this.accountRepository = accountRepository;
+		this.mediaService = mediaService;
 	}
 
 	public int createResto(Restaurant restaurant) {
@@ -139,19 +143,20 @@ public class RestoRepository {
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		try {
 			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
-			return restoDao.saveImage(restoId, newImage);
+			String uuid = mediaService.saveImage(newImage);
+			restoDao.saveRestoMedia(restoId, uuid, MediaType.MENU);
+			return uuid;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public List<MenuPicture> getRestoPictureByRestoId(String id) {
-		List<String> pictureIds = restoDao.getRestoPictureByRestoId(id);
-		log.warn(pictureIds.toString());
+	public List<MenuPicture> getRestoPictureByRestoIdByMediaType(String id, MediaType mediaType) {
+		List<MediaResource> medias = restoDao.getRestoPictureByRestoId(id, mediaType);
 		List<MenuPicture> result = new ArrayList<>();
-		for (String pictureId : pictureIds){
+		for (MediaResource mediaResource : medias){
 			MenuPicture menuPicture = new MenuPicture();
-			menuPicture.setUuid(pictureId);
+			menuPicture.setUuid(mediaResource.getResourceId());
 			result.add(menuPicture);
 		}
 		return result;

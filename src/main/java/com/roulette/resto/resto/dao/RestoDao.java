@@ -1,5 +1,8 @@
 package com.roulette.resto.resto.dao;
 
+import com.roulette.resto.common.entity.MediaResource;
+import com.roulette.resto.common.entity.MediaType;
+import com.roulette.resto.common.entity.mappers.MediaMapper;
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.resto.dto.in.NewRestaurant;
@@ -37,8 +40,7 @@ import java.util.*;
 public class RestoDao {
 	final JdbcTemplate jdbcTemplate;
 	final AccountDao accountDao;
-	@Value("${app.storage.images.location}")
-	private String imageDir;
+
 	public RestoDao(JdbcTemplate jdbcTemplate, AccountDao accountDao) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.accountDao = accountDao;
@@ -359,33 +361,24 @@ public class RestoDao {
 		return jdbcTemplate.query(query, new RestoRowMapper(accountDao), accountId);
 	}
 
-	public void saveImageInDb(int restoId, String uuid) {
+	public void saveRestoMedia(int restoId, String uuid, MediaType type) {
 		try {
-			String query = "INSERT INTO resto_resto_resources (resto_id,resource_id) " +
-					"VALUES (?, ?)";
-			jdbcTemplate.update(query, restoId, uuid);
+			String query = "INSERT INTO resto_resto_medias (resto_id,resource_id, media_type_id) " +
+					"VALUES (?, ?, ?)";
+			jdbcTemplate.update(query, restoId, uuid,type.typeId);
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw new RuntimeException(e);
 		}
 	}
-	public String saveImage(int restoId, BufferedImage newImage){
-		try{
-			String uuid = UUID.randomUUID().toString();
-			saveImageInDb(restoId, uuid);
-			ImageIO.write(newImage, "jpg", new File(imageDir+"/"+uuid+".jpg"));
-			return uuid;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
-	public List<String> getRestoPictureByRestoId(String id) {
-		String query = "SELECT resource_id FROM resto_resto_resources " +
-				"JOIN resto_roulette.resto r on resto_resto_resources.resto_id = r.resto_id "+
-				"WHERE r.resto_id = ?";
+
+	public List<MediaResource> getRestoPictureByRestoId(String id, MediaType mediaType) {
+		String query = "SELECT resource_id, media_type_id FROM resto_roulette.resto_resto_medias m " +
+				"JOIN resto_roulette.resto r on m.resto_id = r.resto_id "+
+				"WHERE r.resto_id = ? and m.resource_id = ? ";
 		try {
-			return jdbcTemplate.queryForList(query, String.class, id);
+			return jdbcTemplate.query(query, new MediaMapper(), id, mediaType.typeId);
 		}catch (EmptyResultDataAccessException e){
 			return Collections.emptyList();
 		}

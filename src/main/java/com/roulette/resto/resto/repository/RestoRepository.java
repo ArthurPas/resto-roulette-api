@@ -30,6 +30,7 @@ public class RestoRepository {
 	private final RestoDao restoDao;
 	private final AccountRepository accountRepository;
 	private final MediaService mediaService;
+
 	public RestoRepository(RestoDao restoDao, RestoDao restoDao1, AccountRepository accountRepository, MediaService mediaService) {
 		this.restoDao = restoDao1;
 		this.accountRepository = accountRepository;
@@ -50,6 +51,7 @@ public class RestoRepository {
 
 			Restaurant restaurant = restoDao.getRestoById(Integer.parseInt(id));
 			restaurant.setBusinessHours(restoDao.getBusinessHoursByRestoId(Integer.parseInt(id)));
+			restaurant.setMedias(this.getRestoPictureByRestoId(id));
 			return restaurant;
 		}catch (RestoNotFoundException e){
 			log.error(e.getMessage());
@@ -71,7 +73,12 @@ public class RestoRepository {
 
 	public List<Restaurant> getAllRestos(int limit, int offset) throws RestoNotFoundException {
 		try {
-			return restoDao.getAllRestos(limit, offset);
+			List<Restaurant> restaurants = restoDao.getAllRestos(limit, offset);
+			for(Restaurant restaurant : restaurants) {
+				List<MediaResource> mediaResources = this.getRestoPictureByRestoId(String.valueOf(restaurant.getId()));
+				restaurant.setMedias(mediaResources);
+			}
+			return restaurants;
 		} catch (RestoNotFoundException e) {
 			log.error(e.getMessage());
 			throw e;

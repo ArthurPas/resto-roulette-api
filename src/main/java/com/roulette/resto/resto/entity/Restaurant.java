@@ -1,5 +1,6 @@
 package com.roulette.resto.resto.entity;
 
+import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.social.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,4 +25,5 @@ public class Restaurant {
 	List<BusinessHour> businessHours;
 	Date creationDate;
 	Account owner;
+	List<MediaResource> medias;
 }

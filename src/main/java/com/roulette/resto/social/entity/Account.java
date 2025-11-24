@@ -40,4 +40,25 @@ public class Account implements UserDetails {
 	public String getUsername() {
 		return this.login;
 	}
+	@JsonIgnore
+	@Override
+	public boolean isAccountNonExpired() {
+		return false;
+	}
+	@JsonIgnore
+	@Override
+	public boolean isAccountNonLocked() {
+		return false;
+	}
+	@JsonIgnore
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return false;
+	}
+	@JsonIgnore
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+
 }

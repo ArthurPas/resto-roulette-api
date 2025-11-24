@@ -3,7 +3,6 @@ package com.roulette.resto.resto.services;
 import com.roulette.resto.common.entity.MediaType;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
-import com.roulette.resto.resto.dto.MenuPicture;
 import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
@@ -180,15 +179,32 @@ public class RestoService {
 
 	public String addMenuPicture(String restoId, MultipartFile menuPicture) throws APIError {
 		try{
-			return restoRepository.saveMenuPicture(Integer.parseInt(restoId),menuPicture.getBytes());
+			return restoRepository.savePicture(Integer.parseInt(restoId), MediaType.MENU,menuPicture.getBytes());
 		}catch (IOException e){
 			log.error(e.getMessage());
 			throw new APIError(95, HttpStatus.INTERNAL_SERVER_ERROR );
 		}
 	}
+	public String addLogoPicture(String id, MultipartFile logo) throws APIError {
+		try{
+			return restoRepository.savePicture(Integer.parseInt(id), MediaType.LOGO, logo.getBytes());
+		}catch (IOException e){
+			log.error(e.getMessage());
+			throw new APIError(95, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	public List<MenuPicture> getMenusByRestoId(String id) {
-		return restoRepository.getRestoPictureByRestoIdByMediaType(id, MediaType.MENU);
+	public String addRestoPicture(String id, MultipartFile photo) throws APIError {
+		try{
+			return restoRepository.savePicture(Integer.parseInt(id), MediaType.RESTO, photo.getBytes());
+		}catch (IOException e){
+			log.error(e.getMessage());
+			throw new APIError(95, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	public List<MediaResource> getPictures(String id) {
+		return restoRepository.getRestoPictureByRestoId(id);
 	}
 
 	public void deleteResto(String id) throws APIError {
@@ -199,4 +215,5 @@ public class RestoService {
 			throw new APIError(84, HttpStatus.NOT_FOUND);
 		}
 	}
+
 }

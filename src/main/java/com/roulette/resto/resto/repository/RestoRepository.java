@@ -2,10 +2,10 @@ package com.roulette.resto.resto.repository;
 
 import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.common.entity.MediaType;
+import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.common.service.MediaService;
 import com.roulette.resto.resto.dao.RestoDao;
-import com.roulette.resto.resto.dto.MenuPicture;
 import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
@@ -138,28 +138,22 @@ public class RestoRepository {
 		return restoDao.getRestoByOwner(accountId);
 	}
 
-	public String saveMenuPicture(int restoId, byte[] bytes) {
+	public String savePicture(int restoId, MediaType mediaType, byte[] bytes) throws IOException {
 
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		try {
 			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
 			String uuid = mediaService.saveImage(newImage);
-			restoDao.saveRestoMedia(restoId, uuid, MediaType.MENU);
+			restoDao.saveRestoMedia(restoId, uuid, mediaType);
 			return uuid;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			log.error(e.getMessage());
+			throw e;
 		}
 	}
 
-	public List<MenuPicture> getRestoPictureByRestoIdByMediaType(String id, MediaType mediaType) {
-		List<MediaResource> medias = restoDao.getRestoPictureByRestoId(id, mediaType);
-		List<MenuPicture> result = new ArrayList<>();
-		for (MediaResource mediaResource : medias){
-			MenuPicture menuPicture = new MenuPicture();
-			menuPicture.setUuid(mediaResource.getResourceId());
-			result.add(menuPicture);
-		}
-		return result;
+	public List<MediaResource> getRestoPictureByRestoId(String id) {
+		return restoDao.getRestoPictureByRestoId(id);
 	}
 
 	public void deleteResto(String id) throws RestoNotFoundException {

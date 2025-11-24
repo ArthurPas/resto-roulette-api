@@ -1,9 +1,9 @@
 package com.roulette.resto.resto.controllers;
 
 import com.roulette.resto.administration.services.AdminService;
+import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
-import com.roulette.resto.resto.dto.MenuPicture;
 import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
@@ -255,26 +255,68 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-
-	@PostMapping(path = "/{id}/get-menu-pictures")
-	@Operation(summary = "Get resto menu pictures ")
+	@PostMapping(path = "/{id}/upload-logo", consumes = MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Add a logo picture")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> addLogoPicture(Authentication authentication,
+											@RequestParam() MultipartFile logo,
+											@PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			String resourceId = restoService.addLogoPicture(id, logo);
+			Map<String, String> response = new HashMap<>();
+			response.put("resourceId",resourceId);
+			return new ResponseEntity<>(response,HttpStatus.CREATED);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@PostMapping(path = "/{id}/upload-photo", consumes = MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Add a restaurant photo (room, theme...)")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> addRestoPicture(Authentication authentication,
+											@RequestParam() MultipartFile photo,
+											@PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			String resourceId = restoService.addRestoPicture(id, photo);
+			Map<String, String> response = new HashMap<>();
+			response.put("resourceId",resourceId);
+			return new ResponseEntity<>(response,HttpStatus.CREATED);
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@GetMapping(path = "/{id}/get-medias")
+	@Operation(summary = "Get resto medias (menu pictures, logos ..) ")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = Integer.class)))})
-	public ResponseEntity<?> getMenuPictures(Authentication authentication,@PathVariable String id) {
+	public ResponseEntity<?> getRestoMedias(@PathVariable String id) {
 
 		record PictureResponseDto(String type, String url) {}
-		List<MenuPicture> pictures = restoService.getMenusByRestoId(id);
+		List<MediaResource> pictures = restoService.getPictures(id);
+		log.info(pictures.toString());
 		List<PictureResponseDto> response = pictures.stream()
 				.map(pic -> {
 					String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
 							.path("/images/")
-							.path(pic.getUuid())
+							.path(pic.getResourceId())
 							.toUriString();
 
-					return new PictureResponseDto("MENU",downloadUrl);
+					return new PictureResponseDto(pic.getMediaType().toString(),downloadUrl);
 				})
 				.collect(Collectors.toList());
 

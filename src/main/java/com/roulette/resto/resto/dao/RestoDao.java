@@ -373,12 +373,12 @@ public class RestoDao {
 	}
 
 
-	public List<MediaResource> getRestoPictureByRestoId(String id, MediaType mediaType) {
-		String query = "SELECT resource_id, media_type_id FROM resto_roulette.resto_resto_medias m " +
-				"JOIN resto_roulette.resto r on m.resto_id = r.resto_id "+
-				"WHERE r.resto_id = ? and m.resource_id = ? ";
+	public List<MediaResource> getRestoPictureByRestoId(String id) {
+		String query = "SELECT resource_id, media_type_id " +
+				" FROM resto_roulette.resto_resto_medias m " +
+				" WHERE m.resto_id = ? ";
 		try {
-			return jdbcTemplate.query(query, new MediaMapper(), id, mediaType.typeId);
+			return jdbcTemplate.query(query, new MediaMapper(), id);
 		}catch (EmptyResultDataAccessException e){
 			return Collections.emptyList();
 		}

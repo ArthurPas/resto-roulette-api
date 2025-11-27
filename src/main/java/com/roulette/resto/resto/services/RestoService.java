@@ -45,7 +45,7 @@ public class RestoService {
 		try{
 			//Remove from newRestaurant payload food type that not exists in db
 			List<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
-			restaurant.setFoodType(existingFoodtype);
+			restaurant.setFoodTypes(existingFoodtype);
 			restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
 		}catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
@@ -86,7 +86,6 @@ public class RestoService {
 	public List<String> existingFoodTypesList(List<String> foodTypes) {
 		List<String> validFootType = restoRepository.getFoodTypes();
 		List<String> newRestofoodType = new ArrayList<>();
-		log.warn("coucou {}", foodTypes);
 		foodTypes.forEach(foodType -> {if (validFootType.contains(foodType)) {newRestofoodType.add(foodType);}});
 		return newRestofoodType;
 	}
@@ -139,9 +138,13 @@ public class RestoService {
 
 	public Restaurant updateRestoInfoById(String id, NewRestaurant newRestaurant) throws APIError {
 		try {
+			List<String> existingFoodTypesList = existingFoodTypesList(newRestaurant.getFoodTypes());
+			newRestaurant.setFoodTypes(existingFoodTypesList);
 			return restoRepository.updateRestoById(id, newRestaurant);
 		} catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
+		} catch (RestoNotFoundException e) {
+			throw new APIError(84, HttpStatus.NOT_FOUND);
 		}
 	}
 

@@ -82,8 +82,9 @@ public class RestoRepository {
 		return restoDao.changeBusinessHours(newBusinessHours, Integer.parseInt(id));
 	}
 
-	public Restaurant updateRestoById(String id, NewRestaurant newRestaurant) throws AccountNotFoundException {
+	public Restaurant updateRestoById(String id, NewRestaurant newRestaurant) throws AccountNotFoundException, RestoNotFoundException {
 		int ownerId = accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()).getAccountId();
+		restoDao.addNewFootypes(Integer.parseInt(id),newRestaurant.getFoodTypes());
 		return restoDao.updateResto(Integer.parseInt(id),ownerId, newRestaurant);
 	}
 
@@ -105,6 +106,16 @@ public class RestoRepository {
 		}
 	}
 	private List<String> getOnlyExistingLabels(List<String> labels){
+		List<String> result = new ArrayList<>();
+		List<String> existingLabels = restoDao.getAllLabels();
+		for (String label : labels) {
+			if (existingLabels.contains(label)) {
+				result.add(label);
+			}
+		}
+		return result;
+	}
+	private List<String> getOnlyExistingFoodType(List<String> labels){
 		List<String> result = new ArrayList<>();
 		List<String> existingLabels = restoDao.getAllLabels();
 		for (String label : labels) {

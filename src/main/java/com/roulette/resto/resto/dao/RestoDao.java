@@ -30,10 +30,7 @@ import java.sql.Statement;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 @Slf4j
@@ -64,8 +61,8 @@ public class RestoDao {
 			}, generatedKeyHolder);
 			int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
 			this.createRestoInfos(restaurant, restoId);
-			log.warn(restaurant.getFoodType().toString());
-			this.linkFoodsType(restaurant.getFoodType(), restoId);
+			log.warn(restaurant.getFoodTypes().toString());
+			this.linkFoodsType(restaurant.getFoodTypes(), restoId);
 			return restoId;
 		} catch (DuplicateKeyException e) {
 			throw e;
@@ -159,6 +156,17 @@ public class RestoDao {
 		String query = "SELECT food_type FROM resto_type";
 		try {
 			return jdbcTemplate.queryForList(query, String.class);
+		}catch (NullPointerException e){
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
+	public List<String> getFoodTypesByRestoId(int restoId) {
+		String query = "SELECT food_type FROM resto_type " +
+				" INNER JOIN resto_roulette.resto_resto_types rrt on resto_type.id = rrt.type_id" +
+				" WHERE rrt.resto_id = ?";
+		try {
+			return jdbcTemplate.queryForList(query, String.class, restoId);
 		}catch (NullPointerException e){
 			log.error(e.getMessage());
 			throw e;
@@ -381,5 +389,17 @@ public class RestoDao {
 		}catch (EmptyResultDataAccessException e){
 			return Collections.emptyList();
 		}
+	}
+
+	public void addNewFootypes(int i, List<String> foodTypes)  {
+		List<String> existingFoodType = getFoodTypesByRestoId(i);
+		List<String> newFoodTypes = new ArrayList<>();
+		for (String foodType : foodTypes) {
+			if (existingFoodType.contains(foodType)) {
+				continue;
+			}
+			newFoodTypes.add(foodType);
+		}
+		this.linkFoodsType(newFoodTypes, i);
 	}
 }

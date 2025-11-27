@@ -29,7 +29,7 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setLatitude(rs.getBigDecimal("lat"));
 		restaurant.setAddress(rs.getString("address"));
 		String aggregatedTypes = rs.getString("aggregated_food_types");
-		restaurant.setFoodType(aggregatedToList(aggregatedTypes));
+		restaurant.setFoodTypes(aggregatedToList(aggregatedTypes));
 		String aggregatedLabels = rs.getString("aggregated_labels");
 		restaurant.setLabels(aggregatedToList(aggregatedLabels));
 		log.warn(restaurant.toString());

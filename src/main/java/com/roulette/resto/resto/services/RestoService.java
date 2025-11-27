@@ -1,5 +1,6 @@
 package com.roulette.resto.resto.services;
 
+import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.common.entity.MediaType;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;

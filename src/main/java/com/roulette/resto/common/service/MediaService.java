@@ -18,23 +18,28 @@ import java.util.UUID;
 public class MediaService {
 
 
+	@Value("${app.storage.images.maxResolution.avatar}")
+	private int maxResolutionAvatar;
+
+	@Value("${app.storage.images.maxResolution.menu}")
+	private int maxResolutionMenu;
+
+	@Value("${app.storage.images.maxResolution.logo}")
+	private int maxResolutionLogo;
 	private final MediaDao mediaDao;
 
 	public MediaService(MediaDao mediaDao) {
 		this.mediaDao = mediaDao;
 	}
 
-	public String saveRezidedImage(BufferedImage bufferedImage, int scale) throws IOException {
+
+	public String saveImage(BufferedImage bufferedImage, MediaType mediaType) throws IOException {
 		try{
-			return mediaDao.saveMedia(bufferedImage,scale);
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			throw e;
-		}
-	}
-	public String saveImage(BufferedImage bufferedImage) throws IOException {
-		try{
-			return mediaDao.saveMedia(bufferedImage);
+			return switch (mediaType) {
+				case AVATAR -> mediaDao.saveMedia(bufferedImage, maxResolutionAvatar);
+				case MENU -> mediaDao.saveMedia(bufferedImage, maxResolutionMenu);
+				default -> mediaDao.saveMedia(bufferedImage, maxResolutionLogo);
+			};
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			throw e;

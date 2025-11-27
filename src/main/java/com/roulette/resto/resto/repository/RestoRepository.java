@@ -146,11 +146,10 @@ public class RestoRepository {
 	}
 
 	public String savePicture(int restoId, MediaType mediaType, byte[] bytes) throws IOException {
-
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		try {
 			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
-			String uuid = mediaService.saveImage(newImage);
+			String uuid = mediaService.saveImage(newImage, mediaType);
 			restoDao.saveRestoMedia(restoId, uuid, mediaType);
 			return uuid;
 		} catch (IOException e) {

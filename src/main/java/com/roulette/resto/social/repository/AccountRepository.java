@@ -123,7 +123,7 @@ public class AccountRepository {
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(avatar);
 		try {
 			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
-			String uuid = mediaService.saveImage(newImage);
+			String uuid = mediaService.saveImage(newImage, mediaType);
 			accountDao.saveMedia(accountId, uuid, mediaType);
 			return uuid;
 		} catch (IOException e) {
@@ -140,7 +140,7 @@ public class AccountRepository {
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		try {
 			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
-			String uuid = mediaService.saveImage(newImage);
+			String uuid = mediaService.saveImage(newImage, MediaType.AVATAR);
 			accountDao.updateAvatar(accountId, uuid);
 			return uuid;
 		} catch (IOException e) {

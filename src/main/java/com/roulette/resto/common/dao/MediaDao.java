@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,18 +19,12 @@ public class MediaDao {
 	@Value("${app.storage.images.location}")
 	private String imageDir;
 
-	@Value("app.storage.images.maxResolution")
-	private int maxResolution;
 
-
-	public String saveMedia(BufferedImage bufferedImage, int scale) throws IOException {
-		try{
-			final int w = bufferedImage.getWidth();
-			final int h = bufferedImage.getHeight();
-			BufferedImage scaledImage = new BufferedImage((w * scale), (h * scale), BufferedImage.TYPE_INT_ARGB);
+	private String saveMedia(BufferedImage bufferedImage) throws IOException {
+		try {
 			String uuid = UUID.randomUUID().toString();
-			boolean saved = ImageIO.write(scaledImage, "png", new File(imageDir+"/"+uuid+".png"));
-			if(!saved) {
+			boolean saved = ImageIO.write(bufferedImage, "png", new File(imageDir + "/" + uuid + ".png"));
+			if (!saved) {
 				throw new IOException("Could not save image");
 			}
 			return uuid;
@@ -38,13 +33,30 @@ public class MediaDao {
 			throw e;
 		}
 	}
-	public String saveMedia(BufferedImage bufferedImage) throws IOException {
+	public String saveMedia(BufferedImage img, int maxResolution ) throws IOException {
+		try {
+			log.info("Saving media");
+			long resolution = (long) img.getWidth() * img.getHeight();
+			if (resolution > maxResolution) {
+				int newW = (int) (img.getWidth() * 0.25);
+				int newH = (int) (img.getHeight() * 0.25);
 
-		if(bufferedImage.getHeight() * bufferedImage.getWidth() >maxResolution){
-			return this.saveMedia(new BufferedImage((int) (bufferedImage.getWidth() * 0.25),
-					(int) (bufferedImage.getHeight() * 0.25),
-					BufferedImage.TYPE_INT_ARGB));
+				BufferedImage resized = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+				Graphics2D g = resized.createGraphics();
+
+				g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+						RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g.drawImage(img, 0, 0, newW, newH, null);
+				g.dispose();
+
+				return saveMedia(resized, maxResolution);
+			}
+			return saveMedia(img);
+		}catch (Exception e) {
+			log.error(e.getMessage());
+			throw e;
 		}
-		return this.saveMedia(bufferedImage);
+
 	}
+
 }

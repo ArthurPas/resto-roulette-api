@@ -3,6 +3,7 @@ package com.roulette.resto.social.controllers;
 import com.roulette.resto.administration.dto.out.AccountsInfos;
 import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.configuration.JwtService;
+import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.ErrorResponse;
 import com.roulette.resto.resto.entity.Restaurant;
@@ -29,10 +30,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
 import java.util.List;
+
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @Slf4j
 @RestController
@@ -125,6 +129,21 @@ public class AccountController {
 					HttpStatus.INTERNAL_SERVER_ERROR));
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
+	}
+
+	@PostMapping(path = "/add-avatar", consumes = MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Add user profile picture")
+	public ResponseEntity<?> addUserAvatar(Authentication authentication,
+											   @RequestParam() MultipartFile avatar) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		try {
+			MediaResource mediaResource = userService.addUserAvatar(accountId,avatar);
+			return new ResponseEntity<>(mediaResource, HttpStatus.CREATED);
+
+		}catch (APIError e) {
+				ErrorResponse errorResponse = new ErrorResponse(e);
+				return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+			}
 	}
 
 	@PatchMapping("password/new")

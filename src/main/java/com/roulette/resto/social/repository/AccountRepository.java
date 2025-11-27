@@ -1,6 +1,9 @@
 package com.roulette.resto.social.repository;
 
+import com.roulette.resto.common.entity.MediaResource;
+import com.roulette.resto.common.entity.MediaType;
 import com.roulette.resto.common.exception.APIError;
+import com.roulette.resto.common.service.MediaService;
 import com.roulette.resto.resto.dao.RestoDao;
 import com.roulette.resto.social.dao.AccountDao;
 import com.roulette.resto.social.dto.in.DeleteAccount;
@@ -14,7 +17,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import javax.imageio.ImageIO;
 import javax.security.auth.login.AccountNotFoundException;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -23,10 +30,11 @@ import java.util.List;
 public class AccountRepository {
 	final JdbcTemplate jdbcTemplate;
 	final AccountDao accountDao;
-
-	public AccountRepository(JdbcTemplate jdbcTemplate, AccountDao accountDao, RestoDao restoDao) {
+	final MediaService mediaService;
+	public AccountRepository(JdbcTemplate jdbcTemplate, AccountDao accountDao, RestoDao restoDao, MediaService mediaService) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.accountDao = accountDao;
+		this.mediaService = mediaService;
 	}
 
 	public int registerAccount(Account account) {
@@ -109,5 +117,35 @@ public class AccountRepository {
 
 	public void updateLoginDate(Account account) throws SQLException {
 		accountDao.updateLoginDate(account.getAccountId());
+	}
+
+	public String saveAvatar(int accountId, MediaType mediaType, byte[] avatar) throws IOException {
+		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(avatar);
+		try {
+			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
+			String uuid = mediaService.saveImage(newImage);
+			accountDao.saveMedia(accountId, uuid, mediaType);
+			return uuid;
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	public List<MediaResource> getAccountMedias(int id) {
+		return accountDao.getAccountPictures(id);
+	}
+
+	public String updateAvatar(int accountId, byte[] bytes) throws IOException {
+		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+		try {
+			BufferedImage newImage = ImageIO.read(byteArrayInputStream);
+			String uuid = mediaService.saveImage(newImage);
+			accountDao.updateAvatar(accountId, uuid);
+			return uuid;
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 }

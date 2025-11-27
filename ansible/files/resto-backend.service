@@ -3,10 +3,10 @@ Description=Resto Roulette Backend
 After=network.target
 
 [Service]
-User=andydck
-WorkingDirectory=/home/andydck/apps/resto
+User=root
+WorkingDirectory=/opt/resto-roulette/resto
 
-Environment="HOME=/home/andydck"
+Environment="HOME=/home/root"
 Environment="JAVA_OPTS=-Xms256m -Xmx512m"
 
 ExecStart=/usr/bin/doppler run -- java $JAVA_OPTS -jar resto-0.0.1-SNAPSHOT.jar

@@ -2,23 +2,23 @@
   hosts: app
   become: no
   vars:
-    app_dir: "/home/{{ ansible_user }}/apps/resto"
-    local_repo: "/Users/andydecock/Code/restoRoulette/backend/test_backend/tes_resto-roulette-api/resto-roulette-api"
+    app_dir: "/opt/resto-roulette"
+    local_repo: "/home/arthur-pascal/Documents/epitech/resto-roulette/resto-roulette-api"
   vars_files:
     - ../group_vars/app/vault.yml
 
   tasks:
     - name: Configure Doppler globally for user
       become: yes
-      become_user: andydck
+      become_user: root
       shell: |
-        mkdir -p /home/andydck/.doppler
+        mkdir -p /home/root/.doppler
         export DOPPLER_TOKEN="{{ doppler_service_token }}"
         export DOPPLER_PROJECT="{{ doppler_project }}"
         export DOPPLER_CONFIG="{{ doppler_config }}"
-        doppler configure set token "$DOPPLER_TOKEN" --scope /home/andydck
-        doppler configure set project "$DOPPLER_PROJECT" --scope /home/andydck
-        doppler configure set config "$DOPPLER_CONFIG" --scope /home/andydck
+        doppler configure set token "$DOPPLER_TOKEN" --scope /home/root
+        doppler configure set project "$DOPPLER_PROJECT" --scope /home/root
+        doppler configure set config "$DOPPLER_CONFIG" --scope /home/root
 
     - name: Build Spring Boot JAR locally
       delegate_to: localhost
@@ -39,19 +39,16 @@
     - name: Upload artifact
       copy:
         src: "{{ local_repo }}/build/libs/resto-backend.tar.gz"
-        dest: "{{ app_dir }}/resto-backend.tar.gz"
+        dest: "{{ app_dir }}/app.tar.gz"
         mode: "0644"
 
     - name: Extract new artifact
       shell: |
         cd "{{ app_dir }}"
-        tar -xzf resto-backend.tar.gz --overwrite
+        tar -xzf app.tar.gz --overwrite
       args:
         executable: /bin/bash
 
     - name: Restart Spring Boot backend
-      become: yes
-      systemd:
-        name: resto-backend.service
-        state: restarted
-        daemon_reload: yes
+      shell: |
+        sudo systemctl restart resto-roulette.service

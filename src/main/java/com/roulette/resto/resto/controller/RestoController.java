@@ -1,4 +1,4 @@
-package com.roulette.resto.resto.controllers;
+package com.roulette.resto.resto.controller;
 
 import com.roulette.resto.administration.services.AdminService;
 import com.roulette.resto.common.entity.MediaResource;
@@ -143,7 +143,6 @@ public class RestoController {
 										@RequestBody NewRestaurant newRestaurant) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			log.warn(newRestaurant.toString());
 			return new ResponseEntity<>(restoService.updateRestoInfoById(id,newRestaurant),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
@@ -246,9 +245,7 @@ public class RestoController {
 											@PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			String resourceId = restoService.addMenuPicture(id,menuPicture);
-			Map<String, String> response = new HashMap<>();
-			response.put("resourceId",resourceId);
+			MediaResource response = restoService.addMenuPicture(id,menuPicture);
 			return new ResponseEntity<>(response,HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
@@ -267,9 +264,7 @@ public class RestoController {
 											@PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			String resourceId = restoService.addLogoPicture(id, logo);
-			Map<String, String> response = new HashMap<>();
-			response.put("resourceId",resourceId);
+			MediaResource response =restoService.addLogoPicture(id, logo);
 			return new ResponseEntity<>(response,HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
@@ -288,9 +283,7 @@ public class RestoController {
 											@PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			String resourceId = restoService.addRestoPicture(id, photo);
-			Map<String, String> response = new HashMap<>();
-			response.put("resourceId",resourceId);
+			MediaResource response = restoService.addRestoPicture(id, photo);
 			return new ResponseEntity<>(response,HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);

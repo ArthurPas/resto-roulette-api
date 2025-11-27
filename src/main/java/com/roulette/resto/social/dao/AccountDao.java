@@ -1,5 +1,8 @@
 package com.roulette.resto.social.dao;
 
+import com.roulette.resto.common.entity.MediaResource;
+import com.roulette.resto.common.entity.MediaType;
+import com.roulette.resto.common.entity.mappers.MediaMapper;
 import com.roulette.resto.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.social.entity.Account;
 import com.roulette.resto.social.entity.UserInfo;
@@ -19,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 @Repository
@@ -251,5 +255,39 @@ public class AccountDao {
 			throw new SQLException(e);
 		}
 
+	}
+
+	public void saveMedia(int accountId, String uuid, MediaType mediaType) {
+		try {
+			String query = "INSERT INTO resto_roulette.user_user_medias (account_id,resource_id, media_type_id) " +
+					"VALUES (?, ?, ?)";
+			jdbcTemplate.update(query, accountId, uuid,mediaType.typeId);
+		} catch (DataAccessException e) {
+			log.error(e.getMessage());
+			throw new RuntimeException(e);
+		}
+	}
+
+	public List<MediaResource> getAccountPictures(int id) {
+		String query = "SELECT resource_id, media_type_id " +
+				" FROM resto_roulette.user_user_medias m " +
+				" WHERE m.account_id = ? ";
+		try {
+			return jdbcTemplate.query(query, new MediaMapper(), id);
+		}catch (EmptyResultDataAccessException e){
+			return Collections.emptyList();
+		}
+	}
+
+	public void updateAvatar(int accountId, String uuid) {
+		String query = "UPDATE resto_roulette.user_user_medias m " +
+				" SET m.resource_id = ? " +
+				" WHERE m.account_id = ? AND m.media_type_id = ?";
+		try {
+			jdbcTemplate.update(query, uuid, accountId, MediaType.AVATAR.typeId );
+		}catch (DataAccessException e){
+			log.error(e.getMessage());
+			throw new RuntimeException(e);
+		}
 	}
 }

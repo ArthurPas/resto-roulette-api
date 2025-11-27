@@ -18,7 +18,7 @@ public class MediaController {
 	@GetMapping("/{uuid}")
 	public ResponseEntity<Void> getSinglePicture(@PathVariable String uuid, Authentication auth) {
 		return ResponseEntity.ok()
-				.header("X-Accel-Redirect", "/protected_storage/" + uuid + ".jpg")
+				.header("X-Accel-Redirect", "/protected_storage/" + uuid)
 				// Optional: Help the browser cache this specific image
 				.cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic())
 				.build();

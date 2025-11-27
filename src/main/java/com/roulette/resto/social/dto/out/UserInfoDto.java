@@ -1,5 +1,6 @@
 package com.roulette.resto.social.dto.out;
 
+import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.social.entity.UserInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,5 +15,6 @@ public class UserInfoDto {
 	private String login;
 	private UserInfo userInfo;
 	private List<UserInteraction> userInteractions;
+	private List<MediaResource> medias;
 
 }

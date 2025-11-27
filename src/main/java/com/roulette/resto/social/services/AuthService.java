@@ -70,6 +70,7 @@ public class AuthService {
 			session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
 			userService.updateLoginDate(account);
 		} catch (AuthenticationException e) {
+			log.error(e.getMessage());
 			throw new APIError(70, HttpStatus.UNAUTHORIZED);
 		}
 		return true;

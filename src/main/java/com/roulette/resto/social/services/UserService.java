@@ -1,6 +1,8 @@
 package com.roulette.resto.social.services;
 
 import com.roulette.resto.administration.dto.out.AccountsInfos;
+import com.roulette.resto.common.entity.MediaResource;
+import com.roulette.resto.common.entity.MediaType;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.social.dao.AccountDao;
 import com.roulette.resto.social.dto.in.ChangePasswordDto;
@@ -21,8 +23,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
@@ -68,6 +72,8 @@ public class UserService {
 		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountId(id);
 		userInfoDto.setUserInteractions(interactions);
 		userInfoDto.setLogin(account.getLogin());
+		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
+		userInfoDto.setMedias(mediaResources);
 		return userInfoDto;
 	}
 
@@ -145,5 +151,40 @@ public class UserService {
 		}catch (Exception e) {
 			log.error(e.getMessage());
 		}
+	}
+
+	public MediaResource addUserAvatar(int accountId, MultipartFile avatar) throws APIError {
+
+		try{
+			if(hasUserAvatar(accountId)) {
+				return updateUserAvatar(accountId, avatar);
+			}
+			else {
+			String resourceId = accountRepository.saveAvatar(accountId, MediaType.AVATAR, avatar.getBytes());
+			return new MediaResource(resourceId, MediaType.AVATAR);
+			}
+		}catch (IOException e){
+			log.error(e.getMessage());
+			throw new APIError(95, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	public MediaResource updateUserAvatar(int accountId, MultipartFile avatar) throws APIError, IOException {
+		try {
+			String resourceId = accountRepository.updateAvatar(accountId, avatar.getBytes());
+			return new MediaResource(resourceId, MediaType.AVATAR);
+		}catch (IOException e) {
+			log.error(e.getMessage());
+			throw new APIError(95, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	private boolean hasUserAvatar(int accountId) {
+		List<MediaResource> mediaResources = accountRepository.getAccountMedias(accountId);
+		for(MediaResource mediaResource : mediaResources) {
+			if(mediaResource.getMediaType().equals(MediaType.AVATAR)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

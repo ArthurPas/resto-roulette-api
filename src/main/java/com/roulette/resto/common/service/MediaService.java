@@ -24,6 +24,14 @@ public class MediaService {
 		this.mediaDao = mediaDao;
 	}
 
+	public String saveRezidedImage(BufferedImage bufferedImage, int scale) throws IOException {
+		try{
+			return mediaDao.saveMedia(bufferedImage,scale);
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
 	public String saveImage(BufferedImage bufferedImage) throws IOException {
 		try{
 			return mediaDao.saveMedia(bufferedImage);

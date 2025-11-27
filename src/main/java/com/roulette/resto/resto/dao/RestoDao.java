@@ -132,7 +132,7 @@ public class RestoDao {
 					"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
 				".resto_id" +
 					" WHERE" +
-					" resto_roulette.resto.resto_id = ?";
+					" resto_roulette.resto.resto_id = ? AND resto.is_deleted = false";
 		try {
 			return jdbcTemplate.queryForObject(query, new RestoRowMapper(accountDao), restoId);
 		}catch (DataAccessException e){
@@ -203,8 +203,8 @@ public class RestoDao {
 				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
 				" ) AS aggregated_labels " +
 				" FROM resto_roulette.resto " +
-				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
-				".resto_id" +
+				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id " +
+				"WHERE is_deleted = false "+
 				" GROUP BY resto_roulette.resto.resto_id "+
 				"ORDER BY resto.resto_id " +
 				"LIMIT ? "+
@@ -401,5 +401,13 @@ public class RestoDao {
 			newFoodTypes.add(foodType);
 		}
 		this.linkFoodsType(newFoodTypes, i);
+	}
+
+	public void deleteResto(String id) throws RestoNotFoundException {
+		String query = "UPDATE resto SET resto.is_deleted = true WHERE resto_id = ?";
+		int row = jdbcTemplate.update(query, id);
+		if (row == 0) {
+			throw new RestoNotFoundException("resto not found cant delete");
+		}
 	}
 }

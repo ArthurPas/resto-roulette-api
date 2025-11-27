@@ -280,5 +280,24 @@ public class RestoController {
 
 		return ResponseEntity.ok(response);
 	}
+	@DeleteMapping(path = "/{id}")
+	@Operation(summary = "Delete restaurant")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> deleteRestaurant(Authentication authentication,@PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			restoService.deleteResto(id);
+			record okResponse(String successMessage) {}
+			return ResponseEntity.ok(new okResponse("resto deleted successfully"));
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+
+	}
 
 }

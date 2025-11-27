@@ -182,11 +182,20 @@ public class RestoService {
 			return restoRepository.saveMenuPicture(Integer.parseInt(restoId),menuPicture.getBytes());
 		}catch (IOException e){
 			log.error(e.getMessage());
-			throw new APIError();
+			throw new APIError(95, HttpStatus.INTERNAL_SERVER_ERROR );
 		}
 	}
 
 	public List<MenuPicture> getMenusByRestoId(String id) {
 		return restoRepository.getRestoPictureByRestoId(id);
+	}
+
+	public void deleteResto(String id) throws APIError {
+		try {
+			restoRepository.deleteResto(id);
+		}catch (RestoNotFoundException e){
+			log.error(e.getMessage());
+			throw new APIError(84, HttpStatus.NOT_FOUND);
+		}
 	}
 }

@@ -156,4 +156,13 @@ public class RestoRepository {
 		}
 		return result;
 	}
+
+	public void deleteResto(String id) throws RestoNotFoundException {
+		try {
+			restoDao.deleteResto(id);
+		}catch (RestoNotFoundException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
 }

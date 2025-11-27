@@ -80,7 +80,9 @@ public class RestoController {
 		}
 	}
 	@PostMapping("/{id}/new-business-hours")
-	@Operation(summary = "Update opening and closing hours for resto")
+	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
+			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
+			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
@@ -96,10 +98,8 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PostMapping("/{id}/update-business-hours")
-	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
-			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
-			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
+	@PatchMapping("/{id}/update-business-hours")
+	@Operation(summary = "update opening and closing hours for resto")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",

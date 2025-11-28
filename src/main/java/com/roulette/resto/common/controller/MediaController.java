@@ -16,11 +16,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MediaController {
 	@GetMapping("/{uuid}")
-	public ResponseEntity<Void> getSinglePicture(@PathVariable String uuid, Authentication auth) {
+	public ResponseEntity<Void> getSinglePicture(@PathVariable String uuid) {
+		log.info("Getting picture for {}", uuid);
 		return ResponseEntity.ok()
-				.header("X-Accel-Redirect", "/protected_storage/" + uuid)
-				// Optional: Help the browser cache this specific image
-				.cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic())
-				.build();
+		.header("X-Accel-Redirect", "/stockage_interne/" + uuid)
+		.cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic())
+		.build();
 	}
 }

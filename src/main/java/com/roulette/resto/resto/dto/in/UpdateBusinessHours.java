@@ -15,9 +15,9 @@ public class UpdateBusinessHours {
 	int weekDay;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm",timezone="Europe/Paris")
 	@Schema(example = "11:30")
-	Date openingHour;
+	String openingHour;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm",timezone="Europe/Paris")
 	@Schema(example = "13:30")
-	Date closingHour;
+	String closingHour;
 	boolean isLunch;
 }

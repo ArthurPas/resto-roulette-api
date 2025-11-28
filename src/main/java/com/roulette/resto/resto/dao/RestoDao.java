@@ -13,23 +13,19 @@ import com.roulette.resto.resto.entity.mapper.BusinessHoursRowMapper;
 import com.roulette.resto.resto.entity.mapper.RestoRowMapper;
 import com.roulette.resto.social.dao.AccountDao;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.imageio.ImageIO;
 import javax.security.auth.login.AccountNotFoundException;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import javax.sql.DataSource;
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -40,10 +36,12 @@ import java.util.*;
 public class RestoDao {
 	final JdbcTemplate jdbcTemplate;
 	final AccountDao accountDao;
+	final DataSource dataSource;
 
-	public RestoDao(JdbcTemplate jdbcTemplate, AccountDao accountDao) {
+	public RestoDao(JdbcTemplate jdbcTemplate, AccountDao accountDao, DataSource dataSource) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.accountDao = accountDao;
+		this.dataSource = dataSource;
 	}
 
 	public int createResto(Restaurant restaurant) {
@@ -225,16 +223,24 @@ public class RestoDao {
 	}
 		
 	@Transactional
-	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours, int restoId) {
+	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours, int restoId) throws DuplicateKeyException {
 		log.warn(businessHours.toString());
-		for (BusinessHour businessHour: businessHours.getBusinessHours()){
+		try {
+			for (BusinessHour businessHour: businessHours.getBusinessHours()){
 
-			LocalTime openHours = convertToLocalTime(businessHour.getOpeningHour());
-			LocalTime closingHours = convertToLocalTime(businessHour.getClosingHour());
-			String query = "INSERT INTO resto_roulette.business_hour (resto_id, week_day, opening_hour, closing_hour)" +
-					"VALUES (?, ?, ?, ?)";
-			jdbcTemplate.update(query, restoId, businessHour.getWeekDay(), openHours, closingHours);
+				LocalTime openHours = convertToLocalTime(businessHour.getOpeningHour());
+				LocalTime closingHours = convertToLocalTime(businessHour.getClosingHour());
+				String query = "INSERT INTO resto_roulette.business_hour (resto_id, week_day, opening_hour, closing_hour," +
+						" is_lunch" +
+						")" +
+						"VALUES (?, ?, ?, ?, ?)";
+				jdbcTemplate.update(query, restoId, businessHour.getWeekDay(), openHours, closingHours, businessHour.isLunch());
+			}
+		}catch (DuplicateKeyException e){
+			log.error(e.getMessage());
+			throw e;
 		}
+
 		return getBusinessHoursByRestoId(restoId);
 	}
 
@@ -246,19 +252,21 @@ public class RestoDao {
 		return hours.truncatedTo(ChronoUnit.MINUTES);
 	}
 
-	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours updateBusinessHours, int restoId) {
-		//If its lunch you only want the first opening hours, if its not you want the last opening hours
-		String filter = updateBusinessHours.isLunch() ? "DESC" :  "ASC";
+	public List<BusinessHour> changeBusinessHours(List<UpdateBusinessHours> updateBusinessHoursList, int restoId) throws SQLException {
 		String query = "UPDATE business_hour " +
 				" SET opening_hour = ?, closing_hour = ? " +
-				" WHERE week_day = ? AND resto_id = ? " +
-				" ORDER BY opening_hour "  + filter +
-				" LIMIT 1 ";
-		jdbcTemplate.update(query, 
-				updateBusinessHours.getOpeningHour(), updateBusinessHours.getClosingHour(), 
-				updateBusinessHours.getWeekDay(), restoId);
+				" WHERE week_day = ? AND resto_id = ? and is_lunch = ?";
+		PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query);
+		for (UpdateBusinessHours updateBusinessHours: updateBusinessHoursList) {
+			preparedStatement.setString(1,updateBusinessHours.getOpeningHour());
+			preparedStatement.setString(2,updateBusinessHours.getClosingHour());
+			preparedStatement.setInt(3, updateBusinessHours.getWeekDay());
+			preparedStatement.setInt(4, restoId);
+			preparedStatement.setBoolean(5, updateBusinessHours.isLunch());
+			preparedStatement.addBatch();
+		}
+		preparedStatement.executeBatch();
 		return getBusinessHoursByRestoId(restoId);
-
 	}
 
 	public Restaurant updateResto(int restoId, int ownerId , NewRestaurant newRestaurant) {
@@ -403,4 +411,5 @@ public class RestoDao {
 			throw new RestoNotFoundException("resto not found cant delete");
 		}
 	}
+
 }

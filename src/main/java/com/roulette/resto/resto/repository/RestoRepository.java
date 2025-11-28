@@ -2,7 +2,6 @@ package com.roulette.resto.resto.repository;
 
 import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.common.entity.MediaType;
-import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
 import com.roulette.resto.common.service.MediaService;
 import com.roulette.resto.resto.dao.RestoDao;
@@ -19,6 +18,7 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +89,7 @@ public class RestoRepository {
 		return restoDao.addBusinessHoursToResto(businessHours, Integer.parseInt(id));
 	}
 
-	public List<BusinessHour> changeBusinessHours(UpdateBusinessHours newBusinessHours, String id) {
+	public List<BusinessHour> changeBusinessHours(List<UpdateBusinessHours> newBusinessHours, String id) throws SQLException {
 		return restoDao.changeBusinessHours(newBusinessHours, Integer.parseInt(id));
 	}
 

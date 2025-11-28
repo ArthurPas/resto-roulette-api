@@ -106,7 +106,7 @@ public class RestoController {
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = BusinessHour.class)))})
 	public ResponseEntity<?> updateBusinessHours(Authentication authentication,
-												 @RequestBody UpdateBusinessHours newBusinessHours,
+												 @RequestBody List<UpdateBusinessHours> newBusinessHours,
 												 @PathVariable String id) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);

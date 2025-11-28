@@ -11,6 +11,7 @@ import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.repository.RestoRepository;
 import com.roulette.resto.social.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.security.auth.login.AccountNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,19 +122,21 @@ public class RestoService {
 		}
 	}
 
-	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours, String id) {
+	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours, String id) throws APIError {
 		try{
 			return restoRepository.addBusinessHoursToResto(businessHours, id);
-		}catch (Exception e){
-			throw e;
+		}catch (DuplicateKeyException e){
+			log.error(e.getMessage());
+			throw new APIError(800,HttpStatus.BAD_REQUEST);
 		}
 	}
 
-	public List<BusinessHour> updateBusinessHours(UpdateBusinessHours newBusinessHours, String id) {
+	public List<BusinessHour> updateBusinessHours(List<UpdateBusinessHours> newBusinessHours, String id) throws APIError {
 		try{
 			return restoRepository.changeBusinessHours(newBusinessHours, id);
-		}catch (Exception e){
-			throw e;
+		}catch (SQLException e){
+			log.error(e.getMessage());
+			throw new APIError(85, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}

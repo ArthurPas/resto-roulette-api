@@ -14,10 +14,11 @@ import java.util.Date;
 @AllArgsConstructor
 public class BusinessHour {
 	int weekDay;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm:ss",timezone="Europe/Paris")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm",timezone="Europe/Paris")
 	@Schema(example = "11:30")
 	Date openingHour;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm:ss",timezone="Europe/Paris")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm",timezone="Europe/Paris")
 	@Schema(example = "13:30")
 	Date closingHour;
+	boolean isLunch;
 }

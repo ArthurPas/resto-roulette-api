@@ -17,6 +17,7 @@ public class BusinessHoursRowMapper implements RowMapper<BusinessHour> {
 		businessHour.setOpeningHour(rs.getTime("opening_hour"));
 		businessHour.setClosingHour(rs.getTime("closing_hour"));
 		businessHour.setWeekDay(rs.getInt("week_day"));
+		businessHour.setLunch(rs.getBoolean("is_lunch"));
 		return businessHour;
 	}
 }

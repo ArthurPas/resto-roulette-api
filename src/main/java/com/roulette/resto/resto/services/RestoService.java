@@ -4,6 +4,7 @@ import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.common.entity.MediaType;
 import com.roulette.resto.common.exception.APIError;
 import com.roulette.resto.common.exception.RestoNotFoundException;
+import com.roulette.resto.resto.dao.RestoDao;
 import com.roulette.resto.resto.dto.in.*;
 import com.roulette.resto.resto.entity.BusinessHour;
 import com.roulette.resto.resto.entity.Label;
@@ -28,7 +29,7 @@ public class RestoService {
 	private final AccountRepository accountRepository;
 	private final RestoRepository restoRepository;
 
-	public RestoService(AccountRepository accountRepository, RestoRepository restoRepository) {
+	public RestoService(AccountRepository accountRepository, RestoRepository restoRepository, RestoDao restoDao) {
 		this.accountRepository = accountRepository;
 		this.restoRepository = restoRepository;
 	}
@@ -39,6 +40,7 @@ public class RestoService {
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setDisplayName(newRestaurant.getDisplayName());
+		restaurant.setLabels(newRestaurant.getLabels());
 		try{
 			//Remove from newRestaurant payload food type that not exists in db
 			Set<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
@@ -49,11 +51,9 @@ public class RestoService {
 		}
 		try {
 			int restoId = restoRepository.createResto(restaurant);
-			this.addLabelsResto(newRestaurant.getLabels(), restoId);
-			restaurant.setId(restoId);
-			return restaurant;
-		}catch (Exception e) {
-			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
+			return restoRepository.getRestoById(String.valueOf(restoId));
+		}catch (RestoNotFoundException e) {
+			throw new APIError(84, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -158,18 +158,18 @@ public class RestoService {
 		}
 	}
 
-	public Map<String, Set<String>> addLabelsResto(Set<String> labels, int id) throws APIError {
-		try {
-
-			Set<String> labelsNames = restoRepository.addLabelsToResto(labels, id);
-			Map<String, Set<String>> labelsResto = new HashMap<>();
-			labelsResto.put("labels", labelsNames);
-			return labelsResto;
-		}catch (RuntimeException e){
-			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
+//	public Map<String, Set<String>> addLabelsResto(Set<String> labels, int id) throws APIError {
+//		try {
+//
+//			Set<String> labelsNames = restoRepository.addLabelsToResto(labels, id);
+//			Map<String, Set<String>> labelsResto = new HashMap<>();
+//			labelsResto.put("labels", labelsNames);
+//			return labelsResto;
+//		}catch (RuntimeException e){
+//			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//
+//	}
 
 	public Set<String> getLabels() {
 		return restoRepository.getLabels();

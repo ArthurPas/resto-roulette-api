@@ -33,6 +33,7 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setFoodTypes(aggregatedToSet(aggregatedTypes));
 		String aggregatedLabels = rs.getString("aggregated_labels");
 		restaurant.setLabels(aggregatedToSet(aggregatedLabels));
+		restaurant.setCreationDate(rs.getDate("created_at"));
 		log.warn(restaurant.toString());
 		return restaurant;
 	}

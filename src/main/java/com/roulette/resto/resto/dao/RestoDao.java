@@ -63,10 +63,11 @@ public class RestoDao {
 			}, generatedKeyHolder);
 			int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
 			this.createRestoInfos(restaurant, restoId);
-			log.warn(restaurant.getFoodTypes().toString());
-			this.linkFoodsType(restaurant.getFoodTypes(), restoId);
+			this.linkFoodsType(restoId, restaurant.getFoodTypes());
+			this.addLabelsToResto(restoId, restaurant.getLabels());
 			return restoId;
 		} catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
 			throw e;
 		}
 		} catch (AccountNotFoundException e) {
@@ -74,7 +75,7 @@ public class RestoDao {
 		}
 	}
 
-	private void linkFoodsType(Set<String> foodTypes, int restoId) throws DuplicateKeyException {
+	private void linkFoodsType( int restoId,Set<String> foodTypes) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		log.warn(foodTypes.toString());
 		for (String foodType: foodTypes) {
@@ -336,7 +337,8 @@ public class RestoDao {
 				jdbcTemplate.update(query, restoId, label);
 			}
 		}catch (Exception e){
-			throw new RuntimeException("Label already exists");
+			log.error(e.getMessage());
+			throw new RuntimeException("Error while adding labels to resto");
 		}
 		Set<String> restoLabels = getLabelByRestoId(restoId);
 		log.info(restoLabels.toString());
@@ -442,7 +444,7 @@ public class RestoDao {
 		Set<String> oldFoodType = computeToDelete(originalLabels,foodTypeToAdd);
 		Set<String> newFoodType = computeToAdd(originalLabels,foodTypeToAdd);
 		removeRestoFoodTypes(restoId, oldFoodType);
-		this.linkFoodsType(newFoodType,restoId);
+		this.linkFoodsType(restoId, newFoodType);
 	}
 
 	private void removeRestoFoodTypes(int restoId, Set<String> removeFoodTypes) throws SQLException {

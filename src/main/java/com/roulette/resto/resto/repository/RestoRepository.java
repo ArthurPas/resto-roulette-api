@@ -20,7 +20,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @Slf4j
@@ -63,7 +65,7 @@ public class RestoRepository {
 		restoDao.createFoodType(foodType);
 	}
 
-	public List<String> getFoodTypes() {
+	public Set<String> getFoodTypes() {
 		return restoDao.getFoodTypes();
 	}
 
@@ -93,9 +95,11 @@ public class RestoRepository {
 		return restoDao.changeBusinessHours(newBusinessHours, Integer.parseInt(id));
 	}
 
-	public Restaurant updateRestoById(String id, NewRestaurant newRestaurant) throws AccountNotFoundException, RestoNotFoundException {
+	public Restaurant updateRestoById(String id, NewRestaurant newRestaurant) throws AccountNotFoundException, RestoNotFoundException, SQLException {
 		int ownerId = accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()).getAccountId();
-		restoDao.addNewFootypes(Integer.parseInt(id),newRestaurant.getFoodTypes());
+
+		restoDao.updatedRestoFoodTypes(Integer.parseInt(id),newRestaurant.getFoodTypes());
+		restoDao.updateLabelsResto(Integer.parseInt(id), newRestaurant.getLabels());
 		return restoDao.updateResto(Integer.parseInt(id),ownerId, newRestaurant);
 	}
 
@@ -106,29 +110,19 @@ public class RestoRepository {
 		return restoDao.newLabel(label.getLabelName());
 	}
 
-	public List<String> addLabelsToResto(AddLabels labels, String id) {
-		List<String> labelsToAdd = getOnlyExistingLabels(labels.getLabels());
+	public Set<String> addLabelsToResto(Set<String> labels, int id) {
+		Set<String> labelsToAdd = getOnlyExistingLabels(labels);
 		log.warn("Labels to add "+labelsToAdd);
 		try {
-			return restoDao.addLabelsToResto(Integer.parseInt(id),labelsToAdd);
+			return new HashSet<>(restoDao.addLabelsToResto(id,labelsToAdd));
 		}catch (RuntimeException e) {
 			log.error(e.getMessage());
 			throw  e;
 		}
 	}
-	private List<String> getOnlyExistingLabels(List<String> labels){
-		List<String> result = new ArrayList<>();
-		List<String> existingLabels = restoDao.getAllLabels();
-		for (String label : labels) {
-			if (existingLabels.contains(label)) {
-				result.add(label);
-			}
-		}
-		return result;
-	}
-	private List<String> getOnlyExistingFoodType(List<String> labels){
-		List<String> result = new ArrayList<>();
-		List<String> existingLabels = restoDao.getAllLabels();
+	private Set<String> getOnlyExistingLabels(Set<String> labels){
+		Set<String> result = new HashSet<>();
+		Set<String> existingLabels = restoDao.getAllLabels();
 		for (String label : labels) {
 			if (existingLabels.contains(label)) {
 				result.add(label);
@@ -137,7 +131,7 @@ public class RestoRepository {
 		return result;
 	}
 
-	public List<String> getLabels() {
+	public Set<String> getLabels() {
 		return restoDao.getAllLabels();
 	}
 

@@ -3,15 +3,15 @@ package com.roulette.resto.resto.dto.in;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class NewRestaurant {
 	String displayName;
 	String name;
 	String type;
-	List<String> foodTypes;
+	Set<String> foodTypes;
+	Set<String> labels;
 	String address;
-	Float longitude;
-	Float latitude;
 	String loginOwner;
 }

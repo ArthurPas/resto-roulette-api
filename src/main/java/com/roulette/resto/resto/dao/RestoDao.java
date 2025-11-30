@@ -30,6 +30,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 @Slf4j
@@ -72,7 +74,7 @@ public class RestoDao {
 		}
 	}
 
-	private void linkFoodsType(List<String> foodTypes, int restoId) throws DuplicateKeyException {
+	private void linkFoodsType(Set<String> foodTypes, int restoId) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		log.warn(foodTypes.toString());
 		for (String foodType: foodTypes) {
@@ -152,21 +154,22 @@ public class RestoDao {
 		}
 	}
 
-	public List<String> getFoodTypes() {
+	public Set<String> getFoodTypes() {
 		String query = "SELECT food_type FROM resto_type";
 		try {
-			return jdbcTemplate.queryForList(query, String.class);
+			return new HashSet<>(jdbcTemplate.queryForList(query, String.class));
 		}catch (NullPointerException e){
 			log.error(e.getMessage());
 			throw e;
 		}
 	}
-	public List<String> getFoodTypesByRestoId(int restoId) {
+	public Set<String> getFoodTypesByRestoId(int restoId) {
 		String query = "SELECT food_type FROM resto_type " +
 				" INNER JOIN resto_roulette.resto_resto_types rrt on resto_type.id = rrt.type_id" +
 				" WHERE rrt.resto_id = ?";
 		try {
-			return jdbcTemplate.queryForList(query, String.class, restoId);
+			List<String> list = jdbcTemplate.queryForList(query, String.class, restoId);
+			return new HashSet<>(list);
 		}catch (NullPointerException e){
 			log.error(e.getMessage());
 			throw e;
@@ -270,11 +273,10 @@ public class RestoDao {
 	}
 
 	public Restaurant updateResto(int restoId, int ownerId , NewRestaurant newRestaurant) {
-		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ?, lon = ?,  lat = ? WHERE resto_id = ?";
+		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?";
 		String queryResto = "UPDATE resto SET display_name = ?, resto.owner_id = ? WHERE resto_id = ?";
 		try {
-			jdbcTemplate.update(queryRestoInfo,newRestaurant.getName(),newRestaurant.getAddress(), newRestaurant.getLongitude(),
-					newRestaurant.getLatitude(), restoId);
+			jdbcTemplate.update(queryRestoInfo,newRestaurant.getName(),newRestaurant.getAddress(), restoId);
 			jdbcTemplate.update(queryResto,newRestaurant.getDisplayName(), ownerId,
 					restoId);
 			return this.getRestoById(restoId);
@@ -305,28 +307,28 @@ public class RestoDao {
 		}
 	}
 
-	public List<String> getAllLabels() {
+	public Set<String> getAllLabels() {
 		String query = "SELECT label_name FROM  resto_label";
 		try {
-			return jdbcTemplate.queryForList(query, String.class);
+			return new HashSet<>(jdbcTemplate.queryForList(query, String.class));
 		}catch (EmptyResultDataAccessException e){
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 	}
 	
-	public List<String> getLabelByRestoId(int restoId) {
+	public Set<String> getLabelByRestoId(int restoId) {
 		String query = "SELECT label_name FROM resto_label " +
 				"JOIN resto_roulette.resto_resto_labels ON resto_label.label_id = resto_resto_labels.label_id " +
 				"JOIN resto_roulette.resto r on resto_resto_labels.resto_id = r.resto_id "+
 				"WHERE r.resto_id = ?";
 		try {
-			return jdbcTemplate.queryForList(query, String.class, restoId);
+			return new HashSet<>(jdbcTemplate.queryForList(query, String.class, restoId));
 		}catch (EmptyResultDataAccessException e){
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 	}
 
-	public List<String> addLabelsToResto(int restoId, List<String> labels) {
+	public Set<String> addLabelsToResto(int restoId, Set<String> labels) {
 		try {
 			for (String label: labels){
 				String query = "INSERT INTO resto_resto_labels (resto_id,label_id) " +
@@ -336,7 +338,7 @@ public class RestoDao {
 		}catch (Exception e){
 			throw new RuntimeException("Label already exists");
 		}
-		List<String> restoLabels = getLabelByRestoId(restoId);
+		Set<String> restoLabels = getLabelByRestoId(restoId);
 		log.info(restoLabels.toString());
 		return labels;
 	}
@@ -392,24 +394,69 @@ public class RestoDao {
 		}
 	}
 
-	public void addNewFootypes(int i, List<String> foodTypes)  {
-		List<String> existingFoodType = getFoodTypesByRestoId(i);
-		List<String> newFoodTypes = new ArrayList<>();
-		for (String foodType : foodTypes) {
-			if (existingFoodType.contains(foodType)) {
-				continue;
-			}
-			newFoodTypes.add(foodType);
-		}
-		this.linkFoodsType(newFoodTypes, i);
-	}
-
 	public void deleteResto(String id) throws RestoNotFoundException {
 		String query = "UPDATE resto SET resto.is_deleted = true WHERE resto_id = ?";
 		int row = jdbcTemplate.update(query, id);
 		if (row == 0) {
 			throw new RestoNotFoundException("resto not found cant delete");
 		}
+	}
+
+	public void updateLabelsResto(int restoId, Set<String> updateLabels) throws SQLException {
+		Set<String> originalLabels = getLabelByRestoId(restoId);
+		Set<String> labelsToDelete = computeToDelete(originalLabels,updateLabels);
+		Set<String> labelsToAdd = computeToAdd(originalLabels,updateLabels);
+		removeLabelFromResto(restoId, labelsToDelete);
+		this.addLabelsToResto(restoId, labelsToAdd);
+	}
+
+	private void removeLabelFromResto(int restoId, Set<String> labelsToDelete) throws SQLException {
+		String query = "DELETE t FROM resto_resto_labels t" +
+				" JOIN resto_label rt ON rt.label_id = t.label_id " +
+				" WHERE rt.label_name = ?" +
+				" AND t.resto_id = ?";
+		PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query);
+		for (String label : labelsToDelete) {
+			preparedStatement.setString(1, label);
+			preparedStatement.setInt(2, restoId);
+			preparedStatement.addBatch();
+		}
+		preparedStatement.executeBatch();
+	}
+
+	private Set<String> computeToDelete(Set<String> originalSet, Set<String> newValuesSet) {
+		return originalSet.stream()
+				.filter(e -> !newValuesSet.contains(e))
+				.collect(Collectors.toSet());
+	}
+
+	private Set<String> computeToAdd(Set<String> originalSet, Set<String> newValuesSet) {
+		return newValuesSet.stream()
+				.filter(e -> !originalSet.contains(e))
+				.collect(Collectors.toSet());
+	}
+
+
+	public void updatedRestoFoodTypes(int restoId, Set<String> foodTypeToAdd) throws SQLException {
+		Set<String> originalLabels = getLabelByRestoId(restoId);
+		Set<String> oldFoodType = computeToDelete(originalLabels,foodTypeToAdd);
+		Set<String> newFoodType = computeToAdd(originalLabels,foodTypeToAdd);
+		removeRestoFoodTypes(restoId, oldFoodType);
+		this.linkFoodsType(newFoodType,restoId);
+	}
+
+	private void removeRestoFoodTypes(int restoId, Set<String> removeFoodTypes) throws SQLException {
+		String query = "DELETE t FROM resto_resto_types t" +
+				" JOIN resto_type rt ON rt.id = t.type_id " +
+				" WHERE rt.food_type = ?" +
+				" AND t.resto_id = ?";
+		PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query);
+		for (String foodType : removeFoodTypes) {
+			preparedStatement.setString(1, foodType);
+			preparedStatement.setInt(2, restoId);
+			preparedStatement.addBatch();
+		}
+		preparedStatement.executeBatch();
 	}
 
 }

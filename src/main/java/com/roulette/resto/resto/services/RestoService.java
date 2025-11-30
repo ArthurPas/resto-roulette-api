@@ -20,10 +20,7 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -39,15 +36,12 @@ public class RestoService {
 	public Restaurant createResto(NewRestaurant newRestaurant) throws APIError {
 		Restaurant restaurant = new Restaurant();
 		restaurant.setAddress(newRestaurant.getAddress());
-		restaurant.setLatitude(BigDecimal.valueOf(newRestaurant.getLatitude()));
-		restaurant.setLongitude(BigDecimal.valueOf(newRestaurant.getLongitude()));
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setName(newRestaurant.getName());
 		restaurant.setDisplayName(newRestaurant.getDisplayName());
-
 		try{
 			//Remove from newRestaurant payload food type that not exists in db
-			List<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
+			Set<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
 			restaurant.setFoodTypes(existingFoodtype);
 			restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
 		}catch (AccountNotFoundException e) {
@@ -55,6 +49,7 @@ public class RestoService {
 		}
 		try {
 			int restoId = restoRepository.createResto(restaurant);
+			this.addLabelsResto(newRestaurant.getLabels(), restoId);
 			restaurant.setId(restoId);
 			return restaurant;
 		}catch (Exception e) {
@@ -74,7 +69,7 @@ public class RestoService {
 		}
 	}
 
-	public List<String> foodTypeList() throws APIError {
+	public Set<String> foodTypeList() throws APIError {
 		try {
 			return restoRepository.getFoodTypes();
 		}catch (Exception e){
@@ -86,9 +81,9 @@ public class RestoService {
 		return !restoRepository.getFoodTypeByName(foodType.toUpperCase().trim()).isEmpty();
 	}
 
-	public List<String> existingFoodTypesList(List<String> foodTypes) {
-		List<String> validFootType = restoRepository.getFoodTypes();
-		List<String> newRestofoodType = new ArrayList<>();
+	public Set<String> existingFoodTypesList(Set<String> foodTypes) {
+		Set<String> validFootType = restoRepository.getFoodTypes();
+		Set<String> newRestofoodType = new HashSet<>();
 		foodTypes.forEach(foodType -> {if (validFootType.contains(foodType)) {newRestofoodType.add(foodType);}});
 		return newRestofoodType;
 	}
@@ -143,13 +138,15 @@ public class RestoService {
 
 	public Restaurant updateRestoInfoById(String id, NewRestaurant newRestaurant) throws APIError {
 		try {
-			List<String> existingFoodTypesList = existingFoodTypesList(newRestaurant.getFoodTypes());
+			Set<String> existingFoodTypesList = existingFoodTypesList(newRestaurant.getFoodTypes());
 			newRestaurant.setFoodTypes(existingFoodTypesList);
 			return restoRepository.updateRestoById(id, newRestaurant);
 		} catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		} catch (RestoNotFoundException e) {
 			throw new APIError(84, HttpStatus.NOT_FOUND);
+		} catch (SQLException e) {
+			throw new APIError(85, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -161,11 +158,11 @@ public class RestoService {
 		}
 	}
 
-	public Map<String, List<String>> addLabelsResto(AddLabels labels, String id) throws APIError {
+	public Map<String, Set<String>> addLabelsResto(Set<String> labels, int id) throws APIError {
 		try {
 
-			List<String> labelsNames = restoRepository.addLabelsToResto(labels, id);
-			Map<String, List<String>> labelsResto = new HashMap<>();
+			Set<String> labelsNames = restoRepository.addLabelsToResto(labels, id);
+			Map<String, Set<String>> labelsResto = new HashMap<>();
 			labelsResto.put("labels", labelsNames);
 			return labelsResto;
 		}catch (RuntimeException e){
@@ -174,7 +171,7 @@ public class RestoService {
 
 	}
 
-	public List<String> getLabels() {
+	public Set<String> getLabels() {
 		return restoRepository.getLabels();
 	}
 

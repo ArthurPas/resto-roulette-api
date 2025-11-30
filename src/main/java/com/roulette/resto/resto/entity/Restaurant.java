@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -17,8 +18,8 @@ public class Restaurant {
 	int id;
 	String displayName;
 	String name;
-	List<String> foodTypes;
-	List<String> labels;
+	Set<String> foodTypes;
+	Set<String> labels;
 	String address;
 	BigDecimal longitude;
 	BigDecimal latitude;

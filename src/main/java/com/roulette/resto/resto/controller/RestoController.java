@@ -149,39 +149,6 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PostMapping("/labels/admin/new-label")
-	@Operation(summary = "Add a label in database")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-					description = "Label",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = Restaurant.class)))})
-	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody Label label ) {
-		try {
-			adminService.rightCheckIsAdmin(authentication);
-			return new ResponseEntity<>(restoService.addNewLabel(label),HttpStatus.OK);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
-	}
-	@PostMapping("/{id}/labels/new-label")
-	@Operation(summary = "Add a labels for restaurant")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-					description = "Labels",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = List.class)))})
-	public ResponseEntity<?> newLabel(Authentication authentication, @RequestBody AddLabels labels,
-									  @PathVariable String id) {
-		try {
-			adminService.rightCheckIsAdmin(authentication);
-			return new ResponseEntity<>(restoService.addLabelsResto(labels, id),HttpStatus.OK);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
-	}
 	@GetMapping("/labels")
 	@Operation(summary = "Get existing labels")
 	@ApiResponses(value = {

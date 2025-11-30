@@ -8,8 +8,9 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
 @Component
 @Slf4j
 public class RestoRowMapper implements RowMapper<Restaurant> {
@@ -29,15 +30,15 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setLatitude(rs.getBigDecimal("lat"));
 		restaurant.setAddress(rs.getString("address"));
 		String aggregatedTypes = rs.getString("aggregated_food_types");
-		restaurant.setFoodTypes(aggregatedToList(aggregatedTypes));
+		restaurant.setFoodTypes(aggregatedToSet(aggregatedTypes));
 		String aggregatedLabels = rs.getString("aggregated_labels");
-		restaurant.setLabels(aggregatedToList(aggregatedLabels));
+		restaurant.setLabels(aggregatedToSet(aggregatedLabels));
 		log.warn(restaurant.toString());
 		return restaurant;
 	}
 
-	private List<String> aggregatedToList(String aggregatedResult) {
-		List<String> result = new ArrayList<>();
+	private Set<String> aggregatedToSet(String aggregatedResult) {
+		Set<String> result = new HashSet<>();
 		if (aggregatedResult != null && !aggregatedResult.isEmpty()) {
 			String[] aggregatedResultAsArr = aggregatedResult.split(",");
 			for (String resultStr : aggregatedResultAsArr) {

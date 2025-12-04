@@ -9,7 +9,6 @@ import java.util.Set;
 public class NewRestaurant {
 	String displayName;
 	String name;
-	String type;
 	Set<String> foodTypes;
 	Set<String> labels;
 	String address;

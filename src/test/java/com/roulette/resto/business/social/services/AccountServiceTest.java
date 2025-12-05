@@ -1,13 +1,13 @@
 package com.roulette.resto.business.social.services;
 
-import com.roulette.resto.common.exception.APIError;
-import com.roulette.resto.social.dto.in.RegisterDto;
-import com.roulette.resto.social.dto.in.VerifyEmailDto;
-import com.roulette.resto.social.entity.Account;
-import com.roulette.resto.social.entity.UserInfo;
-import com.roulette.resto.social.repository.AccountRepository;
-import com.roulette.resto.common.service.MailService;
-import com.roulette.resto.social.services.AccountService;
+import com.roulette.resto.exception.APIError;
+import com.roulette.resto.data.social.dto.in.RegisterDto;
+import com.roulette.resto.data.social.dto.in.VerifyEmailDto;
+import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.UserInfo;
+import com.roulette.resto.repository.social.AccountRepository;
+import com.roulette.resto.service.common.MailService;
+import com.roulette.resto.service.social.AccountService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

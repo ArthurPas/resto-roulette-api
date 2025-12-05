@@ -1,0 +1,27 @@
+package com.roulette.resto.data.social.mapper;
+
+import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.UserInfo;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class AccountUserRowMapper implements RowMapper<Account> {
+
+	@Override
+	public Account mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+		UserInfoRowMapper userInfoRowMapper = new UserInfoRowMapper();
+		Account account = new Account();
+		account.setAccountId(rs.getInt("account_id"));
+		account.setLogin(rs.getString("login"));
+		account.setPassword(rs.getString("password"));
+		account.setVerificationToken(rs.getString("verification_token"));
+		account.setCreatedAt(rs.getTimestamp("created_at"));
+		account.setDeleted(rs.getBoolean("is_deleted"));
+		UserInfo userInfo = userInfoRowMapper.mapRow(rs, rowNum);
+		account.setUserInfo(userInfo);
+		return account;
+	}
+}

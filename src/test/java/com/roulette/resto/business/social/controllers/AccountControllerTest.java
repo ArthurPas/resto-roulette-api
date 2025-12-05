@@ -1,15 +1,15 @@
 package com.roulette.resto.business.social.controllers;
 
-import com.roulette.resto.common.configuration.JwtService;
-import com.roulette.resto.social.controllers.AccountController;
-import com.roulette.resto.social.dto.in.ChangePasswordDto;
-import com.roulette.resto.social.dto.in.UpdateUserInfo;
-import com.roulette.resto.social.dto.out.AuthResponse;
-import com.roulette.resto.social.dto.out.UserInfoDto;
-import com.roulette.resto.social.entity.Account;
-import com.roulette.resto.social.entity.UserInfo;
-import com.roulette.resto.social.services.AccountService;
-import com.roulette.resto.social.services.UserService;
+import com.roulette.resto.configuration.JwtService;
+import com.roulette.resto.controller.social.AccountController;
+import com.roulette.resto.data.social.dto.in.ChangePasswordDto;
+import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
+import com.roulette.resto.data.social.dto.out.AuthResponse;
+import com.roulette.resto.data.social.dto.out.UserInfoDto;
+import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.UserInfo;
+import com.roulette.resto.service.social.AccountService;
+import com.roulette.resto.service.social.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

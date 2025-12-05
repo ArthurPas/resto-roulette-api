@@ -44,7 +44,7 @@ public class UserService {
 
 	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository,
 					   AccountService accountService, AuthenticationManager authenticationManager,
-					   PasswordEncoder passwordEncoder,AccountDao accountDao) {
+					   PasswordEncoder passwordEncoder) {
 		this.accountRepository = accountRepository;
 		this.interactionRepository = interactionRepository;
 		this.accountService = accountService;

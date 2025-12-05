@@ -19,15 +19,10 @@ import java.util.List;
 public class KpiService {
 
 	private final KpiRepository kpiRepository;
-
-	private final JwtService jwtService;
-	private final AccountService accountService;
 	private final KpiDao kpiDao;
 
-	public KpiService(KpiRepository kpiRepository, JwtService jwtService, AccountService accountService, KpiDao kpiDao) {
+	public KpiService(KpiRepository kpiRepository, KpiDao kpiDao) {
 		this.kpiRepository = kpiRepository;
-		this.jwtService = jwtService;
-		this.accountService = accountService;
 		this.kpiDao = kpiDao;
 	}
 

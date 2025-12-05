@@ -34,8 +34,8 @@ public class RestoRepository {
 	private final AccountRepository accountRepository;
 	private final MediaService mediaService;
 
-	public RestoRepository(RestoDao restoDao, RestoDao restoDao1, AccountRepository accountRepository, MediaService mediaService) {
-		this.restoDao = restoDao1;
+	public RestoRepository(RestoDao restoDao, AccountRepository accountRepository, MediaService mediaService) {
+		this.restoDao = restoDao;
 		this.accountRepository = accountRepository;
 		this.mediaService = mediaService;
 	}
@@ -107,19 +107,8 @@ public class RestoRepository {
 	public String newLabel(Label label) {
 		if(restoDao.labelExist(label.getLabelName())>0){
 			throw new RuntimeException("Label already exists");
-		};
-		return restoDao.newLabel(label.getLabelName());
-	}
-
-	public Set<String> addLabelsToResto(Set<String> labels, int id) {
-		Set<String> labelsToAdd = getOnlyExistingLabels(labels);
-		log.warn("Labels to add "+labelsToAdd);
-		try {
-			return new HashSet<>(restoDao.addLabelsToResto(id,labelsToAdd));
-		}catch (RuntimeException e) {
-			log.error(e.getMessage());
-			throw  e;
 		}
+		return restoDao.newLabel(label.getLabelName());
 	}
 	private Set<String> getOnlyExistingLabels(Set<String> labels){
 		Set<String> result = new HashSet<>();

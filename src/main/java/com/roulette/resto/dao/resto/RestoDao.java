@@ -164,18 +164,6 @@ public class RestoDao {
 			throw e;
 		}
 	}
-	public Set<String> getFoodTypesByRestoId(int restoId) {
-		String query = "SELECT food_type FROM resto_type " +
-				" INNER JOIN resto_roulette.resto_resto_types rrt on resto_type.id = rrt.type_id" +
-				" WHERE rrt.resto_id = ?";
-		try {
-			List<String> list = jdbcTemplate.queryForList(query, String.class, restoId);
-			return new HashSet<>(list);
-		}catch (NullPointerException e){
-			log.error(e.getMessage());
-			throw e;
-		}
-	}
 
 	public List<String> getFoodType(String foodType) {
 		String query = "SELECT food_type FROM resto_type where food_type like ?";

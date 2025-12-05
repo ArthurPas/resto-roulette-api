@@ -31,7 +31,7 @@ public class AccountRepository {
 	final JdbcTemplate jdbcTemplate;
 	final AccountDao accountDao;
 	final MediaService mediaService;
-	public AccountRepository(JdbcTemplate jdbcTemplate, AccountDao accountDao, RestoDao restoDao, MediaService mediaService) {
+	public AccountRepository(JdbcTemplate jdbcTemplate, AccountDao accountDao,MediaService mediaService) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.accountDao = accountDao;
 		this.mediaService = mediaService;
@@ -39,10 +39,6 @@ public class AccountRepository {
 
 	public int registerAccount(Account account) {
 		return accountDao.registerAccount(account);
-	}
-
-	public int registerUserInfo(Account account) {
-		return accountDao.registerUserInfo(account);
 	}
 
 	public Account getAccountByLogin(String login) throws AccountNotFoundException {
@@ -90,7 +86,7 @@ public class AccountRepository {
 		return accountDao.getAll(nbResult,offset);
 	}
 	public void updateAccountRole(UpdateAccountInfo updateAccountInfo) throws AccountNotFoundException {
-		int accountId = accountDao.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();;
+		int accountId = accountDao.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();
 		accountDao.updateAccountRole(updateAccountInfo.getNewRole().roleId, accountId);
 	}
 

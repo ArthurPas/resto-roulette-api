@@ -34,12 +34,10 @@ import java.util.Set;
 public class RestoService {
 	private final AccountRepository accountRepository;
 	private final RestoRepository restoRepository;
-	private final AccountService accountService;
 
-	public RestoService(AccountRepository accountRepository, RestoRepository restoRepository, RestoDao restoDao, AccountService accountService) {
+	public RestoService(AccountRepository accountRepository, RestoRepository restoRepository) {
 		this.accountRepository = accountRepository;
 		this.restoRepository = restoRepository;
-		this.accountService = accountService;
 	}
 
 	public Restaurant createResto(NewRestaurant newRestaurant) throws APIError {
@@ -85,7 +83,7 @@ public class RestoService {
 		}
 	}
 
-	public boolean existByFoodType(String foodType) throws APIError {
+	public boolean existByFoodType(String foodType) {
 		return !restoRepository.getFoodTypeByName(foodType.toUpperCase().trim()).isEmpty();
 	}
 
@@ -158,26 +156,6 @@ public class RestoService {
 		}
 	}
 
-	public Label addNewLabel(Label label) throws APIError {
-		try {
-			return new Label(restoRepository.newLabel(label));
-		}catch (Exception e) {
-			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-//	public Map<String, Set<String>> addLabelsResto(Set<String> labels, int id) throws APIError {
-//		try {
-//
-//			Set<String> labelsNames = restoRepository.addLabelsToResto(labels, id);
-//			Map<String, Set<String>> labelsResto = new HashMap<>();
-//			labelsResto.put("labels", labelsNames);
-//			return labelsResto;
-//		}catch (RuntimeException e){
-//			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
-//		}
-//
-//	}
 
 	public Set<String> getLabels() {
 		return restoRepository.getLabels();

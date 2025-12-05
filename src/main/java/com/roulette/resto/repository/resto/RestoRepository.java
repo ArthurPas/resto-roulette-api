@@ -97,11 +97,14 @@ public class RestoRepository {
 	}
 
 	public Restaurant updateRestoById(String id, NewRestaurant newRestaurant) throws AccountNotFoundException, RestoNotFoundException, SQLException {
-		int ownerId = accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()).getAccountId();
 
 		restoDao.updatedRestoFoodTypes(Integer.parseInt(id),newRestaurant.getFoodTypes());
 		restoDao.updateLabelsResto(Integer.parseInt(id), newRestaurant.getLabels());
-		return restoDao.updateResto(Integer.parseInt(id),ownerId, newRestaurant);
+		if(newRestaurant.getLoginOwner()!=null) {
+			int ownerId = accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()).getAccountId();
+			return restoDao.updateResto(Integer.parseInt(id),ownerId, newRestaurant);
+		}
+		return restoDao.updateResto(Integer.parseInt(id), newRestaurant);
 	}
 
 	public String newLabel(Label label) {

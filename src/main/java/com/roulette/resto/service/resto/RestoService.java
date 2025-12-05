@@ -143,6 +143,9 @@ public class RestoService {
 	}
 
 	public Restaurant updateRestoInfoById(String id, NewRestaurant newRestaurant) throws APIError {
+		if(newRestaurant.getFoodTypes() == null || newRestaurant.getFoodTypes().isEmpty() || newRestaurant.getFoodTypes().contains(null)) {
+			throw new APIError(8000, HttpStatus.BAD_REQUEST);
+		}
 		try {
 			Set<String> existingFoodTypesList = existingFoodTypesList(newRestaurant.getFoodTypes());
 			newRestaurant.setFoodTypes(existingFoodTypesList);

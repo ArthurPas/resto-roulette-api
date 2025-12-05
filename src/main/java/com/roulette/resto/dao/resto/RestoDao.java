@@ -274,6 +274,19 @@ public class RestoDao {
 		}
 	}
 
+
+	public Restaurant updateResto(int restoId, NewRestaurant newRestaurant) {
+		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?";
+		String queryResto = "UPDATE resto SET display_name = ? WHERE resto_id = ?";
+		try {
+			jdbcTemplate.update(queryRestoInfo, newRestaurant.getName(), newRestaurant.getAddress(), restoId);
+			jdbcTemplate.update(queryResto, newRestaurant.getDisplayName(), restoId);
+			return this.getRestoById(restoId);
+		} catch (DataAccessException | RestoNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public String newLabel(String label) {
 		String query = "INSERT INTO resto_label (label_name) " +
 				"VALUES (?)";
@@ -318,6 +331,9 @@ public class RestoDao {
 	}
 
 	public Set<String> addLabelsToResto(int restoId, Set<String> labels) {
+		if(labels.isEmpty() || labels.contains(null)) {
+			return Collections.emptySet();
+		}
 		try {
 			for (String label: labels){
 				String query = "INSERT INTO resto_resto_labels (resto_id,label_id) " +
@@ -451,5 +467,4 @@ public class RestoDao {
 		}
 		preparedStatement.executeBatch();
 	}
-
 }

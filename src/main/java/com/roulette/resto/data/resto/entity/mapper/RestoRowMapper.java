@@ -23,9 +23,6 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setLongitude(rs.getBigDecimal("lon"));
 		restaurant.setLatitude(rs.getBigDecimal("lat"));
 		restaurant.setAddress(rs.getString("address"));
-		Account owner = new Account();
-		owner.setAccountId(rs.getInt("owner_id"));
-		restaurant.setOwner(owner);
 		String aggregatedTypes = rs.getString("aggregated_food_types");
 		restaurant.setFoodTypes(aggregatedToSet(aggregatedTypes));
 		String aggregatedLabels = rs.getString("aggregated_labels");

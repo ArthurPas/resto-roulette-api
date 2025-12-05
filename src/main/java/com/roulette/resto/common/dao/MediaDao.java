@@ -22,7 +22,7 @@ public class MediaDao {
 
 	private String saveMedia(BufferedImage bufferedImage) throws IOException {
 		try {
-			String uuid = UUID.randomUUID().toString();
+			String uuid = UUID.randomUUID().toString().replace("-", "");
 			boolean saved = ImageIO.write(bufferedImage, "png", new File(imageDir + "/" + uuid + ".png"));
 			if (!saved) {
 				throw new IOException("Could not save image");

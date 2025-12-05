@@ -179,18 +179,20 @@ public class RestoService {
 		return restoRepository.getRestoByOwner(accountId);
 	}
 
-	public MediaResource addMenuPicture(String restoId, MultipartFile menuPicture) throws APIError {
+	private MediaResource addMenuPicture(String restoId, MultipartFile menuPicture) throws APIError {
 		try{
 			String resourceId = restoRepository.savePicture(Integer.parseInt(restoId), MediaType.MENU,
 					menuPicture.getBytes());
+			log.warn("upload menu picture");
 			return new MediaResource(resourceId,MediaType.MENU);
 		}catch (IOException e){
 			log.error(e.getMessage());
 			throw new APIError(95, HttpStatus.INTERNAL_SERVER_ERROR );
 		}
 	}
-	public MediaResource addLogoPicture(String id, MultipartFile logo) throws APIError {
+	private MediaResource addLogoPicture(String id, MultipartFile logo) throws APIError {
 		try{
+			log.warn("upload resto logo");
 			String resourceId = restoRepository.savePicture(Integer.parseInt(id), MediaType.LOGO, logo.getBytes());
 			return new MediaResource(resourceId,MediaType.LOGO);
 		}catch (IOException e){
@@ -199,7 +201,8 @@ public class RestoService {
 		}
 	}
 
-	public MediaResource addRestoPicture(String id, MultipartFile photo) throws APIError {
+	private MediaResource addRestoPicture(String id, MultipartFile photo) throws APIError {
+		log.warn("upload resto picture");
 		try{
 			String resourceId = restoRepository.savePicture(Integer.parseInt(id), MediaType.RESTO, photo.getBytes());
 			return new MediaResource(resourceId,MediaType.RESTO);
@@ -222,4 +225,13 @@ public class RestoService {
 		}
 	}
 
+	public MediaResource addPicture(String id, MultipartFile menuPicture, String pictureType) throws APIError {
+		log.warn("upload picture type = {}", pictureType);
+		return switch (pictureType.toLowerCase().trim()) {
+			case "menu" -> addMenuPicture(id, menuPicture);
+			case "logo" -> addLogoPicture(id, menuPicture);
+			case "resto" -> addRestoPicture(id, menuPicture);
+			default -> addRestoPicture(id, menuPicture);
+		};
+	}
 }

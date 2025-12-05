@@ -96,7 +96,7 @@ public class AccountController {
 		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
-	@PatchMapping("info")
+	@PutMapping("info")
 	@Operation(summary = "Update user infos", description = "Update all users info " +
 			"send in the body all userinfo that changed or not")
 	@ApiResponses(value = {

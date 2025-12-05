@@ -132,7 +132,7 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@PatchMapping("/{id}")
+	@PutMapping("/{id}")
 	@Operation(summary = "Modify restaurant infos")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -200,57 +200,21 @@ public class RestoController {
 		}
 	}
 
-	@PostMapping(path = "/{id}/upload-menu-pictures", consumes = MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Add a new picture for the menu")
+	@PostMapping(path = "/{id}/upload-picture", consumes = MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Add a new picture for the menu", description = """
+			pictureType can be "menu","logo","resto" (which is any photo that the resto owner wants to display ...)
+			""")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "201",
 					description = "Success",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = Integer.class)))})
-	public ResponseEntity<?> addMenuPicture(Authentication authentication,
+	public ResponseEntity<?> addPicture(Authentication authentication,
 											@RequestParam() MultipartFile menuPicture,
-											@PathVariable String id) {
+											@PathVariable String id, @RequestParam String pictureType) {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
-			MediaResource response = restoService.addMenuPicture(id,menuPicture);
-			return new ResponseEntity<>(response,HttpStatus.CREATED);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
-	}
-	@PostMapping(path = "/{id}/upload-logo", consumes = MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Add a logo picture")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201",
-					description = "Success",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = Integer.class)))})
-	public ResponseEntity<?> addLogoPicture(Authentication authentication,
-											@RequestParam() MultipartFile logo,
-											@PathVariable String id) {
-		try {
-			adminService.rightCheckIsAdmin(authentication);
-			MediaResource response =restoService.addLogoPicture(id, logo);
-			return new ResponseEntity<>(response,HttpStatus.CREATED);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
-	}
-	@PostMapping(path = "/{id}/upload-photo", consumes = MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Add a restaurant photo (room, theme...)")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201",
-					description = "Success",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = Integer.class)))})
-	public ResponseEntity<?> addRestoPicture(Authentication authentication,
-											@RequestParam() MultipartFile photo,
-											@PathVariable String id) {
-		try {
-			adminService.rightCheckIsAdmin(authentication);
-			MediaResource response = restoService.addRestoPicture(id, photo);
+			MediaResource response = restoService.addPicture(id,menuPicture,pictureType);
 			return new ResponseEntity<>(response,HttpStatus.CREATED);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);

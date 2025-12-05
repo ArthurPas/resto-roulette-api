@@ -92,8 +92,15 @@ public class AccountController {
 	@Operation(summary = "Get restaurant(s) that user owns")
 	public ResponseEntity<?> getOwnedRestos(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<Restaurant> restaurants = restoService.getRestosByOwnerId(accountId);
-		return new ResponseEntity<>(restaurants, HttpStatus.OK);
+		try {
+
+			List<Restaurant> restaurants = restoService.getRestosByOwnerId(accountId);
+			return new ResponseEntity<>(restaurants, HttpStatus.OK);
+		}
+		catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
 	}
 
 	@PutMapping("info")

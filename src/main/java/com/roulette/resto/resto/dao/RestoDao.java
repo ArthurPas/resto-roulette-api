@@ -137,7 +137,7 @@ public class RestoDao {
 					" WHERE" +
 					" resto_roulette.resto.resto_id = ? AND resto.is_deleted = false";
 		try {
-			return jdbcTemplate.queryForObject(query, new RestoRowMapper(accountDao), restoId);
+			return jdbcTemplate.queryForObject(query, new RestoRowMapper(), restoId);
 		}catch (DataAccessException e){
 			log.warn(e.getMessage());
 			throw new RestoNotFoundException("Restaurant not found");
@@ -210,11 +210,11 @@ public class RestoDao {
 				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id " +
 				"WHERE is_deleted = false "+
 				" GROUP BY resto_roulette.resto.resto_id "+
-				"ORDER BY resto.resto_id " +
-				"LIMIT ? "+
-				"OFFSET ? ";
+				" ORDER BY resto.resto_id " +
+				" LIMIT ? "+
+				" OFFSET ? ";
 			try {
-				return jdbcTemplate.query(query, new RestoRowMapper(accountDao),  limit, offset);
+				return jdbcTemplate.query(query, new RestoRowMapper(),  limit, offset);
 			}catch (EmptyResultDataAccessException e){
 				log.warn(e.getMessage());
 				throw  new RestoNotFoundException("Resto not found");
@@ -369,8 +369,11 @@ public class RestoDao {
 				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
 				".resto_id" +
 				" WHERE" +
-				" resto_roulette.resto.owner_id = ?";
-		return jdbcTemplate.query(query, new RestoRowMapper(accountDao), accountId);
+				" resto_roulette.resto.owner_id = ? " +
+				" AND resto_roulette.resto.is_deleted = false";
+		List<Restaurant> restos = jdbcTemplate.query(query, new RestoRowMapper(), accountId);
+		log.warn(restos.toString());
+		return restos;
 	}
 
 	public void saveRestoMedia(int restoId, String uuid, MediaType type) {

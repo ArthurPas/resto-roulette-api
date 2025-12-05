@@ -2,6 +2,7 @@ package com.roulette.resto.resto.entity.mapper;
 
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.social.dao.AccountDao;
+import com.roulette.resto.social.entity.Account;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -14,21 +15,18 @@ import java.util.Set;
 @Component
 @Slf4j
 public class RestoRowMapper implements RowMapper<Restaurant> {
-	public final AccountDao accountDao;
-
-	public RestoRowMapper(AccountDao accountDao) {
-		this.accountDao = accountDao;
-	}
 	@Override
 	public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
 		Restaurant restaurant = new Restaurant();
 		restaurant.setId(rs.getInt("resto_id"));
 		restaurant.setName(rs.getString("name"));
 		restaurant.setDisplayName(rs.getString("display_name"));
-		restaurant.setOwner(accountDao.getAccountById(rs.getInt("owner_id")));
 		restaurant.setLongitude(rs.getBigDecimal("lon"));
 		restaurant.setLatitude(rs.getBigDecimal("lat"));
 		restaurant.setAddress(rs.getString("address"));
+		Account owner = new Account();
+		owner.setAccountId(rs.getInt("owner_id"));
+		restaurant.setOwner(owner);
 		String aggregatedTypes = rs.getString("aggregated_food_types");
 		restaurant.setFoodTypes(aggregatedToSet(aggregatedTypes));
 		String aggregatedLabels = rs.getString("aggregated_labels");

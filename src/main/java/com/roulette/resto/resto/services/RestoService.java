@@ -11,6 +11,7 @@ import com.roulette.resto.resto.entity.Label;
 import com.roulette.resto.resto.entity.Restaurant;
 import com.roulette.resto.resto.repository.RestoRepository;
 import com.roulette.resto.social.repository.AccountRepository;
+import com.roulette.resto.social.services.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -28,10 +29,12 @@ import java.util.*;
 public class RestoService {
 	private final AccountRepository accountRepository;
 	private final RestoRepository restoRepository;
+	private final AccountService accountService;
 
-	public RestoService(AccountRepository accountRepository, RestoRepository restoRepository, RestoDao restoDao) {
+	public RestoService(AccountRepository accountRepository, RestoRepository restoRepository, RestoDao restoDao, AccountService accountService) {
 		this.accountRepository = accountRepository;
 		this.restoRepository = restoRepository;
+		this.accountService = accountService;
 	}
 
 	public Restaurant createResto(NewRestaurant newRestaurant) throws APIError {
@@ -175,7 +178,7 @@ public class RestoService {
 		return restoRepository.getLabels();
 	}
 
-	public List<Restaurant> getRestosByOwnerId(int accountId) {
+	public List<Restaurant> getRestosByOwnerId(int accountId) throws APIError {
 		return restoRepository.getRestoByOwner(accountId);
 	}
 

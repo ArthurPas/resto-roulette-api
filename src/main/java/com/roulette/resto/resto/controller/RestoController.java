@@ -201,7 +201,7 @@ public class RestoController {
 	}
 
 	@PostMapping(path = "/{id}/upload-picture", consumes = MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Add a new picture for the menu", description = """
+	@Operation(summary = "Add a new picture", description = """
 			pictureType can be "menu","logo","resto" (which is any photo that the resto owner wants to display ...)
 			""")
 	@ApiResponses(value = {

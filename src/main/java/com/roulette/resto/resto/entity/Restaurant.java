@@ -1,5 +1,6 @@
 package com.roulette.resto.resto.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.roulette.resto.common.entity.MediaResource;
 import com.roulette.resto.social.entity.Account;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Restaurant {
 	int id;
 	String displayName;

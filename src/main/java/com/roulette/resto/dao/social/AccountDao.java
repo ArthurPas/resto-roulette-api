@@ -32,11 +32,9 @@ import java.util.Objects;
 @Log4j2
 public class AccountDao {
 	final JdbcTemplate jdbcTemplate;
-	final DataSource dataSource;
 
-	public AccountDao(JdbcTemplate jdbcTemplate, DataSource dataSource) {
+	public AccountDao(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
-		this.dataSource = dataSource;
 	}
 
 	public int registerAccount(Account account) {

@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -23,10 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.sql.DataSource;
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -59,6 +58,7 @@ public class RestoDao {
 				preparedStatement.setString(1, restaurant.getDisplayName());
 				preparedStatement.setInt(2, accountId);
 				preparedStatement.setDate(3, createdDate);
+				log.debug("Executing query {}",preparedStatement);
 				return preparedStatement;
 			}, generatedKeyHolder);
 			int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
@@ -84,10 +84,10 @@ public class RestoDao {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setInt(1, restoId);
 				preparedStatement.setString(2, foodType);
+				log.debug("Executing query {}",preparedStatement);
 				return preparedStatement;
 			}, generatedKeyHolder);
 		}
-
 	}
 
 	private void createRestoInfos(Restaurant restaurant, int restoId){
@@ -101,12 +101,12 @@ public class RestoDao {
 					preparedStatement.setBigDecimal(3, restaurant.getLongitude());
 					preparedStatement.setBigDecimal(4, restaurant.getLatitude());
 					preparedStatement.setInt(5,restoId);
+					log.debug("Executing query {}",preparedStatement);
 					return preparedStatement;
 				});
 		} catch (DataAccessException e) {
 			throw new RuntimeException(e);
 		}
-
 	}
 
 	public Restaurant getRestoById(int restoId) throws RestoNotFoundException {
@@ -135,18 +135,28 @@ public class RestoDao {
 					" WHERE" +
 					" resto_roulette.resto.resto_id = ? AND resto.is_deleted = false";
 		try {
-			return jdbcTemplate.queryForObject(query, new RestoRowMapper(), restoId);
-		}catch (DataAccessException e){
+			List<Restaurant> results = jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setInt(1, restoId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, new RestoRowMapper());
+			return DataAccessUtils.requiredSingleResult(results);
+		} catch (EmptyResultDataAccessException e) {
 			throw new RestoNotFoundException("Restaurant not found");
 		}
 	}
 
 	public void createFoodType(String foodType) {
-		String query = "INSERT INTO resto_type (food_type) " +
-				"VALUES (?)";
+		String query = "INSERT INTO resto_type (food_type) VALUES (?)";
 		try {
-			jdbcTemplate.update(query, foodType);
-		}catch (NullPointerException e){
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setString(1, foodType);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
+		} catch (NullPointerException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
@@ -155,8 +165,13 @@ public class RestoDao {
 	public Set<String> getFoodTypes() {
 		String query = "SELECT food_type FROM resto_type";
 		try {
-			return new HashSet<>(jdbcTemplate.queryForList(query, String.class));
-		}catch (NullPointerException e){
+			List<String> types = jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, (rs, rowNum) -> rs.getString("food_type"));
+			return new HashSet<>(types);
+		} catch (NullPointerException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
@@ -165,8 +180,13 @@ public class RestoDao {
 	public List<String> getFoodType(String foodType) {
 		String query = "SELECT food_type FROM resto_type where food_type like ?";
 		try {
-			return jdbcTemplate.queryForList(query,String.class, '%'+foodType+'%');
-		}catch (NullPointerException e){
+			return jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setString(1, "%" + foodType + "%");
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, (rs, rowNum) -> rs.getString("food_type"));
+		} catch (NullPointerException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
@@ -192,24 +212,34 @@ public class RestoDao {
 				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
 				" ) AS aggregated_labels " +
 				" FROM resto_roulette.resto " +
-				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id " +
-				"WHERE is_deleted = false "+
+				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id " +
+				" WHERE is_deleted = false "+
 				" GROUP BY resto_roulette.resto.resto_id "+
 				" ORDER BY resto.resto_id " +
-				" LIMIT ? "+
-				" OFFSET ? ";
-			try {
-				return jdbcTemplate.query(query, new RestoRowMapper(),  limit, offset);
-			}catch (EmptyResultDataAccessException e){
-				throw  new RestoNotFoundException("Resto not found");
-			}
+				" LIMIT ? OFFSET ? ";
+		try {
+			return jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setInt(1, limit);
+				preparedStatement.setInt(2, offset);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, new RestoRowMapper());
+		} catch (EmptyResultDataAccessException e) {
+			throw new RestoNotFoundException("Resto not found");
 		}
-	
+	}
+
 	public List<BusinessHour> getBusinessHoursByRestoId(int restoId) {
 		String query = "SELECT * FROM business_hour WHERE resto_id = ?";
-		return jdbcTemplate.query(query, new BusinessHoursRowMapper(), restoId);
+		return jdbcTemplate.query(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query);
+			preparedStatement.setInt(1, restoId);
+			log.debug("Executing query {}",preparedStatement);
+			return preparedStatement;
+		}, new BusinessHoursRowMapper());
 	}
-		
+
 	@Transactional
 	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours, int restoId) throws DuplicateKeyException {
 		try {
@@ -217,22 +247,27 @@ public class RestoDao {
 
 				LocalTime openHours = convertToLocalTime(businessHour.getOpeningHour());
 				LocalTime closingHours = convertToLocalTime(businessHour.getClosingHour());
-				String query = "INSERT INTO resto_roulette.business_hour (resto_id, week_day, opening_hour, closing_hour," +
-						" is_lunch" +
-						")" +
+				String query = "INSERT INTO resto_roulette.business_hour (resto_id, week_day, opening_hour, closing_hour, is_lunch) " +
 						"VALUES (?, ?, ?, ?, ?)";
-				jdbcTemplate.update(query, restoId, businessHour.getWeekDay(), openHours, closingHours, businessHour.isLunch());
+				jdbcTemplate.update(conn -> {
+					PreparedStatement preparedStatement = conn.prepareStatement(query);
+					preparedStatement.setInt(1, restoId);
+					preparedStatement.setInt(2, businessHour.getWeekDay());
+					preparedStatement.setObject(3, openHours);
+					preparedStatement.setObject(4, closingHours);
+					preparedStatement.setBoolean(5, businessHour.isLunch());
+					log.debug("Executing query {}",preparedStatement);
+					return preparedStatement;
+				});
 			}
-		}catch (DuplicateKeyException e){
+		} catch (DuplicateKeyException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
-
 		return getBusinessHoursByRestoId(restoId);
 	}
 
-	private static LocalTime convertToLocalTime(
-			java.util.Date businessHour) {
+	private static LocalTime convertToLocalTime(java.util.Date businessHour) {
 		LocalTime hours = businessHour.toInstant()
 				.atZone(ZoneId.of("Europe/Paris"))
 				.toLocalTime();
@@ -252,17 +287,32 @@ public class RestoDao {
 			preparedStatement.setBoolean(5, updateBusinessHours.isLunch());
 			preparedStatement.addBatch();
 		}
+		log.debug("Executing query {}",preparedStatement);
 		preparedStatement.executeBatch();
 		return getBusinessHoursByRestoId(restoId);
 	}
 
-	public Restaurant updateResto(int restoId, int ownerId , NewRestaurant newRestaurant) {
+	public Restaurant updateResto(int restoId, int ownerId, NewRestaurant newRestaurant) {
 		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?";
 		String queryResto = "UPDATE resto SET display_name = ?, resto.owner_id = ? WHERE resto_id = ?";
 		try {
-			jdbcTemplate.update(queryRestoInfo,newRestaurant.getName(),newRestaurant.getAddress(), restoId);
-			jdbcTemplate.update(queryResto,newRestaurant.getDisplayName(), ownerId,
-					restoId);
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(queryRestoInfo);
+				preparedStatement.setString(1, newRestaurant.getName());
+				preparedStatement.setString(2, newRestaurant.getAddress());
+				preparedStatement.setInt(3, restoId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
+
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(queryResto);
+				preparedStatement.setString(1, newRestaurant.getDisplayName());
+				preparedStatement.setInt(2, ownerId);
+				preparedStatement.setInt(3, restoId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
 			return this.getRestoById(restoId);
 		} catch (DataAccessException | RestoNotFoundException e) {
 			throw new RuntimeException(e);
@@ -274,8 +324,22 @@ public class RestoDao {
 		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?";
 		String queryResto = "UPDATE resto SET display_name = ? WHERE resto_id = ?";
 		try {
-			jdbcTemplate.update(queryRestoInfo, newRestaurant.getName(), newRestaurant.getAddress(), restoId);
-			jdbcTemplate.update(queryResto, newRestaurant.getDisplayName(), restoId);
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(queryRestoInfo);
+				preparedStatement.setString(1, newRestaurant.getName());
+				preparedStatement.setString(2, newRestaurant.getAddress());
+				preparedStatement.setInt(3, restoId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
+
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(queryResto);
+				preparedStatement.setString(1, newRestaurant.getDisplayName());
+				preparedStatement.setInt(2, restoId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
 			return this.getRestoById(restoId);
 		} catch (DataAccessException | RestoNotFoundException e) {
 			throw new RuntimeException(e);
@@ -283,10 +347,14 @@ public class RestoDao {
 	}
 
 	public String newLabel(String label) {
-		String query = "INSERT INTO resto_label (label_name) " +
-				"VALUES (?)";
+		String query = "INSERT INTO resto_label (label_name) VALUES (?)";
 		try {
-			jdbcTemplate.update(query, label);
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setString(1, label);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
 			return label;
 		}catch (NullPointerException e){
 			log.error(e.getMessage());
@@ -297,8 +365,14 @@ public class RestoDao {
 	public int labelExist(String label) {
 		String query = "SELECT label_id FROM resto_label WHERE label_name = ?";
 		try {
-			return jdbcTemplate.queryForObject(query, Integer.class, label);
-		}catch (EmptyResultDataAccessException e){
+			List<Integer> ids = jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setString(1, label);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, (rs, rowNum) -> rs.getInt("label_id"));
+			return DataAccessUtils.requiredSingleResult(ids);
+		} catch (EmptyResultDataAccessException e) {
 			log.error(e.getMessage());
 			return 0;
 		}
@@ -307,39 +381,55 @@ public class RestoDao {
 	public Set<String> getAllLabels() {
 		String query = "SELECT label_name FROM  resto_label";
 		try {
-			return new HashSet<>(jdbcTemplate.queryForList(query, String.class));
-		}catch (EmptyResultDataAccessException e){
+			List<String> labels = jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, (rs, rowNum) -> rs.getString("label_name"));
+			return new HashSet<>(labels);
+		} catch (EmptyResultDataAccessException e) {
 			return Collections.emptySet();
 		}
 	}
-	
+
 	public Set<String> getLabelByRestoId(int restoId) {
 		String query = "SELECT label_name FROM resto_label " +
 				"JOIN resto_roulette.resto_resto_labels ON resto_label.label_id = resto_resto_labels.label_id " +
-				"JOIN resto_roulette.resto r on resto_resto_labels.resto_id = r.resto_id "+
+				"JOIN resto_roulette.resto r on resto_resto_labels.resto_id = r.resto_id " +
 				"WHERE r.resto_id = ?";
 		try {
-			return new HashSet<>(jdbcTemplate.queryForList(query, String.class, restoId));
-		}catch (EmptyResultDataAccessException e){
+			List<String> labels = jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setInt(1, restoId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, (rs, rowNum) -> rs.getString("label_name"));
+			return new HashSet<>(labels);
+		} catch (EmptyResultDataAccessException e) {
 			return Collections.emptySet();
 		}
 	}
 
 	public Set<String> addLabelsToResto(int restoId, Set<String> labels) {
-		if(labels.isEmpty() || labels.contains(null)) {
+		if (labels.isEmpty() || labels.contains(null)) {
 			return Collections.emptySet();
 		}
 		try {
-			for (String label: labels){
+			for (String label : labels) {
 				String query = "INSERT INTO resto_resto_labels (resto_id,label_id) " +
 						"VALUES (?, (SELECT label_id FROM resto_label WHERE label_name = ?))";
-				jdbcTemplate.update(query, restoId, label);
+				jdbcTemplate.update(conn -> {
+					PreparedStatement preparedStatement = conn.prepareStatement(query);
+					preparedStatement.setInt(1, restoId);
+					preparedStatement.setString(2, label);
+					log.debug("Executing query {}",preparedStatement);
+					return preparedStatement;
+				});
 			}
 		}catch (Exception e){
 			log.error(e.getMessage());
 			throw new RuntimeException("Error while adding labels to resto");
 		}
-		Set<String> restoLabels = getLabelByRestoId(restoId);
 		return labels;
 	}
 
@@ -364,41 +454,57 @@ public class RestoDao {
 				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
 				" ) AS aggregated_labels " +
 				" FROM resto_roulette.resto " +
-				"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
-				".resto_id" +
+				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id" +
 				" WHERE" +
 				" resto_roulette.resto.owner_id = ? " +
 				" AND resto_roulette.resto.is_deleted = false";
-		List<Restaurant> restos = jdbcTemplate.query(query, new RestoRowMapper(), accountId);
-		return restos;
+		return jdbcTemplate.query(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query);
+			preparedStatement.setInt(1, accountId);
+			log.debug("Executing query {}",preparedStatement);
+			return preparedStatement;
+		}, new RestoRowMapper());
 	}
 
 	public void saveRestoMedia(int restoId, String uuid, MediaType type) {
 		try {
-			String query = "INSERT INTO resto_resto_medias (resto_id,resource_id, media_type_id) " +
-					"VALUES (?, ?, ?)";
-			jdbcTemplate.update(query, restoId, uuid,type.typeId);
+			String query = "INSERT INTO resto_resto_medias (resto_id,resource_id, media_type_id) VALUES (?, ?, ?)";
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setInt(1, restoId);
+				preparedStatement.setString(2, uuid);
+				preparedStatement.setInt(3, type.typeId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw new RuntimeException(e);
 		}
 	}
 
-
 	public List<MediaResource> getRestoPictureByRestoId(String id) {
-		String query = "SELECT resource_id, media_type_id " +
-				" FROM resto_roulette.resto_resto_medias m " +
-				" WHERE m.resto_id = ? ";
+		String query = "SELECT resource_id, media_type_id FROM resto_roulette.resto_resto_medias m WHERE m.resto_id = ?";
 		try {
-			return jdbcTemplate.query(query, new MediaMapper(), id);
-		}catch (EmptyResultDataAccessException e){
+			return jdbcTemplate.query(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setString(1, id);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, new MediaMapper());
+		} catch (EmptyResultDataAccessException e) {
 			return Collections.emptyList();
 		}
 	}
 
 	public void deleteResto(String id) throws RestoNotFoundException {
 		String query = "UPDATE resto SET resto.is_deleted = true WHERE resto_id = ?";
-		int row = jdbcTemplate.update(query, id);
+		int row = jdbcTemplate.update(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query);
+			preparedStatement.setString(1, id);
+			log.debug("Executing query {}",preparedStatement);
+			return preparedStatement;
+		});
 		if (row == 0) {
 			throw new RestoNotFoundException("resto not found cant delete");
 		}
@@ -423,6 +529,7 @@ public class RestoDao {
 			preparedStatement.setInt(2, restoId);
 			preparedStatement.addBatch();
 		}
+		log.debug("Executing query {}",preparedStatement);
 		preparedStatement.executeBatch();
 	}
 
@@ -437,7 +544,6 @@ public class RestoDao {
 				.filter(e -> !originalSet.contains(e))
 				.collect(Collectors.toSet());
 	}
-
 
 	public void updatedRestoFoodTypes(int restoId, Set<String> foodTypeToAdd) throws SQLException {
 		Set<String> originalLabels = getLabelByRestoId(restoId);
@@ -458,6 +564,7 @@ public class RestoDao {
 			preparedStatement.setInt(2, restoId);
 			preparedStatement.addBatch();
 		}
+		log.debug("Executing query {}",preparedStatement);
 		preparedStatement.executeBatch();
 	}
 }

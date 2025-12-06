@@ -71,7 +71,7 @@ public class RestoController {
 	public ResponseEntity<?> getAll(Authentication authentication, @RequestParam(required = false
 			,defaultValue = "0") int page) {
 		try {
-			log.error("coucou");
+			log.debug("coucou");
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.getRestos(page),HttpStatus.OK);
 		} catch (APIError e) {

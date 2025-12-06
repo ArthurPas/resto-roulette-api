@@ -12,11 +12,13 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.security.auth.login.AccountNotFoundException;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -25,15 +27,17 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 @Repository
 @Log4j2
 public class AccountDao {
 	final JdbcTemplate jdbcTemplate;
+	final DataSource dataSource;
 
-	public AccountDao(JdbcTemplate jdbcTemplate) {
+	public AccountDao(JdbcTemplate jdbcTemplate, DataSource dataSource) {
 		this.jdbcTemplate = jdbcTemplate;
+		this.dataSource = dataSource;
 	}
-
 
 	public int registerAccount(Account account) {
 		int userInfoId = registerUserInfo(account);
@@ -48,6 +52,7 @@ public class AccountDao {
 				preparedStatement.setString(2, account.getPassword());
 				preparedStatement.setString(3, String.valueOf(userInfoId));
 				preparedStatement.setString(4, account.getVerificationToken());
+				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			}, generatedKeyHolder);
 			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
@@ -69,13 +74,14 @@ public class AccountDao {
 				preparedStatement.setString(2, account.getUserInfo().getFirstName());
 				preparedStatement.setString(3, account.getUserInfo().getEmail());
 				preparedStatement.setInt(4, account.getUserInfo().getRole().getRoleId());
+				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			}, generatedKeyHolder);
 			return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
 		} catch (DataAccessException e) {
 			log.error("Error registering user_info {}", account.getLogin());
 			log.error(e.getMessage());
-			return -1;
+			throw new RuntimeException();
 		}
 	}
 
@@ -86,7 +92,17 @@ public class AccountDao {
 				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE login = ? ";
 		try {
-			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), login);
+			List<Account> accounts = jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setString(1, login);
+						log.debug("SQL request : {}", preparedStatement.toString());
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new AccountUserRowMapper()
+			);
+			return DataAccessUtils.requiredSingleResult(accounts);
 		} catch (EmptyResultDataAccessException e) {
 			log.info("No user found with login {}", login);
 			throw new AccountNotFoundException(e.getMessage());
@@ -100,10 +116,18 @@ public class AccountDao {
 				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE email = ? ";
 		try {
-			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), email);
+			List<Account> accounts = jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setString(1, email);
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new AccountUserRowMapper()
+			);
+			return DataAccessUtils.requiredSingleResult(accounts);
 		} catch (EmptyResultDataAccessException e) {
 			log.info("No user found with email {}", email);
-
 			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
@@ -114,7 +138,16 @@ public class AccountDao {
 				"JOIN account on user_info.user_info_id = account.user_info_id " +
 				"WHERE account.login = ? ";
 		try {
-			return jdbcTemplate.queryForObject(query, new UserInfoRowMapper(), login);
+			List<UserInfo> users = jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setString(1, login);
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new UserInfoRowMapper()
+			);
+			return DataAccessUtils.requiredSingleResult(users);
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw e;
@@ -130,7 +163,16 @@ public class AccountDao {
 				"JOIN account on user_info.user_info_id = account.user_info_id " +
 				"WHERE account.account_id = ? ";
 		try {
-			return jdbcTemplate.queryForObject(query, new UserInfoRowMapper(), id);
+			List<UserInfo> users = jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setInt(1, id);
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new UserInfoRowMapper()
+			);
+			return DataAccessUtils.requiredSingleResult(users);
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw e;
@@ -147,7 +189,16 @@ public class AccountDao {
 				"JOIN resto_roulette.user_info on account.user_info_id = user_info.user_info_id " +
 				"WHERE account.account_id = ? ";
 		try {
-			return jdbcTemplate.queryForObject(query, new AccountUserRowMapper(), id);
+			List<Account> accounts = jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setInt(1, id);
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new AccountUserRowMapper()
+			);
+			return DataAccessUtils.requiredSingleResult(accounts);
 		} catch (EmptyResultDataAccessException e) {
 			log.error("failed to get account id : {}, error :{}",id, e.getMessage());
 			throw e;
@@ -160,9 +211,16 @@ public class AccountDao {
 				" SET user_info.email = ?, user_info.last_name = ?, user_info.first_name = ?" +
 				" WHERE account_id = ?";
 		try {
-			return jdbcTemplate.update(query, newUserInfo.getEmail(),
-					newUserInfo.getLastName(), newUserInfo.getFirstName(), id);
-		} catch (DuplicateKeyException e) {
+			return jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setString(1, newUserInfo.getEmail());
+				preparedStatement.setString(2, newUserInfo.getLastName());
+				preparedStatement.setString(3, newUserInfo.getFirstName());
+				preparedStatement.setString(4, id);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		} catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw new SQLException(e);
 		}
@@ -172,7 +230,19 @@ public class AccountDao {
 		String query = "UPDATE account " +
 				" SET password = ? " +
 				" WHERE account_id = ?";
-		jdbcTemplate.update(query, newPassword, id);
+		try {
+
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setString(1, newPassword);
+				preparedStatement.setInt(2, id);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		}catch (DataAccessException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	public void updateMailVerificationStatus(int accountId, boolean isVerified) throws SQLException {
@@ -180,7 +250,13 @@ public class AccountDao {
 				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
 				" SET user_info.email_verified = ? WHERE account_id = ?";
 		try {
-			jdbcTemplate.update(query, isVerified ? 1 : 0, accountId);
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setInt(1, isVerified ? 1 : 0);
+				preparedStatement.setInt(2, accountId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
 		} catch (DuplicateKeyException e) {
 			log.error(e.getMessage());
 			throw new SQLException(e);
@@ -192,13 +268,19 @@ public class AccountDao {
 				"SET account.verification_token = ? " +
 				"WHERE account_id = ?";
 		try {
-			jdbcTemplate.update(query, token, accountId);
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setString(1, token);
+				preparedStatement.setInt(2, accountId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw e;
 		}
-
 	}
+
 	public List<Account> getAll(int limit, int offset) {
 		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
 				"first_name, email_verified, last_login_at, account.created_at, account.is_deleted " +
@@ -209,34 +291,86 @@ public class AccountDao {
 				"LIMIT ? "+
 				"OFFSET ? ";
 		try {
-			return jdbcTemplate.query(query, new AccountUserRowMapper(),  limit, offset);
-		}catch (EmptyResultDataAccessException e){
-			return null;
+			return jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setInt(1, limit);
+						preparedStatement.setInt(2, offset);
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new AccountUserRowMapper()
+			);
+		} catch (DataAccessException e) {
+			log.warn("failed to get all accounts from database");
+			return Collections.emptyList();
 		}
 	}
-	public void updateAccountRole(int roleId, int accountId) {
 
+	public void updateAccountRole(int roleId, int accountId) {
 		String query = "UPDATE user_info " +
 				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
 				" SET user_info.type_id = ? WHERE account_id = ?";
-		jdbcTemplate.update(query, roleId, accountId);
+		try {
 
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setInt(1, roleId);
+				preparedStatement.setInt(2, accountId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		}catch (DataAccessException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	public void deleteAccount(int accountId) {
 		String query = "UPDATE account SET account.is_deleted = true WHERE account_id = ?";
-		jdbcTemplate.update(query, accountId);
+		try {
+
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setInt(1, accountId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		}catch (DataAccessException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 	public void recoverAccount(int accountId) {
 		String query = "UPDATE account SET account.is_deleted = false WHERE account_id = ?";
-		jdbcTemplate.update(query, accountId);
+		try {
+
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setInt(1, accountId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		}catch (DataAccessException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
-	
+
 	public int getAccountId(Account account) throws AccountNotFoundException {
 		String query = "SELECT account_id FROM account WHERE login = ? LIMIT 1";
 		try {
-			return jdbcTemplate.queryForObject(query, Integer.class, account.getLogin());
-		}catch (NullPointerException e){
+			List<Integer> ids = jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setString(1, account.getLogin());
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					(rs, rowNum) -> rs.getInt("account_id")
+			);
+			return DataAccessUtils.requiredSingleResult(ids);
+		} catch (DataAccessException | NullPointerException e) {
 			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
@@ -246,22 +380,34 @@ public class AccountDao {
 				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
 				" SET user_info.last_login_at = ? WHERE account_id = ?";
 		try {
-			jdbcTemplate.update(query, Timestamp.from(Instant.now()), accountId);
-		} catch (DuplicateKeyException e) {
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setTimestamp(1, Timestamp.from(Instant.now()));
+				preparedStatement.setInt(2, accountId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		} catch (DataAccessException e) {
 			log.error(e.getMessage());
-			throw new SQLException(e);
+			throw e;
 		}
-
 	}
 
 	public void saveMedia(int accountId, String uuid, MediaType mediaType) {
 		try {
 			String query = "INSERT INTO resto_roulette.user_user_medias (account_id,resource_id, media_type_id) " +
 					"VALUES (?, ?, ?)";
-			jdbcTemplate.update(query, accountId, uuid,mediaType.typeId);
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setInt(1, accountId);
+				preparedStatement.setString(2, uuid);
+				preparedStatement.setInt(3, mediaType.typeId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
-			throw new RuntimeException(e);
+			throw e;
 		}
 	}
 
@@ -270,8 +416,16 @@ public class AccountDao {
 				" FROM resto_roulette.user_user_medias m " +
 				" WHERE m.account_id = ? ";
 		try {
-			return jdbcTemplate.query(query, new MediaMapper(), id);
-		}catch (EmptyResultDataAccessException e){
+			return jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setInt(1, id);
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new MediaMapper()
+			);
+		} catch (EmptyResultDataAccessException e) {
 			return Collections.emptyList();
 		}
 	}
@@ -281,10 +435,17 @@ public class AccountDao {
 				" SET m.resource_id = ? " +
 				" WHERE m.account_id = ? AND m.media_type_id = ?";
 		try {
-			jdbcTemplate.update(query, uuid, accountId, MediaType.AVATAR.typeId );
-		}catch (DataAccessException e){
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setString(1, uuid);
+				preparedStatement.setInt(2, accountId);
+				preparedStatement.setInt(3, MediaType.AVATAR.typeId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		} catch (DataAccessException e) {
 			log.error(e.getMessage());
-			throw new RuntimeException(e);
+			throw e;
 		}
 	}
 }

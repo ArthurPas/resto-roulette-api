@@ -232,7 +232,6 @@ public class RestoController {
 
 		record PictureResponseDto(String type, String url) {}
 		List<MediaResource> pictures = restoService.getPictures(id);
-		log.info(pictures.toString());
 		List<PictureResponseDto> response = pictures.stream()
 				.map(pic -> {
 					String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()

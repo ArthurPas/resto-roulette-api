@@ -20,7 +20,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
 	@Bean
 	public GroupedOpenApi publicApi() {
 		return GroupedOpenApi.builder()
-				.group("springshop-public")
+				.group("resto-roulette")
 				.pathsToMatch("/**")
 				.build();
 	}
@@ -29,8 +29,11 @@ public class SwaggerConfig implements WebMvcConfigurer {
 	public OpenAPI customOpenAPI() {
 		return new OpenAPI()
 				.info(new Info()
-						.title("Spring Boot REST API")
+						.title("Resto-roulette API")
 						.version("1.0")
-						.description("API documentation for resto roulette"));
+						.description(
+								"eyJhbGciOiJIUzM4NCJ9.eyJ1c2VySWQiOjEsInN1YiI6ImZhbjJyZXN0byIsImlhdCI6MTc2NTAyNjk1Myw" +
+								"iZXhwIjoyMDgwMzg2OTUzfQ.Uf9awermXQ1GGGC6gyFMA-IhmobIMOAk8ZjZMgYAtrEDsq7qiqsxfgSah_T2" +
+								"LDW8"));
 	}
 }

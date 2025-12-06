@@ -77,7 +77,6 @@ public class RestoDao {
 
 	private void linkFoodsType( int restoId,Set<String> foodTypes) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		log.warn(foodTypes.toString());
 		for (String foodType: foodTypes) {
 			String query = "INSERT INTO resto_resto_types (resto_id,type_id) " +
 					"VALUES (?, (SELECT id FROM resto_type WHERE food_type = ?))";
@@ -85,7 +84,6 @@ public class RestoDao {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setInt(1, restoId);
 				preparedStatement.setString(2, foodType);
-				log.warn(preparedStatement.toString());
 				return preparedStatement;
 			}, generatedKeyHolder);
 		}
@@ -139,7 +137,6 @@ public class RestoDao {
 		try {
 			return jdbcTemplate.queryForObject(query, new RestoRowMapper(), restoId);
 		}catch (DataAccessException e){
-			log.warn(e.getMessage());
 			throw new RestoNotFoundException("Restaurant not found");
 		}
 	}
@@ -204,7 +201,6 @@ public class RestoDao {
 			try {
 				return jdbcTemplate.query(query, new RestoRowMapper(),  limit, offset);
 			}catch (EmptyResultDataAccessException e){
-				log.warn(e.getMessage());
 				throw  new RestoNotFoundException("Resto not found");
 			}
 		}
@@ -216,7 +212,6 @@ public class RestoDao {
 		
 	@Transactional
 	public List<BusinessHour>  addBusinessHoursToResto(NewBusinessHours businessHours, int restoId) throws DuplicateKeyException {
-		log.warn(businessHours.toString());
 		try {
 			for (BusinessHour businessHour: businessHours.getBusinessHours()){
 
@@ -345,7 +340,6 @@ public class RestoDao {
 			throw new RuntimeException("Error while adding labels to resto");
 		}
 		Set<String> restoLabels = getLabelByRestoId(restoId);
-		log.info(restoLabels.toString());
 		return labels;
 	}
 
@@ -376,7 +370,6 @@ public class RestoDao {
 				" resto_roulette.resto.owner_id = ? " +
 				" AND resto_roulette.resto.is_deleted = false";
 		List<Restaurant> restos = jdbcTemplate.query(query, new RestoRowMapper(), accountId);
-		log.warn(restos.toString());
 		return restos;
 	}
 

@@ -48,9 +48,7 @@ public class KpiDao {
 				users.setTotal((Long) row.get("total"));
 				users.setMonth((Long) row.get("month"));
 				userRegistrationHistory.add(users);
-				log.info(userRegistrationHistory.toString());
 			}
-			log.warn("Users registered : {}", userRegistrationHistory);
 			return userRegistrationHistory;
 		} catch (EmptyResultDataAccessException e) {
 			log.error(e.getMessage());

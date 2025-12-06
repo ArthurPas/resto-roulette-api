@@ -200,7 +200,6 @@ public class AccountDao {
 
 	}
 	public List<Account> getAll(int limit, int offset) {
-		log.warn("Limit {}, Offset {}", limit, offset);
 		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
 				"first_name, email_verified, last_login_at, account.created_at, account.is_deleted " +
 				"FROM account " +
@@ -212,7 +211,6 @@ public class AccountDao {
 		try {
 			return jdbcTemplate.query(query, new AccountUserRowMapper(),  limit, offset);
 		}catch (EmptyResultDataAccessException e){
-			log.warn(e.getMessage());
 			return null;
 		}
 	}
@@ -239,7 +237,6 @@ public class AccountDao {
 		try {
 			return jdbcTemplate.queryForObject(query, Integer.class, account.getLogin());
 		}catch (NullPointerException e){
-			log.warn(e.getMessage());
 			throw new AccountNotFoundException(e.getMessage());
 		}
 	}

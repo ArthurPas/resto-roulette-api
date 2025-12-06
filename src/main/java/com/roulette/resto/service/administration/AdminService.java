@@ -26,7 +26,6 @@ public class AdminService {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		try {
 			Account account = accountService.getAccountById(accountId);
-			log.warn("Account role : {}", account.getUserInfo().getRole().toString());
 			if(account.getUserInfo().getRole()!= UserRole.ROLE_ADMIN){
 				throw new APIError(71,
 						HttpStatus.UNAUTHORIZED);

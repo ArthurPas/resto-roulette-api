@@ -17,6 +17,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -37,12 +38,10 @@ import java.util.stream.Collectors;
 public class RestoDao {
 	final JdbcTemplate jdbcTemplate;
 	final AccountDao accountDao;
-	final DataSource dataSource;
 
-	public RestoDao(JdbcTemplate jdbcTemplate, AccountDao accountDao, DataSource dataSource) {
+	public RestoDao(JdbcTemplate jdbcTemplate, AccountDao accountDao) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.accountDao = accountDao;
-		this.dataSource = dataSource;
 	}
 
 	public int createResto(Restaurant restaurant) {
@@ -274,21 +273,28 @@ public class RestoDao {
 		return hours.truncatedTo(ChronoUnit.MINUTES);
 	}
 
-	public List<BusinessHour> changeBusinessHours(List<UpdateBusinessHours> updateBusinessHoursList, int restoId) throws SQLException {
+	public List<BusinessHour> changeBusinessHours(List<UpdateBusinessHours> updateBusinessHoursList, int restoId) {
 		String query = "UPDATE business_hour " +
 				" SET opening_hour = ?, closing_hour = ? " +
 				" WHERE week_day = ? AND resto_id = ? and is_lunch = ?";
-		PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query);
-		for (UpdateBusinessHours updateBusinessHours: updateBusinessHoursList) {
-			preparedStatement.setString(1,updateBusinessHours.getOpeningHour());
-			preparedStatement.setString(2,updateBusinessHours.getClosingHour());
-			preparedStatement.setInt(3, updateBusinessHours.getWeekDay());
-			preparedStatement.setInt(4, restoId);
-			preparedStatement.setBoolean(5, updateBusinessHours.isLunch());
-			preparedStatement.addBatch();
-		}
-		log.debug("Executing query {}",preparedStatement);
-		preparedStatement.executeBatch();
+
+		jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
+			@Override
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				UpdateBusinessHours updateBusinessHours = updateBusinessHoursList.get(i);
+				ps.setString(1, updateBusinessHours.getOpeningHour());
+				ps.setString(2, updateBusinessHours.getClosingHour());
+				ps.setInt(3, updateBusinessHours.getWeekDay());
+				ps.setInt(4, restoId);
+				ps.setBoolean(5, updateBusinessHours.isLunch());
+			}
+
+			@Override
+			public int getBatchSize() {
+				return updateBusinessHoursList.size();
+			}
+		});
+
 		return getBusinessHoursByRestoId(restoId);
 	}
 
@@ -510,7 +516,7 @@ public class RestoDao {
 		}
 	}
 
-	public void updateLabelsResto(int restoId, Set<String> updateLabels) throws SQLException {
+	public void updateLabelsResto(int restoId, Set<String> updateLabels){
 		Set<String> originalLabels = getLabelByRestoId(restoId);
 		Set<String> labelsToDelete = computeToDelete(originalLabels,updateLabels);
 		Set<String> labelsToAdd = computeToAdd(originalLabels,updateLabels);
@@ -518,19 +524,25 @@ public class RestoDao {
 		this.addLabelsToResto(restoId, labelsToAdd);
 	}
 
-	private void removeLabelFromResto(int restoId, Set<String> labelsToDelete) throws SQLException {
+	private void removeLabelFromResto(int restoId, Set<String> labelsToDelete) {
 		String query = "DELETE t FROM resto_resto_labels t" +
 				" JOIN resto_label rt ON rt.label_id = t.label_id " +
 				" WHERE rt.label_name = ?" +
 				" AND t.resto_id = ?";
-		PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query);
-		for (String label : labelsToDelete) {
-			preparedStatement.setString(1, label);
-			preparedStatement.setInt(2, restoId);
-			preparedStatement.addBatch();
-		}
-		log.debug("Executing query {}",preparedStatement);
-		preparedStatement.executeBatch();
+		List<String> labelsList = new ArrayList<>(labelsToDelete);
+
+		jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
+			@Override
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				ps.setString(1, labelsList.get(i));
+				ps.setInt(2, restoId);
+			}
+
+			@Override
+			public int getBatchSize() {
+				return labelsList.size();
+			}
+		});
 	}
 
 	private Set<String> computeToDelete(Set<String> originalSet, Set<String> newValuesSet) {
@@ -545,7 +557,7 @@ public class RestoDao {
 				.collect(Collectors.toSet());
 	}
 
-	public void updatedRestoFoodTypes(int restoId, Set<String> foodTypeToAdd) throws SQLException {
+	public void updatedRestoFoodTypes(int restoId, Set<String> foodTypeToAdd) {
 		Set<String> originalLabels = getLabelByRestoId(restoId);
 		Set<String> oldFoodType = computeToDelete(originalLabels,foodTypeToAdd);
 		Set<String> newFoodType = computeToAdd(originalLabels,foodTypeToAdd);
@@ -553,18 +565,25 @@ public class RestoDao {
 		this.linkFoodsType(restoId, newFoodType);
 	}
 
-	private void removeRestoFoodTypes(int restoId, Set<String> removeFoodTypes) throws SQLException {
+	private void removeRestoFoodTypes(int restoId, Set<String> removeFoodTypes) {
 		String query = "DELETE t FROM resto_resto_types t" +
 				" JOIN resto_type rt ON rt.id = t.type_id " +
 				" WHERE rt.food_type = ?" +
 				" AND t.resto_id = ?";
-		PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query);
-		for (String foodType : removeFoodTypes) {
-			preparedStatement.setString(1, foodType);
-			preparedStatement.setInt(2, restoId);
-			preparedStatement.addBatch();
-		}
-		log.debug("Executing query {}",preparedStatement);
-		preparedStatement.executeBatch();
+
+		List<String> foodTypesList = new ArrayList<>(removeFoodTypes);
+
+		jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
+			@Override
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				ps.setString(1, foodTypesList.get(i));
+				ps.setInt(2, restoId);
+			}
+
+			@Override
+			public int getBatchSize() {
+				return foodTypesList.size();
+			}
+		});
 	}
 }

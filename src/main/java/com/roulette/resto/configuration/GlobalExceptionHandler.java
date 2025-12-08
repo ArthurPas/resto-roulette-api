@@ -21,7 +21,8 @@ public class GlobalExceptionHandler {
 		log.error("Exception caught in GlobalExceptionHandler calling");
 		log.error(ex.getMessage());
 		record Message(String message){};
-		return new ResponseEntity<>(new Message("invalid request body, it might be an json typo"), HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>(new Message(ex.getMessage()),
+				HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler(Exception.class)

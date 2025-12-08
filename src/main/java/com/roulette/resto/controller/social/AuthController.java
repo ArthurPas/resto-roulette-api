@@ -74,14 +74,10 @@ public class AuthController {
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))
 	})
-	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request) {
-		try {
+	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request) throws APIError {
 			Account account = authService.getAccountFromLoginRequest(loginDto);
 			authService.authenticate(loginDto, request, account);
 			return new ResponseEntity<>(jwtService.buildAuthResponse(account), HttpStatus.OK);
-		} catch (APIError e) {
-			return new ResponseEntity<>(e, e.getStatus());
-		}
 	}
 
 
@@ -112,23 +108,10 @@ public class AuthController {
 									name = "server error",
 									value = "{\"message\":\"Server error while creating account\",\"description\":\"\"}")}))
 	})
-	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto) {
-
-		try {
-			authService.checkIfExists(registerDto);
-			Account newAccount = accountService.registerAccount(registerDto);
-			return new ResponseEntity<>(jwtService.buildAuthResponse(newAccount), HttpStatus.CREATED);
-		} catch (DuplicateKeyException e) {
-			return new ResponseEntity<>((new APIError(6000)),
-					HttpStatus.BAD_REQUEST);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, e.getStatus());
-		} catch (Exception e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(500,
-					HttpStatus.INTERNAL_SERVER_ERROR));
-			return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto) throws APIError {
+		authService.checkIfExists(registerDto);
+		Account newAccount = accountService.registerAccount(registerDto);
+		return new ResponseEntity<>(jwtService.buildAuthResponse(newAccount), HttpStatus.CREATED);
 	}
 
 
@@ -160,14 +143,9 @@ public class AuthController {
 									name = "server error",
 									value = "{\"message\":\"Unexpected error\",\"description\":\"\"}")}))
 	})
-	public ResponseEntity<?> verifyMail(@RequestBody VerifyEmailDto verifyEmailDto) {
-		try {
+	public ResponseEntity<?> verifyMail(@RequestBody VerifyEmailDto verifyEmailDto) throws APIError {
 			accountService.verifyEmail(verifyEmailDto);
 			return new ResponseEntity<>("{\"Message\": \"email verification succeed\"}", HttpStatus.NO_CONTENT);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, e.getStatus());
-		}
 	}
 
 	@PostMapping("/password/reset")
@@ -186,15 +164,10 @@ public class AuthController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
-		try {
+	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto){
 			userService.resetPassword(resetPasswordDto);
 			accountService.verifyEmail(new VerifyEmailDto(resetPasswordDto.getEmail(), resetPasswordDto.getVerificationToken()));
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, e.getStatus());
-		}
 	}
 
 	@PostMapping("/sendVerificationCode")
@@ -211,12 +184,7 @@ public class AuthController {
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> sendMail(@RequestBody SendEmailDto emailDto) {
-		try {
 			accountService.sendVerificationCode(emailDto.getEmail());
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, e.getStatus());
-		}
 	}
 }

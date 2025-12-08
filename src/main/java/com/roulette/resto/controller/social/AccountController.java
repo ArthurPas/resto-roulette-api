@@ -79,14 +79,9 @@ public class AccountController {
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> usersInfo(Authentication authentication) {
-		try {
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);
 			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
-		}catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
 	}
 	@GetMapping("/owned-restaurants")
 	@Operation(summary = "Get restaurant(s) that user owns")
@@ -124,18 +119,9 @@ public class AccountController {
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> updateUserInfo(@RequestBody UpdateUserInfo userInfo, Authentication authentication) {
-		try {
-			int accountId = jwtService.getAccountIdAuthenticated(authentication);
-			UserInfo updateUserInfo = userService.updateUserPersonalInfo(accountId, userInfo);
-			return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		} catch (SQLException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(500,
-					HttpStatus.INTERNAL_SERVER_ERROR));
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		UserInfo updateUserInfo = userService.updateUserPersonalInfo(accountId, userInfo);
+		return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
 	}
 
 	@PostMapping(path = "/add-avatar", consumes = MULTIPART_FORM_DATA_VALUE)
@@ -143,14 +129,8 @@ public class AccountController {
 	public ResponseEntity<?> addUserAvatar(Authentication authentication,
 											   @RequestParam() MultipartFile avatar) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		try {
-			MediaResource mediaResource = userService.addUserAvatar(accountId,avatar);
-			return new ResponseEntity<>(mediaResource, HttpStatus.CREATED);
-
-		}catch (APIError e) {
-				ErrorResponse errorResponse = new ErrorResponse(e);
-				return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-			}
+		MediaResource mediaResource = userService.addUserAvatar(accountId,avatar);
+		return new ResponseEntity<>(mediaResource, HttpStatus.CREATED);
 	}
 
 	@PatchMapping("password/new")
@@ -174,16 +154,10 @@ public class AccountController {
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
 	public ResponseEntity<?> updatePassword(@RequestBody ChangePasswordDto changePasswordDto,
 											Authentication authentication) {
-		try {
-
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);
 			Account account = userService.updatePassword(changePasswordDto, accountId);
 			final BasicAuthDto authResponse = jwtService.buildAuthResponse(account);
 			return new ResponseEntity<>(authResponse, HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
 	}
 
 	@GetMapping("/admin/get-all")
@@ -194,14 +168,9 @@ public class AccountController {
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountsInfos.class)))})
 	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication, @RequestParam(required = false
-			,defaultValue = "0")int page) {
-		try {
+			, defaultValue = "0") int page) {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(userService.getAccounts(page), HttpStatus.OK);
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
 	}
 
 	@PatchMapping("/admin/update-role")
@@ -214,48 +183,24 @@ public class AccountController {
 							schema = @Schema(implementation = UserInfoDto.class)))})
 	public ResponseEntity<?> modifyAccountRole (Authentication authentication,
 												@RequestBody UpdateAccountInfo updateAccountInfo) {
-		try {
 			adminService.rightCheckIsAdmin(authentication);
 			int accountId = userService.updateUserRole(updateAccountInfo);
 			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
 	}
 
 	@DeleteMapping("/admin/delete-account")
 	@Operation(summary = "Delete account")
 	public ResponseEntity<?> deleteAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
-		try {
 			adminService.rightCheckIsAdmin(authentication);
 			accountService.deleteUser(deleteAccount);
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
 	}
 	@PatchMapping("/admin/recover-deleted-account")
 	@Operation(summary = "Recover deleted account")
 	public ResponseEntity<?> recoverAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
-		try {
 			adminService.rightCheckIsAdmin(authentication);
 			accountService.recoverUser(deleteAccount);
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (AccountNotFoundException e) {
-			ErrorResponse errorResponse = new ErrorResponse(new APIError(64, HttpStatus.NOT_FOUND));
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		} catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
 	}
 }

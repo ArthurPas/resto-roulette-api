@@ -13,11 +13,13 @@ import com.roulette.resto.data.social.dto.out.UserInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
+import com.roulette.resto.exception.ErrorResponse;
 import com.roulette.resto.repository.social.AccountRepository;
 import com.roulette.resto.repository.social.InteractionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -62,9 +64,9 @@ public class UserService {
 		return userInfoDto;
 	}
 
-	public UserInfoDto getUserInfoById(int id) throws AccountNotFoundException {
+	public UserInfoDto getUserInfoById(int id)  {
 		if(!accountService.existsById(id)) {
-			throw new AccountNotFoundException();
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 		UserInfoDto userInfoDto = new UserInfoDto();
 		Account account = accountRepository.getAccountById(id);
@@ -75,10 +77,10 @@ public class UserService {
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
 		userInfoDto.setMedias(mediaResources);
 		return userInfoDto;
+
 	}
 
-	public UserInfo updateUserPersonalInfo(int userId, UpdateUserInfo newUserInfo) throws AccountNotFoundException,
-			SQLException {
+	public UserInfo updateUserPersonalInfo(int userId, UpdateUserInfo newUserInfo)  {
 		try {
 			UserInfo olduserInfo = accountRepository.getUserInfoById(userId);
 			//If email has changed
@@ -92,12 +94,11 @@ public class UserService {
 			return accountRepository.getUserInfoById(userId);
 		} catch (SQLException e) {
 			log.error(e.getMessage());
-			throw new SQLException(e);
+			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	public Account updatePassword(ChangePasswordDto passwordDto, int accountId) throws AuthenticationException,
-			AccountNotFoundException {
+	public Account updatePassword(ChangePasswordDto passwordDto, int accountId) throws AuthenticationException{
 		try {
 			Account account = accountRepository.getAccountById(accountId);
 			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(account.getLogin(),
@@ -111,7 +112,7 @@ public class UserService {
 			throw e;
 		} catch (DataAccessException e) {
 			log.error("account not found");
-			throw new AccountNotFoundException(e.getMessage());
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -139,9 +140,15 @@ public class UserService {
 								.map(AccountsInfos::new)
 								.collect(Collectors.toList());
 	}
-	public int updateUserRole(UpdateAccountInfo updateAccountInfo) throws AccountNotFoundException {
-		accountRepository.updateAccountRole(updateAccountInfo);
-		return accountRepository.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();
+	public int updateUserRole(UpdateAccountInfo updateAccountInfo) {
+		try {
+
+			accountRepository.updateAccountRole(updateAccountInfo);
+			return accountRepository.getAccountByLogin(updateAccountInfo.getLogin()).getAccountId();
+		}catch (AccountNotFoundException e) {
+			log.error(e.getMessage());
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
 
 	public void updateLoginDate(Account account) {

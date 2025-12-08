@@ -11,12 +11,14 @@ import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.resto.entity.mapper.BusinessHoursRowMapper;
 import com.roulette.resto.data.resto.entity.mapper.RestoRowMapper;
+import com.roulette.resto.exception.APIError;
 import com.roulette.resto.exception.RestoNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -498,7 +500,8 @@ public class RestoDao {
 				log.debug("Executing query {}",preparedStatement);
 				return preparedStatement;
 			}, new MediaMapper());
-		} catch (EmptyResultDataAccessException e) {
+		}
+		catch (EmptyResultDataAccessException e) {
 			return Collections.emptyList();
 		}
 	}
@@ -585,5 +588,19 @@ public class RestoDao {
 				return foodTypesList.size();
 			}
 		});
+	}
+	
+	public boolean restoExists(int restoId) {
+		log.error("COUCOUUUUUUU");
+		String query = "SELECT COUNT(resto_id) FROM resto_roulette.resto_resto_medias m WHERE m.resto_id = ?";
+		List<Integer> results = jdbcTemplate.query(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query);
+			preparedStatement.setInt(1,restoId);
+			log.debug("Executing query {}",preparedStatement);
+			return preparedStatement;
+		}, (rs, rowNum) -> rs.getInt(1));
+
+		return DataAccessUtils.requiredSingleResult(results).equals(1);
+
 	}
 }

@@ -199,7 +199,12 @@ public class RestoService {
 	}
 
 	public List<MediaResource> getPictures(String id) {
-		return restoRepository.getRestoPictureByRestoId(id);
+		try {
+
+			return restoRepository.getRestoPictureByRestoId(id);
+		}catch (RestoNotFoundException ex){
+			throw new APIError(84, HttpStatus.NOT_FOUND);
+		}
 	}
 
 	public void deleteResto(String id) throws APIError {

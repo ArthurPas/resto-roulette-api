@@ -69,7 +69,7 @@ class AccountServiceTest {
 
 		@Test
 		@DisplayName("should register account successfully and send verification email")
-		void registerAccount_shouldSucceed() {
+		void registerAccount_shouldSucceed() throws APIError {
 			// Arrange
 			RegisterDto registerDto = new RegisterDto("testuser", "password123", "test@example.com", "John", "Doe");
 

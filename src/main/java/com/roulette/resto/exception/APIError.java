@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class APIError extends Throwable {
+public class APIError extends RuntimeException {
 	private int errorCode;
 	private HttpStatus status;
 

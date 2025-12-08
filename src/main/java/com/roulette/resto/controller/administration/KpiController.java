@@ -58,14 +58,10 @@ public class KpiController {
 									"  0\n" +
 									"]")))})
 	public ResponseEntity<?> getUsersRegistrationsByYear(@RequestParam String year, Authentication authentication) {
-		try {
 			adminService.rightCheckIsAdmin(authentication);
 			List<Long> results = kpiService.getUsersRegistrationHistoric(year);
 			Gson gson= new GsonBuilder().create();
 			return new ResponseEntity<>(gson.toJson(results), HttpStatus.OK);
-		} catch (APIError e) {
-			return new ResponseEntity<>(e.getMessage(), e.getStatus());
-		}
 	}
 
 	@GetMapping("/registrationTrend")
@@ -77,13 +73,9 @@ public class KpiController {
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = TrendDto.class)))})
 	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication) {
-		try {
-			adminService.rightCheckIsAdmin(authentication);
-			TrendDto trendDto = kpiService.getRegistrationTrend();
-			return new ResponseEntity<>(trendDto, HttpStatus.OK);
-		} catch (APIError e) {
-			return new ResponseEntity<>(e.getMessage(), e.getStatus());
-		}
+		adminService.rightCheckIsAdmin(authentication);
+		TrendDto trendDto = kpiService.getRegistrationTrend();
+		return new ResponseEntity<>(trendDto, HttpStatus.OK);
 	}
 
 
@@ -96,12 +88,8 @@ public class KpiController {
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = TrendDto.class)))})
 	public ResponseEntity<?> getLaunchedWheels(Authentication authentication) {
-		try {
-			adminService.rightCheckIsAdmin(authentication);
-			TrendDto trendDto = kpiService.getWheelTrend();
-			return new ResponseEntity<>(trendDto, HttpStatus.OK);
-		} catch (APIError e) {
-			return new ResponseEntity<>(e.getMessage(), e.getStatus());
-		}
+		adminService.rightCheckIsAdmin(authentication);
+		TrendDto trendDto = kpiService.getWheelTrend();
+		return new ResponseEntity<>(trendDto, HttpStatus.OK);
 	}
 }

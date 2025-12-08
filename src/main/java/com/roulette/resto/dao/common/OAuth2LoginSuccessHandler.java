@@ -7,9 +7,11 @@ import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.RegisterDto;
 import com.roulette.resto.data.social.dto.out.AuthResponse;
 import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.exception.APIError;
 import com.roulette.resto.service.social.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -22,6 +24,7 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	private final AccountService accountService;
@@ -55,9 +58,16 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 			registerDto.setFirstName(oAuth2User.getAttribute("given_name"));
 			registerDto.setLastName(oAuth2User.getAttribute("family_name"));
 			registerDto.setLogin(email);
-			Account newAccount = accountService.registerAccount(registerDto);
-			authResponse = jwtService.buildAuthResponse(newAccount);
-			status = HttpStatus.CREATED;
+
+			Account newAccount = null;
+			try {
+				newAccount = accountService.registerAccount(registerDto);
+				authResponse = jwtService.buildAuthResponse(newAccount);
+				status = HttpStatus.CREATED;
+			} catch (APIError ex) {
+				log.error(ex.getMessage());
+				throw new RuntimeException();
+			}
 		}
 		response.setStatus(status.value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);

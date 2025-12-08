@@ -145,8 +145,12 @@ public class RestoRepository {
 		}
 	}
 
-	public List<MediaResource> getRestoPictureByRestoId(String id) {
-		return restoDao.getRestoPictureByRestoId(id);
+	public List<MediaResource> getRestoPictureByRestoId(String id) throws RestoNotFoundException {
+		if(restoDao.restoExists(Integer.parseInt(id))){
+
+			return restoDao.getRestoPictureByRestoId(id);
+		}
+		throw new RestoNotFoundException("no resto found with id = "+id);
 	}
 
 	public void deleteResto(String id) throws RestoNotFoundException {

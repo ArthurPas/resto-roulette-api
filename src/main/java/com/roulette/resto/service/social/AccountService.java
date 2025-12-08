@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -73,7 +74,7 @@ public class AccountService implements UserDetailsService {
 		return account != null;
 	}
 
-	public Account registerAccount(RegisterDto registerDto) throws DuplicateKeyException {
+	public Account registerAccount(RegisterDto registerDto) throws DuplicateKeyException, APIError {
 
 		Account account = new Account();
 		account.setLogin(registerDto.getLogin());
@@ -92,8 +93,7 @@ public class AccountService implements UserDetailsService {
 			mailService.sendVerificationMail(account);
 			return account;
 		} catch (DuplicateKeyException e) {
-			log.error(e.getMessage());
-			throw e;
+			throw new APIError(6000,HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -155,10 +155,20 @@ public class AccountService implements UserDetailsService {
 		return accountRepository.getAccountByEmail(email);
 	}
 
-	public void deleteUser(DeleteAccount deleteAccount) throws APIError, AccountNotFoundException {
-		accountRepository.deleteAccount(deleteAccount);
+	public void deleteUser(DeleteAccount deleteAccount){
+		try {
+			accountRepository.deleteAccount(deleteAccount);
+		} catch (AccountNotFoundException e) {
+			log.error(e.getMessage());
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
-	public void recoverUser(DeleteAccount deleteAccount) throws APIError, AccountNotFoundException {
-		accountRepository.recoverAccount(deleteAccount);
+	public void recoverUser(DeleteAccount deleteAccount){
+
+		try {
+			accountRepository.recoverAccount(deleteAccount);
+		} catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
 }

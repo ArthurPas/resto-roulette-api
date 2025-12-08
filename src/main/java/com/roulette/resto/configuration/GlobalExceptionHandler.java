@@ -1,11 +1,13 @@
 package com.roulette.resto.configuration;
 
+import com.roulette.resto.exception.APIError;
 import com.roulette.resto.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,19 +19,35 @@ import java.util.Arrays;
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<?> handleMalformedPayloadInput(Exception ex, HttpServletRequest request){
-		log.error("Exception caught in GlobalExceptionHandler calling");
+	public ResponseEntity<?> handleMalformedPayloadInput(Exception ex){
+		log.error("Exception caught in GlobalExceptionHandler calling {}", ex.getClass());
 		log.error(ex.getMessage());
 		record Message(String message){};
 		return new ResponseEntity<>(new Message(ex.getMessage()),
 				HttpStatus.BAD_REQUEST);
 	}
 
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<?> handleGeneralException(Exception ex, HttpServletRequest request) {
-		log.error("Exception caught in GlobalExceptionHandler", ex);
+	@ExceptionHandler(APIError.class)
+	public ResponseEntity<?> handleAPIError(Exception ex){
+		log.error("Exception caught in GlobalExceptionHandler{}", ex.getClass());
 		log.error(ex.getMessage());
-		log.error(request.getRequestURL().toString());
+		ErrorResponse errorResponse = new ErrorResponse((APIError) ex);
+		return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+	}
+
+	@ExceptionHandler(BadCredentialsException.class)
+	public ResponseEntity<?> handleACredsError(Exception ex){
+		log.error("Exception caught in GlobalExceptionHandler {}", ex.getClass());
+		log.error(ex.getMessage());
+		ErrorResponse errorResponse = new ErrorResponse(70, HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<?> handleGeneralException(Exception ex) {
+		log.error("Exception caught in GlobalExceptionHandler {}", ex.getClass());
+		log.error(ex.getMessage());
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
 }

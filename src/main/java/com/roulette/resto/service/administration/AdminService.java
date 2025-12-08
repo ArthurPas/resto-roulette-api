@@ -22,7 +22,7 @@ public class AdminService {
 		this.accountService = accountService;
 	}
 
-	public void rightCheckIsAdmin(Authentication authentication) throws APIError {
+	public void rightCheckIsAdmin(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		try {
 			Account account = accountService.getAccountById(accountId);

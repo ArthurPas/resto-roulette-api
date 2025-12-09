@@ -10,6 +10,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -42,7 +43,20 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse(70, HttpStatus.BAD_REQUEST);
 		return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 	}
-
+	@ExceptionHandler(IOException.class)
+	public ResponseEntity<?> handleIOException(Exception ex){
+		log.error("Exception caught in GlobalExceptionHandler {}", ex.getClass());
+		log.error(ex.getMessage());
+		ErrorResponse errorResponse = new ErrorResponse(95, HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+	}
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<?> handleMaxUploadSize(Exception ex) {
+		log.error("Exception caught in GlobalExceptionHandler {}", ex.getClass());
+		log.error(ex.getMessage());
+		ErrorResponse errorResponse = new ErrorResponse(90, HttpStatus.PAYLOAD_TOO_LARGE);
+		return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+	}
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleGeneralException(Exception ex) {
 		log.error("Exception caught in GlobalExceptionHandler {}", ex.getClass());

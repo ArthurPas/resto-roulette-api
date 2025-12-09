@@ -22,6 +22,7 @@ public class MediaService {
 
 	@Value("${app.storage.images.maxResolution.logo}")
 	private int maxResolutionLogo;
+
 	private final MediaDao mediaDao;
 
 	public MediaService(MediaDao mediaDao) {
@@ -32,10 +33,19 @@ public class MediaService {
 	public String saveImage(BufferedImage bufferedImage, MediaType mediaType) throws IOException {
 		try{
 			return switch (mediaType) {
-				case AVATAR -> mediaDao.saveMedia(bufferedImage, maxResolutionAvatar);
-				case MENU -> mediaDao.saveMedia(bufferedImage, maxResolutionMenu);
-				default -> mediaDao.saveMedia(bufferedImage, maxResolutionLogo);
+				case MENU, RESTO -> mediaDao.saveMedia(bufferedImage, maxResolutionMenu);
+				case AVATAR -> mediaDao.saveSquaredMedia(bufferedImage, maxResolutionAvatar);
+				case LOGO -> mediaDao.saveSquaredMedia(bufferedImage, maxResolutionLogo);
 			};
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	public void removeFile(String uuid) throws IOException {
+		try {
+			mediaDao.removeMedia(uuid);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			throw e;

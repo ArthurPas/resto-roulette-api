@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -199,7 +200,7 @@ public class RestoController {
 		}
 	}
 
-	@PostMapping(path = "/{id}/upload-picture", consumes = MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(path = "/{id}/upload-media", consumes = MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "Add a new picture", description = """
 			pictureType can be "menu","logo","resto" (which is any photo that the resto owner wants to display ...)
 			""")
@@ -263,5 +264,9 @@ public class RestoController {
 		}
 
 	}
-
+	@DeleteMapping("/delete-media/{uuid}")
+	public ResponseEntity<Void> deleteMedia(@PathVariable String uuid) {
+		restoService.removeMedia(uuid);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }

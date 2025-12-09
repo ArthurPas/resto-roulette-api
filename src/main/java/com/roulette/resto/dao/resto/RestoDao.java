@@ -589,18 +589,18 @@ public class RestoDao {
 			}
 		});
 	}
-	
-	public boolean restoExists(int restoId) {
-		log.error("COUCOUUUUUUU");
-		String query = "SELECT COUNT(resto_id) FROM resto_roulette.resto_resto_medias m WHERE m.resto_id = ?";
-		List<Integer> results = jdbcTemplate.query(conn -> {
+
+
+	public void deleteRestoPictureDb(String uuid) throws RestoNotFoundException {
+		String query = "DELETE FROM resto_resto_medias WHERE resource_id = ?";
+		int row = jdbcTemplate.update(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setInt(1,restoId);
+			preparedStatement.setString(1, uuid);
 			log.debug("Executing query {}",preparedStatement);
 			return preparedStatement;
-		}, (rs, rowNum) -> rs.getInt(1));
-
-		return DataAccessUtils.requiredSingleResult(results).equals(1);
-
+		});
+		if (row == 0) {
+			throw new RestoNotFoundException("resto not found cant delete");
+		}
 	}
 }

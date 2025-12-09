@@ -1,6 +1,5 @@
 package com.roulette.resto.service.resto;
 
-import com.roulette.resto.dao.resto.RestoDao;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
@@ -8,13 +7,11 @@ import com.roulette.resto.data.resto.dto.in.NewFoodType;
 import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.data.resto.entity.BusinessHour;
-import com.roulette.resto.data.resto.entity.Label;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.exception.RestoNotFoundException;
 import com.roulette.resto.repository.resto.RestoRepository;
 import com.roulette.resto.repository.social.AccountRepository;
-import com.roulette.resto.service.social.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -223,5 +220,15 @@ public class RestoService {
 			case "resto" -> addRestoPicture(id, menuPicture);
 			default -> addRestoPicture(id, menuPicture);
 		};
+	}
+
+	public void removeMedia(String uuid) {
+		try {
+			restoRepository.removeRestoPicture(uuid);
+		}catch (RestoNotFoundException ex){
+			throw new APIError(84, HttpStatus.NOT_FOUND);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

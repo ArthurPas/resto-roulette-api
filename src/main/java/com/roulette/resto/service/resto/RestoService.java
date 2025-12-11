@@ -6,6 +6,7 @@ import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.data.resto.dto.in.NewFoodType;
 import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
+import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.exception.APIError;
@@ -60,9 +61,9 @@ public class RestoService {
 		}
 	}
 
-	public Restaurant getRestoById(String id) throws APIError {
+	public RestoDto getRestoById(String id) throws APIError {
 		try {
-			return restoRepository.getRestoById(id);
+			return new RestoDto(restoRepository.getRestoById(id));
 		}catch (RestoNotFoundException e){
 			log.error(e.getMessage());
 			throw new APIError(84, HttpStatus.NOT_FOUND);

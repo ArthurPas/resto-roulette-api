@@ -1,5 +1,6 @@
 package com.roulette.resto.controller.resto;
 
+import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.data.resto.dto.in.NewFoodType;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.roulette.resto.service.common.MediaService.buildMediaUrl;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @RestController
@@ -230,21 +232,14 @@ public class RestoController {
 							schema = @Schema(implementation = Integer.class)))})
 	public ResponseEntity<?> getRestoMedias(@PathVariable String id) {
 
-		record PictureResponseDto(String type, String url) {}
 		List<MediaResource> pictures = restoService.getPictures(id);
-		List<PictureResponseDto> response = pictures.stream()
-				.map(pic -> {
-					String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-							.path("/images/")
-							.path(pic.getResourceId())
-							.toUriString();
-
-					return new PictureResponseDto(pic.getMediaType().toString(),downloadUrl);
-				})
-				.collect(Collectors.toList());
+		final List<MediaResponse> response = buildMediaUrl(pictures);
 
 		return ResponseEntity.ok(response);
 	}
+
+
+
 	@DeleteMapping(path = "/{id}")
 	@Operation(summary = "Delete restaurant")
 	@ApiResponses(value = {

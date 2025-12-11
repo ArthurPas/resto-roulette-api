@@ -1,13 +1,18 @@
 package com.roulette.resto.service.common;
 
 import com.roulette.resto.dao.common.MediaDao;
+import com.roulette.resto.data.common.dto.MediaResponse;
+import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -50,5 +55,18 @@ public class MediaService {
 			log.error(e.getMessage());
 			throw e;
 		}
+	}
+	public static List<MediaResponse> buildMediaUrl(List<MediaResource> pictures) {
+		List<MediaResponse> response = pictures.stream()
+				.map(pic -> {
+					String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+							.path("/medias/")
+							.path(pic.getResourceId())
+							.toUriString();
+
+					return new MediaResponse(pic.getMediaType().toString(),downloadUrl);
+				})
+				.collect(Collectors.toList());
+		return response;
 	}
 }

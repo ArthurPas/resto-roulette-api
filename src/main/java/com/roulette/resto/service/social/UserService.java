@@ -2,6 +2,7 @@ package com.roulette.resto.service.social;
 
 import com.roulette.resto.dao.social.AccountDao;
 import com.roulette.resto.data.administration.dto.out.AccountsInfos;
+import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
 import com.roulette.resto.data.social.dto.in.ChangePasswordDto;
@@ -30,9 +31,12 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.security.auth.login.AccountNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.roulette.resto.service.common.MediaService.buildMediaUrl;
 
 @Service
 @Slf4j
@@ -75,7 +79,7 @@ public class UserService {
 		userInfoDto.setUserInteractions(interactions);
 		userInfoDto.setLogin(account.getLogin());
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
-		userInfoDto.setMedias(mediaResources);
+		userInfoDto.setMedias(buildMediaUrl(mediaResources));
 		return userInfoDto;
 
 	}

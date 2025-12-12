@@ -16,16 +16,16 @@ public class InteractionRepository {
 		this.interactionDao = interactionDao;
 	}
 
-	public List<SocialInteraction> getInteractionsByAccountLogin(String login) {
-		return interactionDao.getInteractionsByAccountLogin(login);
-
-	}
 
 	public List<SocialInteraction> getInteractionsByAccountId(int id) {
 		return interactionDao.getInteractionsByAccountId(id);
 	}
 
 	public boolean addLikeToResto(String restoId, int accountId) {
-		return interactionDao.setLikeToResto(restoId, accountId);
+		return interactionDao.setLikeToResto(Integer.parseInt(restoId), accountId);
+	}
+
+	public boolean removeLiketoResto(String restoId, int accountId) {
+		return interactionDao.removeLikeToResto(Integer.parseInt(restoId), accountId);
 	}
 }

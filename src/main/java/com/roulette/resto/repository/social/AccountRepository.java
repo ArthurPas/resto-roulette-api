@@ -58,6 +58,7 @@ public class AccountRepository {
 	}
 
 	public UserInfo getUserInfoById(int id) {
+
 		return accountDao.getUserInfoById(id);
 	}
 

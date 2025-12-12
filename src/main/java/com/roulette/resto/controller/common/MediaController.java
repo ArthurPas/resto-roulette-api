@@ -2,6 +2,7 @@ package com.roulette.resto.controller.common;
 
 import com.roulette.resto.service.common.MediaService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 @CrossOrigin(origins = "*") //TODO: add strict origin
 @SecurityRequirement(name = "Bearer Authentication")
 @Slf4j
+@Tag(name = "Medias")
 public class MediaController {
 	final MediaService mediaService;
 

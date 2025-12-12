@@ -54,14 +54,6 @@ public class UserService {
 	}
 
 
-	public UserInfoDto getUserInfoByLogin(String login) {
-		UserInfoDto userInfoDto = new UserInfoDto();
-		UserInfo userInfo = accountRepository.getUserInfoByLogin(login);
-		userInfoDto.setUserInfo(userInfo);
-		List<SocialInteraction> interactions = interactionRepository.getInteractionsByAccountLogin(login);
-		userInfoDto.setSocialInteractions(interactions);
-		return userInfoDto;
-	}
 
 	public UserInfoDto getUserInfoById(int id)  {
 		if(!accountService.existsById(id)) {

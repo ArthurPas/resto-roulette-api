@@ -1,8 +1,6 @@
 package com.roulette.resto.service.social;
 
-import com.roulette.resto.dao.social.AccountDao;
 import com.roulette.resto.data.administration.dto.out.AccountsInfos;
-import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
 import com.roulette.resto.data.social.dto.in.ChangePasswordDto;
@@ -10,17 +8,15 @@ import com.roulette.resto.data.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.data.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.dto.out.UserInfoDto;
-import com.roulette.resto.data.social.dto.out.UserInteraction;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
-import com.roulette.resto.exception.ErrorResponse;
 import com.roulette.resto.repository.social.AccountRepository;
 import com.roulette.resto.repository.social.InteractionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -31,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.security.auth.login.AccountNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -63,8 +58,8 @@ public class UserService {
 		UserInfoDto userInfoDto = new UserInfoDto();
 		UserInfo userInfo = accountRepository.getUserInfoByLogin(login);
 		userInfoDto.setUserInfo(userInfo);
-		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountLogin(login);
-		userInfoDto.setUserInteractions(interactions);
+		List<SocialInteraction> interactions = interactionRepository.getInteractionsByAccountLogin(login);
+		userInfoDto.setSocialInteractions(interactions);
 		return userInfoDto;
 	}
 
@@ -75,8 +70,8 @@ public class UserService {
 		UserInfoDto userInfoDto = new UserInfoDto();
 		Account account = accountRepository.getAccountById(id);
 		userInfoDto.setUserInfo(account.getUserInfo());
-		List<UserInteraction> interactions = interactionRepository.getInteractionsByAccountId(id);
-		userInfoDto.setUserInteractions(interactions);
+		List<SocialInteraction> interactions = interactionRepository.getInteractionsByAccountId(id);
+		userInfoDto.setSocialInteractions(interactions);
 		userInfoDto.setLogin(account.getLogin());
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
 		userInfoDto.setMedias(buildMediaUrl(mediaResources));

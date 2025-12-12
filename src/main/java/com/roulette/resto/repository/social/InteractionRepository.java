@@ -1,7 +1,7 @@
 package com.roulette.resto.repository.social;
 
 import com.roulette.resto.dao.social.InteractionDao;
-import com.roulette.resto.data.social.dto.out.UserInteraction;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -16,12 +16,16 @@ public class InteractionRepository {
 		this.interactionDao = interactionDao;
 	}
 
-	public List<UserInteraction> getInteractionsByAccountLogin(String login) {
+	public List<SocialInteraction> getInteractionsByAccountLogin(String login) {
 		return interactionDao.getInteractionsByAccountLogin(login);
 
 	}
 
-	public List<UserInteraction> getInteractionsByAccountId(int id) {
+	public List<SocialInteraction> getInteractionsByAccountId(int id) {
 		return interactionDao.getInteractionsByAccountId(id);
+	}
+
+	public boolean addLikeToResto(String restoId, int accountId) {
+		return interactionDao.setLikeToResto(restoId, accountId);
 	}
 }

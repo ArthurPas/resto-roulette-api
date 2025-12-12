@@ -8,11 +8,13 @@ import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.data.social.mapper.AccountUserRowMapper;
 import com.roulette.resto.data.social.mapper.UserInfoRowMapper;
+import com.roulette.resto.exception.APIError;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -156,7 +158,7 @@ public class AccountDao {
 	}
 
 	public UserInfo getUserInfoById(int id) {
-		String query = "SELECT last_name, first_name, email, type_id as role, login, email_verified " +
+		String query = "SELECT last_name, first_name, email, type_id as role, login, email_verified,last_login_at " +
 				"FROM user_info " +
 				"JOIN account on user_info.user_info_id = account.user_info_id " +
 				"WHERE account.account_id = ? ";
@@ -204,6 +206,7 @@ public class AccountDao {
 	}
 
 	public int updateUserInfo(String id, UpdateUserInfo newUserInfo) throws SQLException {
+
 		String query = "UPDATE user_info " +
 				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
 				" SET user_info.email = ?, user_info.last_name = ?, user_info.first_name = ?" +
@@ -218,7 +221,11 @@ public class AccountDao {
 				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			});
-		} catch (DataAccessException e) {
+		}catch (DuplicateKeyException ex){
+			log.error(ex.getMessage());
+			throw new APIError(600, HttpStatus.BAD_REQUEST);
+		}
+		catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw new SQLException(e);
 		}

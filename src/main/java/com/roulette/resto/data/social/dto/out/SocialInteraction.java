@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInteraction {
+public class SocialInteraction {
 	@Schema(example = "1")
 	Integer accountId;
 	@Schema(example = "2")

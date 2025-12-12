@@ -5,7 +5,7 @@ import com.roulette.resto.data.social.dto.in.ChangePasswordDto;
 import com.roulette.resto.data.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.dto.out.UserInfoDto;
-import com.roulette.resto.data.social.dto.out.UserInteraction;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.repository.social.AccountRepository;
@@ -80,7 +80,7 @@ class UserServiceTest {
 		void getUserInfoById_shouldReturnDto_whenUserExists() throws AccountNotFoundException {
 			// Arrange
 			int userId = 1;
-			List<UserInteraction> interactions = Collections.singletonList(new UserInteraction());
+			List<SocialInteraction> interactions = Collections.singletonList(new SocialInteraction());
 			when(accountService.existsById(userId)).thenReturn(true);
 			when(accountRepository.getAccountById(userId)).thenReturn(sampleAccount);
 			when(interactionRepository.getInteractionsByAccountId(userId)).thenReturn(interactions);
@@ -92,7 +92,7 @@ class UserServiceTest {
 			assertNotNull(result);
 			assertEquals("testuser", result.getLogin());
 			assertEquals("John", result.getUserInfo().getFirstName());
-			assertEquals(1, result.getUserInteractions().size());
+			assertEquals(1, result.getSocialInteractions().size());
 			verify(accountService).existsById(userId);
 			verify(accountRepository).getAccountById(userId);
 			verify(interactionRepository).getInteractionsByAccountId(userId);

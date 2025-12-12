@@ -1,6 +1,6 @@
 package com.roulette.resto.dao.social;
 
-import com.roulette.resto.data.social.dto.out.UserInteraction;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.mapper.InteractionRowMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -16,8 +16,8 @@ public class InteractionDao {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
-	public List<UserInteraction> getInteractionsByAccountLogin(String login) {
-		String query = "select account.account_id, has_liked, i.resto_id, r.display_name as resto_name, text from " +
+	public List<SocialInteraction> getInteractionsByAccountLogin(String login) {
+		String query = "select account.account_id, i.resto_id, r.display_name as resto_name, text from " +
 				"account " +
 				"JOIN resto_roulette.interaction i on account.account_id = i.account_id " +
 				"JOIN resto_roulette.resto r on i.resto_id = r.resto_id " +
@@ -32,7 +32,7 @@ public class InteractionDao {
 
 	}
 
-	public List<UserInteraction> getInteractionsByAccountId(int id) {
+	public List<SocialInteraction> getInteractionsByAccountId(int id) {
 		String query = "select account.account_id, has_liked, i.resto_id, r.display_name as resto_name, text from " +
 				"account " +
 				"JOIN resto_roulette.interaction i on account.account_id = i.account_id " +
@@ -45,6 +45,6 @@ public class InteractionDao {
 			log.error(e.getMessage());
 			throw e;
 		}
-
 	}
+
 }

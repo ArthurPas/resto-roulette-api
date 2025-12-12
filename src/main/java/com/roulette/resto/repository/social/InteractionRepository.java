@@ -1,6 +1,7 @@
 package com.roulette.resto.repository.social;
 
 import com.roulette.resto.dao.social.InteractionDao;
+import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -27,5 +28,14 @@ public class InteractionRepository {
 
 	public boolean removeLiketoResto(String restoId, int accountId) {
 		return interactionDao.removeLikeToResto(Integer.parseInt(restoId), accountId);
+	}
+
+	public String addCommentToResto(String restoId, int accountId, NewComment comment) {
+		int commentId = interactionDao.newCommentByUserToResto(Integer.parseInt(restoId),accountId,comment);
+		return interactionDao.getCommentById(commentId);
+	}
+
+	public List<Integer> getLikedRestoByAccountId(int accountId) {
+		return interactionDao.getLikedRestos(accountId);
 	}
 }

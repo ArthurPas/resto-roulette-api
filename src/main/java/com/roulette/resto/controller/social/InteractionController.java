@@ -1,16 +1,21 @@
 package com.roulette.resto.controller.social;
 
 import com.roulette.resto.configuration.JwtService;
+import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.service.social.InteractionsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -41,5 +46,23 @@ public class InteractionController {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		LikedResto likedResto = interactionsService.dislikeResto(restoId, accountId);
 		return new ResponseEntity<>(likedResto,HttpStatus.OK);
+	}
+
+	@PostMapping("/resto/{restoId}/add-comment")
+	@Operation(summary = "Add comment on resto")
+
+	public ResponseEntity<?> newComment(Authentication authentication, @PathVariable String restoId,
+										@RequestBody @Valid NewComment newComment){
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		NewComment comment = interactionsService.addComment(restoId, accountId,newComment);
+		return new ResponseEntity<>(comment,HttpStatus.OK);
+	}
+
+	@GetMapping("/me")
+	@Operation(summary = "Get my interactions")
+	public ResponseEntity<?> myInteractions(Authentication authentication) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		List<SocialInteraction> comment = interactionsService.getInteractionsByAccountId(accountId);
+		return new ResponseEntity<>(comment, HttpStatus.OK);
 	}
 }

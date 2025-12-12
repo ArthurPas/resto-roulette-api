@@ -62,8 +62,6 @@ public class UserService {
 		UserInfoDto userInfoDto = new UserInfoDto();
 		Account account = accountRepository.getAccountById(id);
 		userInfoDto.setUserInfo(account.getUserInfo());
-		List<SocialInteraction> interactions = interactionRepository.getInteractionsByAccountId(id);
-		userInfoDto.setSocialInteractions(interactions);
 		userInfoDto.setLogin(account.getLogin());
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
 		userInfoDto.setMedias(buildMediaUrl(mediaResources));

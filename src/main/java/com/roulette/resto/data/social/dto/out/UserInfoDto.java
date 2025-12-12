@@ -14,7 +14,6 @@ import java.util.List;
 public class UserInfoDto {
 	private String login;
 	private UserInfo userInfo;
-	private List<SocialInteraction> socialInteractions;
 	private List<MediaResponse> medias;
 
 }

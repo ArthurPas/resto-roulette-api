@@ -6,7 +6,9 @@ import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @Slf4j
@@ -35,7 +37,7 @@ public class InteractionRepository {
 		return interactionDao.getCommentById(commentId);
 	}
 
-	public List<Integer> getLikedRestoByAccountId(int accountId) {
-		return interactionDao.getLikedRestos(accountId);
+	public Set<Integer> getLikedRestoByAccountId(int accountId) {
+		return new HashSet<>(interactionDao.getLikedRestos(accountId));
 	}
 }

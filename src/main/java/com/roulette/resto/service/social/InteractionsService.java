@@ -5,20 +5,24 @@ import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.repository.social.InteractionRepository;
+import com.roulette.resto.service.resto.RestoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
 public class InteractionsService {
 
 	final InteractionRepository interactionRepository;
+	private final RestoService restoService;
 
-	public InteractionsService(InteractionRepository interactionRepository) {
+	public InteractionsService(InteractionRepository interactionRepository, RestoService restoService) {
 		this.interactionRepository = interactionRepository;
+		this.restoService = restoService;
 	}
 
 	public LikedResto likeResto(String restoId, int accountId) {
@@ -52,19 +56,28 @@ public class InteractionsService {
 	public UserLikedRestos getUserLikedRestoIds(int accountId) {
 		UserLikedRestos likedResto = new UserLikedRestos();
 		likedResto.setAccountId(accountId);
-		List<Integer> restoIds = interactionRepository.getLikedRestoByAccountId(accountId);
+		Set<Integer> restoIds = interactionRepository.getLikedRestoByAccountId(accountId);
 		likedResto.setRestoIds(restoIds);
 		return likedResto;
 	}
 
 	public List<SocialInteraction> getInteractionsByAccountId(int accountId) {
-		List<SocialInteraction> socialInteraction = interactionRepository.getInteractionsByAccountId(accountId);
-		List<Integer> restosLiked = getUserLikedRestoIds(accountId).getRestoIds();
-		for (SocialInteraction interaction : socialInteraction) {
-			if (restosLiked.contains(interaction.getRestoId())) {
+		List<SocialInteraction> socialInteractions = interactionRepository.getInteractionsByAccountId(accountId);
+		Set<Integer> restosLiked = getUserLikedRestoIds(accountId).getRestoIds();
+		for (SocialInteraction interaction : socialInteractions) {
+			if(restosLiked.contains(interaction.getRestoId())) {
 				interaction.setHas_liked(true);
+				restosLiked.removeIf(id -> interaction.getRestoId() == id);
 			}
 		}
-		return socialInteraction;
+		for (int restoId : restosLiked) {
+			SocialInteraction socialInteraction = new SocialInteraction();
+			socialInteraction.setRestoId(restoId);
+			socialInteraction.setHas_liked(true);
+			socialInteraction.setRestoName(restoService.getRestoById(String.valueOf(restoId)).getName());
+			socialInteraction.setAccountId(accountId);
+			socialInteractions.add(socialInteraction);
+		}
+		return socialInteractions;
 	}
 }

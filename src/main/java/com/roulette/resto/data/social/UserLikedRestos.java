@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -14,6 +15,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserLikedRestos {
 	int accountId;
-	List<Integer> restoIds;
-	List<Resto> restos;
+	Set<Integer> restoIds;
+	Set<Resto> restos;
 }

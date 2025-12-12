@@ -110,7 +110,7 @@ public class InteractionDao {
 	}
 
 	public List<Integer> getLikedRestos(int accountId) {
-		String query = "SELECT resto_id FROM user_like WHERE account_id = ?";
+		String query = "SELECT DISTINCT resto_id FROM user_like WHERE account_id = ?";
 		try {
 			return jdbcTemplate.queryForList(query, Integer.class, accountId);
 		} catch (DataAccessException e) {

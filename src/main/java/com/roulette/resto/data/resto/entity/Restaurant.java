@@ -2,6 +2,7 @@ package com.roulette.resto.data.resto.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.roulette.resto.data.common.entity.MediaResource;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Restaurant {
-	int id;
+	Integer id;
 	String displayName;
 	String name;
 	Set<String> foodTypes;
@@ -29,4 +30,5 @@ public class Restaurant {
 	Date creationDate;
 	Account owner;
 	List<MediaResource> medias;
+	List<SocialInteraction> interactions;
 }

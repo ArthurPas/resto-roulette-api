@@ -129,7 +129,12 @@ public class RestoDao {
 					"  FROM resto_resto_labels" +
 					"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
 					"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-					" ) AS aggregated_labels " +
+					" ) AS aggregated_labels, " +
+					" (SELECT GROUP_CONCAT(c.text SEPARATOR ';;')" +
+					"  FROM interaction" +
+					"  JOIN comment as c ON interaction.comment_id = c.comment_id" +
+					"  WHERE interaction.resto_id = resto.resto_id" +
+					" ) AS aggregated_comments " +
 					" FROM resto_roulette.resto " +
 					"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
 				".resto_id" +
@@ -211,7 +216,12 @@ public class RestoDao {
 				"  FROM resto_resto_labels" +
 				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
 				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-				" ) AS aggregated_labels " +
+				" ) AS aggregated_labels, " +
+				" (SELECT GROUP_CONCAT(c.text SEPARATOR ';;')" +
+						"  FROM interaction" +
+						"  JOIN comment as c ON interaction.comment_id = c.comment_id" +
+						"  WHERE interaction.resto_id = resto.resto_id" +
+						" ) AS aggregated_comments " +
 				" FROM resto_roulette.resto " +
 				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id " +
 				" WHERE is_deleted = false "+
@@ -221,6 +231,7 @@ public class RestoDao {
 		try {
 			return jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				log.info("Executing query {}",preparedStatement);
 				preparedStatement.setInt(1, limit);
 				preparedStatement.setInt(2, offset);
 				log.debug("Executing query {}",preparedStatement);
@@ -460,7 +471,12 @@ public class RestoDao {
 				"  FROM resto_resto_labels" +
 				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
 				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-				" ) AS aggregated_labels " +
+				" ) AS aggregated_labels, " +
+				" (SELECT GROUP_CONCAT(c.text SEPARATOR ';;')" +
+				"  FROM interaction" +
+				"  JOIN comment as c ON interaction.comment_id = c.comment_id" +
+				"  WHERE interaction.resto_id = resto.resto_id" +
+				" ) AS aggregated_comments " +
 				" FROM resto_roulette.resto " +
 				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id" +
 				" WHERE" +
@@ -602,5 +618,32 @@ public class RestoDao {
 		if (row == 0) {
 			throw new RestoNotFoundException("resto not found cant delete");
 		}
+	}
+	
+	public List<Restaurant> getRestosBasicInfoByIds(Set<Integer> ids){
+		String query = String.format("SELECT resto_id, display_name from resto where resto_id IN (%s)",
+				ids.stream()
+				.map(v -> "?")
+				.collect(Collectors.joining(", ")));
+		List<List<Restaurant>> restaurants = jdbcTemplate.query(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query);
+			int index = 1;
+			for (Integer id : ids) {
+				preparedStatement.setInt(index, id);
+				index++;
+			}
+			log.debug("Executing query {}",preparedStatement);
+			return preparedStatement;
+		}, (rs, rowNum) -> {
+			List<Restaurant> result = new ArrayList<>();
+			while (rs.next()) {
+				Restaurant restaurant = new Restaurant();
+				restaurant.setId(rs.getInt("resto_id"));
+				restaurant.setName(rs.getString("display_name"));
+				result.add(restaurant);
+			}
+			return result;
+		});
+		return restaurants.getFirst();
 	}
 }

@@ -1,6 +1,7 @@
 package com.roulette.resto.data.resto.entity.mapper;
 
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.RowMapper;
@@ -8,8 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -27,6 +27,8 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setFoodTypes(aggregatedToSet(aggregatedTypes));
 		String aggregatedLabels = rs.getString("aggregated_labels");
 		restaurant.setLabels(aggregatedToSet(aggregatedLabels));
+		String aggregatedComments = rs.getString("aggregated_comments");
+		restaurant.setInteractions(splitCommentsIntoSocialInteractions(aggregatedComments));
 		restaurant.setCreationDate(rs.getDate("created_at"));
 		return restaurant;
 	}
@@ -44,5 +46,17 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 			}
 		}
 		return result;
+	}
+	private List<SocialInteraction> splitCommentsIntoSocialInteractions(String aggregated_comments) {
+		if(aggregated_comments == null) {
+			return Collections.emptyList();
+		}
+		List<SocialInteraction> socialInteractions = new ArrayList<>();
+		for (String resultStr : aggregated_comments.split(";;")) {
+			SocialInteraction socialInteraction = new SocialInteraction();
+			socialInteraction.setComment(resultStr.trim());
+			socialInteractions.add(socialInteraction);
+		}
+		return socialInteractions;
 	}
 }

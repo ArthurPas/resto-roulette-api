@@ -1,5 +1,6 @@
 package com.roulette.resto.service.social;
 
+import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.social.UserLikedRestos;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
@@ -11,6 +12,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -67,14 +69,15 @@ public class InteractionsService {
 		for (SocialInteraction interaction : socialInteractions) {
 			if(restosLiked.contains(interaction.getRestoId())) {
 				interaction.setHas_liked(true);
-				restosLiked.removeIf(id -> interaction.getRestoId() == id);
+				restosLiked.removeIf(id -> Objects.equals(interaction.getRestoId(), id));
 			}
 		}
-		for (int restoId : restosLiked) {
+		List<Restaurant> restaurantsLiked = interactionRepository.getRestosBasicInfoByIds(restosLiked);
+ 		for (Restaurant restaurant : restaurantsLiked) {
 			SocialInteraction socialInteraction = new SocialInteraction();
-			socialInteraction.setRestoId(restoId);
+			socialInteraction.setRestoId(restaurant.getId());
 			socialInteraction.setHas_liked(true);
-			socialInteraction.setRestoName(restoService.getRestoById(String.valueOf(restoId)).getName());
+			socialInteraction.setRestoName(restaurant.getDisplayName());
 			socialInteraction.setAccountId(accountId);
 			socialInteractions.add(socialInteraction);
 		}

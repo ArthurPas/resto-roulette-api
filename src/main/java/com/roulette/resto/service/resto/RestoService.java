@@ -109,10 +109,11 @@ public class RestoService {
 
 	}
 
-	public List<Restaurant> getRestos(int offset) throws APIError {
+	public List<RestoDto> getRestos(int offset) throws APIError {
 		try {
 			int nbResult = 25;
-			return new ArrayList<>(restoRepository.getAllRestos(nbResult, offset * nbResult));
+			List<Restaurant> restaurants = new ArrayList<>(restoRepository.getAllRestos(nbResult, offset * nbResult));
+			return restaurants.stream().map(RestoDto::new).toList();
 		}catch (RestoNotFoundException e) {
 			throw new APIError(84, HttpStatus.NOT_FOUND);
 		}catch (Exception e) {

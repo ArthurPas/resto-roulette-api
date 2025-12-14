@@ -26,6 +26,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.annotation.MultipartConfig;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
@@ -90,7 +93,6 @@ public class AccountController {
 	public ResponseEntity<?> getOwnedRestos(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		try {
-
 			List<Restaurant> restaurants = restoService.getRestosByOwnerId(accountId);
 			return new ResponseEntity<>(restaurants, HttpStatus.OK);
 		}

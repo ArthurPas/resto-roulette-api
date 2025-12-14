@@ -5,6 +5,7 @@ import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +33,7 @@ public class RestoDto {
 	Date creationDate;
 	Account owner;
 	List<MediaResponse> medias;
+	List<String> comments;
 
 	public RestoDto(Restaurant restaurant) {
 		this.id = restaurant.getId();
@@ -44,5 +46,6 @@ public class RestoDto {
 		this.creationDate = restaurant.getCreationDate();
 		this.owner = restaurant.getOwner();
 		this.medias = buildMediaUrl(restaurant.getMedias());
+		this.comments = restaurant.getInteractions().stream().map(SocialInteraction::getComment).toList();
 	}
 }

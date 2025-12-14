@@ -11,10 +11,11 @@ public class InteractionRowMapper implements RowMapper<SocialInteraction> {
 	@Override
 	public SocialInteraction mapRow(ResultSet rs, int rowNum) throws SQLException {
 		SocialInteraction interaction = new SocialInteraction();
-		interaction.setComment(rs.getString("text"));
+		interaction.setComment(rs.getString("content"));
 		interaction.setRestoId(rs.getInt("resto_id"));
 		interaction.setAccountId(rs.getInt("account_id"));
 		interaction.setRestoName(rs.getString("resto_name"));
+		interaction.setCommentId(rs.getInt("comment_id"));
 		return interaction;
 	}
 }

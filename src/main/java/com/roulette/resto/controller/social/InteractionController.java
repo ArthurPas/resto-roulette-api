@@ -4,6 +4,7 @@ import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.exception.APIError;
 import com.roulette.resto.service.social.InteractionsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -50,14 +51,26 @@ public class InteractionController {
 
 	@PostMapping("/resto/{restoId}/add-comment")
 	@Operation(summary = "Add comment on resto")
-
 	public ResponseEntity<?> newComment(Authentication authentication, @PathVariable String restoId,
 										@RequestBody @Valid NewComment newComment){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		NewComment comment = interactionsService.addComment(restoId, accountId,newComment);
-		return new ResponseEntity<>(comment,HttpStatus.OK);
+		record CommentResponse(String comment, int id){};
+		int commentId = interactionsService.addComment(restoId, accountId,newComment);
+		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
-
+	@PatchMapping("/edit-comment/{comment_id}")
+	@Operation(summary = "Change previous comment")
+	public ResponseEntity<?> editComment(Authentication authentication, @PathVariable String comment_id,
+										@RequestBody @Valid NewComment newComment){
+		record CommentResponse(String comment, int id){};
+		int commentId = interactionsService.editComment(comment_id,newComment);
+		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
+	}
+	@DeleteMapping("/delete-comment/{comment_id}")
+	public ResponseEntity<?> deleteComment(Authentication authentication, @PathVariable String comment_id){
+		interactionsService.deleteComment(comment_id);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 	@GetMapping("/me")
 	@Operation(summary = "Get my interactions")
 	public ResponseEntity<?> myInteractions(Authentication authentication) {

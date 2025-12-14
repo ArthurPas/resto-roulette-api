@@ -5,7 +5,11 @@ import com.roulette.resto.dao.social.InteractionDao;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.exception.APIError;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
@@ -16,11 +20,9 @@ import java.util.Set;
 @Slf4j
 public class InteractionRepository {
 	final InteractionDao  interactionDao;
-	private final RestoDao restoDao;
 
 	public InteractionRepository(InteractionDao interactionDao, RestoDao restoDao) {
 		this.interactionDao = interactionDao;
-		this.restoDao = restoDao;
 	}
 
 
@@ -36,16 +38,24 @@ public class InteractionRepository {
 		return interactionDao.removeLikeToResto(Integer.parseInt(restoId), accountId);
 	}
 
-	public String addCommentToResto(String restoId, int accountId, NewComment comment) {
-		int commentId = interactionDao.newCommentByUserToResto(Integer.parseInt(restoId),accountId,comment);
-		return interactionDao.getCommentById(commentId);
+	public int addCommentToResto(String restoId, int accountId, NewComment comment) {
+		return interactionDao.newCommentByUserToResto(Integer.parseInt(restoId),accountId,comment);
 	}
 
 	public Set<Integer> getLikedRestoByAccountId(int accountId) {
 		return new HashSet<>(interactionDao.getLikedRestos(accountId));
 	}
 
-	public List<Restaurant> getRestosBasicInfoByIds(Set<Integer> ids) {
-		return restoDao.getRestosBasicInfoByIds(ids);
+	public int editComment(String commentId, String comment) {
+		return interactionDao.editComment(Integer.parseInt(commentId), comment);
 	}
+
+	public boolean deleteComment(String commentId) {
+		String comment = interactionDao.getCommentById(Integer.parseInt(commentId));
+		if(comment == null) {
+			throw new APIError(14, HttpStatus.NOT_FOUND);
+		}
+		return interactionDao.deleteComment(Integer.parseInt(commentId));
+	}
+
 }

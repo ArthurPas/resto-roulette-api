@@ -22,10 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.security.auth.login.AccountNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -232,5 +229,12 @@ public class RestoService {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public List<Restaurant> getRestosBasicInfoByIds(Set<Integer> ids) {
+		if(ids.isEmpty()){
+			return Collections.emptyList();
+		}
+		return restoRepository.getRestosBasicInfoByIds(ids);
 	}
 }

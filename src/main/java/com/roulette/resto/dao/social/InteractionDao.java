@@ -3,9 +3,11 @@ package com.roulette.resto.dao.social;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.mapper.InteractionRowMapper;
+import com.roulette.resto.exception.APIError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -26,11 +28,11 @@ public class InteractionDao {
 
 
 	public List<SocialInteraction> getInteractionsByAccountId(int id) {
-		String query = "select account.account_id, i.resto_id, r.display_name as resto_name, text from " +
+		String query = "select account.account_id, c.resto_id, r.display_name as resto_name, content, c.comment_id " +
+				"from " +
 				"account " +
-				"JOIN resto_roulette.interaction i on account.account_id = i.account_id " +
-				"JOIN resto_roulette.resto r on i.resto_id = r.resto_id " +
-				"LEFT JOIN resto_roulette.comment c on i.comment_id = c.comment_id " +
+				"JOIN resto_roulette.comment c on account.account_id = c.account_id " +
+				"JOIN resto_roulette.resto r on c.resto_id = r.resto_id " +
 				"WHERE account.account_id = ?";
 		try {
 			return jdbcTemplate.query(query, new InteractionRowMapper(), id);
@@ -65,33 +67,19 @@ public class InteractionDao {
 	}
 
 	public int newCommentByUserToResto(int restoId, int accountId, NewComment comment) {
-		int commentId = insertComment(accountId, comment);
-		insertInteraction(restoId, accountId, commentId);
+		int commentId = insertComment(accountId,restoId, comment);
 		return commentId;
 
 	}
 
-	private int insertComment(int accountId, NewComment comment) {
-		String insertCommentQuery = "INSERT INTO comment (text,account_id) VALUES (?, ?)";
+	private int insertComment(int accountId, int restoId, NewComment comment) {
+		String insertCommentQuery = "INSERT INTO comment (content,account_id, resto_id) VALUES (?, ?, ?)";
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		jdbcTemplate.update(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(insertCommentQuery, Statement.RETURN_GENERATED_KEYS);
 			preparedStatement.setString(1, comment.getComment());
 			preparedStatement.setInt(2, accountId);
-			log.debug(preparedStatement.toString());
-			return preparedStatement;
-		}, generatedKeyHolder);
-		return Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
-	}
-
-	private int insertInteraction(int restoId, int accountId, int commentId) {
-		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		String socialInteractionQuery = "INSERT INTO interaction (resto_id,account_id, comment_id) VALUES (?, ?, ?)";
-		jdbcTemplate.update(conn -> {
-			PreparedStatement preparedStatement = conn.prepareStatement(socialInteractionQuery, Statement.RETURN_GENERATED_KEYS);
-			preparedStatement.setInt(1, restoId);
-			preparedStatement.setInt(2, accountId);
-			preparedStatement.setInt(3, commentId);
+			preparedStatement.setInt(3, restoId);
 			log.debug(preparedStatement.toString());
 			return preparedStatement;
 		}, generatedKeyHolder);
@@ -100,7 +88,7 @@ public class InteractionDao {
 	
 
 	public String getCommentById(int commentId) {
-		String query = "SELECT text FROM comment WHERE comment_id = ?";
+		String query = "SELECT content FROM comment WHERE comment_id = ?";
 		try {
 			return jdbcTemplate.queryForObject(query, String.class, commentId);
 		} catch (DataAccessException e) {
@@ -117,5 +105,30 @@ public class InteractionDao {
 			log.error(e.getMessage());
 			throw e;
 		}
+	}
+
+	public int editComment(int id, String comment) {
+		String query = "UPDATE comment SET content = ? WHERE comment_id = ?";
+		int rows = jdbcTemplate.update(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			preparedStatement.setString(1, comment);
+			preparedStatement.setInt(2, id);
+			log.debug(preparedStatement.toString());
+			return preparedStatement;
+		});
+		if (rows != 1) {
+			throw new APIError(14, HttpStatus.NOT_FOUND);
+		}
+		return id;
+	}
+	public boolean deleteComment(int id) {
+		String query = "DELETE FROM comment WHERE comment_id = ?";
+		int rows = jdbcTemplate.update(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			preparedStatement.setInt(1, id);
+			log.debug(preparedStatement.toString());
+			return preparedStatement;
+		});
+		return rows == 1;
 	}
 }

@@ -19,6 +19,7 @@ public class SocialInteraction {
 	String restoName;
 	@Schema(example = "Je me suis ré-ga-lé")
 	String comment;
+	Integer commentId;
 	@Schema(example = "True")
 	Boolean has_liked;
 }

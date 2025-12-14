@@ -169,4 +169,8 @@ public class RestoRepository {
 			throw e;
 		}
 	}
+
+	public List<Restaurant> getRestosBasicInfoByIds(Set<Integer> ids) {
+		return restoDao.getRestosBasicInfoByIds(ids);
+	}
 }

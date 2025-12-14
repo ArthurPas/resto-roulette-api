@@ -39,7 +39,6 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "Bearer Authentication")
 @Slf4j
-@Tag(name = "Resto")
 public class RestoController {
 
 	final private RestoService restoService;
@@ -51,6 +50,7 @@ public class RestoController {
 	}
 
 	@PostMapping("/create")
+	@Tag(name = "Resto | Resto management")
 	@Operation(summary = "Create a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -67,6 +67,7 @@ public class RestoController {
 		}
 	}
 	@GetMapping("")
+	@Tag(name = "Resto")
 	@Operation(summary = "Get all restaurants")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -84,6 +85,7 @@ public class RestoController {
 		}
 	}
 	@PostMapping("/{id}/new-business-hours")
+	@Tag(name = "Resto | Resto management")
 	@Operation(summary = "Add opening and closing hours for resto", description = "With a resto id given in " +
 			"parameter you can add a list of all the opening and closing hours by day. Weekday is an int between 1 " +
 			"and 7 which represent the day of the week (eg: 1 for monday, 7 for sunday)")
@@ -103,6 +105,7 @@ public class RestoController {
 		}
 	}
 	@PatchMapping("/{id}/update-business-hours")
+	@Tag(name = "Resto | Resto management")
 	@Operation(summary = "update opening and closing hours for resto")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -122,6 +125,7 @@ public class RestoController {
 	}
 	@GetMapping("/{id}")
 	@Operation(summary = "Get a restaurant")
+	@Tag(name = "Resto | Resto management")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Restaurant info",
@@ -138,6 +142,7 @@ public class RestoController {
 	}
 	@PutMapping("/{id}")
 	@Operation(summary = "Modify restaurant infos")
+	@Tag(name = "Resto | Resto management")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Restaurant info",
@@ -154,6 +159,8 @@ public class RestoController {
 		}
 	}
 	@GetMapping("/labels")
+
+	@Tag(name = "Resto")
 	@Operation(summary = "Get existing labels")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -173,6 +180,7 @@ public class RestoController {
 
 	@PostMapping("/food-types/create")
 	@Operation(summary = "Add a new food type")
+	@Tag(name = "Resto | Admin management")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "201",
 					description = "Success",
@@ -188,6 +196,7 @@ public class RestoController {
 		}
 	}
 	@GetMapping("/food-types")
+	@Tag(name = "Resto")
 	@Operation(summary = "Get all food types available")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -213,6 +222,7 @@ public class RestoController {
 					description = "Success",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = Integer.class)))})
+	@Tag(name = "Resto | Resto management")
 	public ResponseEntity<?> addPicture(Authentication authentication,
 											@RequestParam() MultipartFile menuPicture,
 											@PathVariable String id, @RequestParam String pictureType) {
@@ -227,6 +237,7 @@ public class RestoController {
 	}
 	@GetMapping(path = "/{id}/get-medias")
 	@Operation(summary = "Get resto medias (menu pictures, logos ..) ")
+	@Tag(name = "Resto")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
@@ -243,6 +254,7 @@ public class RestoController {
 
 
 	@DeleteMapping(path = "/{id}")
+	@Tag(name = "Resto | Admin management")
 	@Operation(summary = "Delete restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -262,6 +274,7 @@ public class RestoController {
 
 	}
 	@DeleteMapping("/delete-media/{uuid}")
+	@Tag(name = "Resto | Resto management")
 	public ResponseEntity<Void> deleteMedia(@PathVariable String uuid) {
 		restoService.removeMedia(uuid);
 		return new ResponseEntity<>(HttpStatus.OK);

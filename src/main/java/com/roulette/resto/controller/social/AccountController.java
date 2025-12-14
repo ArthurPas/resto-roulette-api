@@ -47,7 +47,6 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 @RequestMapping("/users")
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "Bearer Authentication")
-@Tag(name = "Account | User profile")
 public class AccountController {
 	private final UserService userService;
 	private final JwtService jwtService;
@@ -64,6 +63,7 @@ public class AccountController {
 	}
 
 	@GetMapping("/me")
+	@Tag(name = "Account | User profile")
 	@Operation(summary = "Get information about an user", description = "Get all the information about a user by his " +
 			"id including basic info of his profile and an array of all his social interactions with restaurants")
 	@ApiResponses(value = {
@@ -88,7 +88,9 @@ public class AccountController {
 			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
 	}
+
 	@GetMapping("/owned-restaurants")
+	@Tag(name = "Account | User profile")
 	@Operation(summary = "Get restaurant(s) that user owns")
 	public ResponseEntity<?> getOwnedRestos(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
@@ -103,6 +105,7 @@ public class AccountController {
 	}
 
 	@PutMapping("info")
+	@Tag(name = "Account | User profile")
 	@Operation(summary = "Update user infos", description = "Update all users info " +
 			"send in the body all userinfo that changed or not")
 	@ApiResponses(value = {
@@ -129,6 +132,7 @@ public class AccountController {
 	}
 
 	@PostMapping(path = "/add-avatar", consumes = MULTIPART_FORM_DATA_VALUE)
+	@Tag(name = "Account | User profile")
 	@Operation(summary = "Add user profile picture")
 	public ResponseEntity<?> addUserAvatar(Authentication authentication,
 											   @RequestParam() MultipartFile avatar) {
@@ -138,6 +142,7 @@ public class AccountController {
 	}
 
 	@PatchMapping("password/new")
+	@Tag(name = "Account | User profile")
 	@Operation(summary = "Update password", description = "Password update with verification of the old password")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -165,6 +170,7 @@ public class AccountController {
 	}
 
 	@GetMapping("/admin/get-all")
+	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Get all users accounts info")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
@@ -178,6 +184,7 @@ public class AccountController {
 	}
 
 	@PatchMapping("/admin/update-role")
+	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Change account role", description = "Change the role of the account" +
 			" The role values available are : ROLE_USER, ROLE_RESTAURANT_OWNER, ROLE_MODERATOR, ROLE_ADMIN")
 	@ApiResponses(value = {
@@ -194,6 +201,7 @@ public class AccountController {
 	}
 
 	@DeleteMapping("/admin/delete-account")
+	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Delete account")
 	public ResponseEntity<?> deleteAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
 			adminService.rightCheckIsAdmin(authentication);
@@ -201,6 +209,7 @@ public class AccountController {
 			return new ResponseEntity<>(HttpStatus.OK);
 	}
 	@PatchMapping("/admin/recover-deleted-account")
+	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Recover deleted account")
 	public ResponseEntity<?> recoverAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
 			adminService.rightCheckIsAdmin(authentication);

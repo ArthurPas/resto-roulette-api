@@ -69,4 +69,11 @@ public class MediaService {
 				.collect(Collectors.toList());
 		return response;
 	}
+	public static String buildMediaUrl(String resourceId) {
+		return ServletUriComponentsBuilder.fromCurrentContextPath()
+				.path("/medias/")
+				.path(resourceId)
+				.toUriString();
+	}
+
 }

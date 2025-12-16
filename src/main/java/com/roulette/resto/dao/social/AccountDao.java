@@ -193,7 +193,7 @@ public class AccountDao {
 		}
 	}
 
-	public Account getAccountById(int id) {
+	public Account getAccountById(int id) throws AccountNotFoundException {
 		String query =
 				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
 						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
@@ -217,7 +217,7 @@ public class AccountDao {
 			return DataAccessUtils.requiredSingleResult(accounts);
 		} catch (EmptyResultDataAccessException e) {
 			log.error("failed to get account id : {}, error :{}",id, e.getMessage());
-			throw e;
+			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
 

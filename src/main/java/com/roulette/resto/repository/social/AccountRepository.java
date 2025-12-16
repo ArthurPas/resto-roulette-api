@@ -62,7 +62,7 @@ public class AccountRepository {
 		return accountDao.getUserInfoById(id);
 	}
 
-	public Account getAccountById(int id) {
+	public Account getAccountById(int id) throws AccountNotFoundException {
 		return accountDao.getAccountById(id);
 	}
 

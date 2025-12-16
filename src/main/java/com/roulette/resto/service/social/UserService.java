@@ -39,16 +39,14 @@ public class UserService {
 
 	final AccountRepository accountRepository;
 	final InteractionRepository interactionRepository;
-	private final AccountService accountService;
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
 
 	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository,
-					   AccountService accountService, AuthenticationManager authenticationManager,
+					   AuthenticationManager authenticationManager,
 					   PasswordEncoder passwordEncoder) {
 		this.accountRepository = accountRepository;
 		this.interactionRepository = interactionRepository;
-		this.accountService = accountService;
 		this.authenticationManager = authenticationManager;
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -56,16 +54,33 @@ public class UserService {
 
 
 	public UserInfoDto getUserInfoById(int id)  {
-		if(!accountService.existsById(id)) {
+		UserInfoDto userInfoDto = new UserInfoDto();
+		Account account = null;
+		try {
+			account = accountRepository.getAccountById(id);
+		} catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
-		UserInfoDto userInfoDto = new UserInfoDto();
-		Account account = accountRepository.getAccountById(id);
 		userInfoDto.setUserInfo(account.getUserInfo());
 		userInfoDto.setLogin(account.getLogin());
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
 		userInfoDto.setMedias(buildMediaUrl(mediaResources));
 		return userInfoDto;
+
+	}
+	public UserInfoDto getUserInfoByLogin(String login) {
+		try {
+			Account account = accountRepository.getAccountByLogin(login);
+			UserInfoDto userInfoDto = new UserInfoDto();
+			userInfoDto.setUserInfo(account.getUserInfo());
+			userInfoDto.setLogin(account.getLogin());
+			List<MediaResource> mediaResources = accountRepository.getAccountMedias(account.getAccountId());
+			userInfoDto.setMedias(buildMediaUrl(mediaResources));
+			return userInfoDto;
+		} catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
+
 
 	}
 
@@ -87,7 +102,7 @@ public class UserService {
 		}
 	}
 
-	public Account updatePassword(ChangePasswordDto passwordDto, int accountId) throws AuthenticationException{
+	public Account updatePassword(ChangePasswordDto passwordDto, int accountId) throws AuthenticationException {
 		try {
 			Account account = accountRepository.getAccountById(accountId);
 			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(account.getLogin(),
@@ -102,6 +117,8 @@ public class UserService {
 		} catch (DataAccessException e) {
 			log.error("account not found");
 			throw new APIError(64, HttpStatus.NOT_FOUND);
+		} catch (AccountNotFoundException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

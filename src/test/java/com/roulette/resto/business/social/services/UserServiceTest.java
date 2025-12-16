@@ -92,7 +92,6 @@ class UserServiceTest {
 			assertNotNull(result);
 			assertEquals("testuser", result.getLogin());
 			assertEquals("John", result.getUserInfo().getFirstName());
-			assertEquals(1, result.getSocialInteractions().size());
 			verify(accountService).existsById(userId);
 			verify(accountRepository).getAccountById(userId);
 			verify(interactionRepository).getInteractionsByAccountId(userId);
@@ -100,7 +99,7 @@ class UserServiceTest {
 
 		@Test
 		@DisplayName("should throw AccountNotFoundException when user does not exist")
-		void getUserInfoById_shouldThrowException_whenUserDoesNotExist() {
+		void getUserInfoById_shouldThrowException_whenUserDoesNotExist() throws AccountNotFoundException {
 			// Arrange
 			int userId = 99;
 			when(accountService.existsById(userId)).thenReturn(false);

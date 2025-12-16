@@ -70,8 +70,12 @@ public class AccountService implements UserDetailsService {
 	}
 
 	public boolean existsById(int id) {
-		Account account = accountRepository.getAccountById(id);
-		return account != null;
+		try {
+			accountRepository.getAccountById(id);
+			return true;
+		} catch (AccountNotFoundException e) {
+			return false;
+		}
 	}
 
 	public Account registerAccount(RegisterDto registerDto) throws DuplicateKeyException, APIError {

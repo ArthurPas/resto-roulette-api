@@ -216,4 +216,12 @@ public class AccountController {
 			accountService.recoverUser(deleteAccount);
 			return new ResponseEntity<>(HttpStatus.OK);
 	}
+	@GetMapping("/admin/{user_login}")
+	@Tag(name = "Account | Admin view")
+	@Operation(summary = "Get specific user info")
+	public ResponseEntity<?> recoverAccount(@PathVariable String user_login, Authentication authentication) {
+		adminService.rightCheckIsAdmin(authentication);
+		UserInfoDto userInfoDto = userService.getUserInfoByLogin(user_login);
+		return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
+	}
 }

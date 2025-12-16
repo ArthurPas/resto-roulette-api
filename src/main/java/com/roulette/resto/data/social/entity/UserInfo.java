@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
+import static com.roulette.resto.service.common.MediaService.buildMediaUrl;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
@@ -26,4 +27,7 @@ public class UserInfo {
 	UserRole role;
 	private boolean emailVerified;
 	private String avatar;
+	public void setAvatar(String avatar){
+		this.avatar = buildMediaUrl(avatar);
+	}
 }

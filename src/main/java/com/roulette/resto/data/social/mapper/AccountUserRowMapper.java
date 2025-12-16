@@ -2,16 +2,15 @@ package com.roulette.resto.data.social.mapper;
 
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 public class AccountUserRowMapper implements RowMapper<Account> {
 
 	@Override
 	public Account mapRow(ResultSet rs, int rowNum) throws SQLException {
-
 		UserInfoRowMapper userInfoRowMapper = new UserInfoRowMapper();
 		Account account = new Account();
 		account.setAccountId(rs.getInt("account_id"));

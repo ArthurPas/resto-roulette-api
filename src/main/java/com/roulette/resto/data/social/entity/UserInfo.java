@@ -25,4 +25,5 @@ public class UserInfo {
 	private Timestamp lastLoginAt;
 	UserRole role;
 	private boolean emailVerified;
+	private String avatar;
 }

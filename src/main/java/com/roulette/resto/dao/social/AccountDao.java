@@ -86,11 +86,17 @@ public class AccountDao {
 	}
 
 	public Account getAccountByLogin(String login) throws AccountNotFoundException {
-		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted " +
-				"FROM account " +
-				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
-				"WHERE login = ? ";
+		String query =
+				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
+						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
+						"uum.resource_id AS avatar " +
+						"FROM account " +
+						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
+						"LEFT JOIN resto_roulette.user_user_medias uum " +
+						"  ON account.account_id = uum.account_id " +
+						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
+						"WHERE login = ?";
+
 		try {
 			List<Account> accounts = jdbcTemplate.query(
 					connection -> {
@@ -110,11 +116,16 @@ public class AccountDao {
 	}
 
 	public Account getAccountByEmail(String email) throws AccountNotFoundException {
-		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified,account.created_at, user_info.last_login_at,is_deleted " +
-				"FROM account " +
-				"JOIN user_info on account.user_info_id = user_info.user_info_id " +
-				"WHERE email = ? ";
+		String query =
+				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
+						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
+						"uum.resource_id AS avatar " +
+						"FROM account " +
+						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
+						"LEFT JOIN resto_roulette.user_user_medias uum " +
+						"  ON account.account_id = uum.account_id " +
+						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
+						"WHERE email = ?";
 		try {
 			List<Account> accounts = jdbcTemplate.query(
 					connection -> {
@@ -183,11 +194,16 @@ public class AccountDao {
 	}
 
 	public Account getAccountById(int id) {
-		String query = "SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified,account.created_at, user_info.last_login_at,is_deleted " +
-				"FROM account " +
-				"JOIN resto_roulette.user_info on account.user_info_id = user_info.user_info_id " +
-				"WHERE account.account_id = ? ";
+		String query =
+				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
+						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
+						"uum.resource_id AS avatar " +
+						"FROM account " +
+						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
+						"LEFT JOIN resto_roulette.user_user_medias uum " +
+						"  ON account.account_id = uum.account_id " +
+						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
+							"WHERE account.account_id = ? ";
 		try {
 			List<Account> accounts = jdbcTemplate.query(
 					connection -> {
@@ -287,14 +303,18 @@ public class AccountDao {
 	}
 
 	public List<Account> getAll(int limit, int offset) {
-		String query = 	"SELECT account_id,login,password, verification_token, email, type_id as role, last_name, " +
-				"first_name, email_verified, last_login_at, account.created_at, account.is_deleted " +
-				"FROM account " +
-				"JOIN user_info on account.user_info_id = user_info.user_info_id "+
-				"WHERE is_deleted = false "+
-				"ORDER BY account_id " +
-				"LIMIT ? "+
-				"OFFSET ? ";
+		String query =
+				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
+						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
+						"uum.resource_id AS avatar " +
+						"FROM account " +
+						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
+						"LEFT JOIN resto_roulette.user_user_medias uum " +
+						"  ON account.account_id = uum.account_id " +
+						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
+						"ORDER BY account_id " +
+						"LIMIT ? "+
+						"OFFSET ? ";
 		try {
 			return jdbcTemplate.query(
 					connection -> {

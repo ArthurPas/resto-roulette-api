@@ -64,7 +64,9 @@ public class UserService {
 		userInfoDto.setUserInfo(account.getUserInfo());
 		userInfoDto.setLogin(account.getLogin());
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
-		userInfoDto.setMedias(buildMediaUrl(mediaResources));
+		userInfoDto.setMedias(
+				buildMediaUrl(mediaResources.stream()
+						.filter(mediaResource -> !mediaResource.getMediaType().equals(MediaType.AVATAR)).toList()));
 		return userInfoDto;
 
 	}

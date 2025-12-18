@@ -2,7 +2,6 @@ package com.roulette.resto.data.resto.dto.out;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.roulette.resto.data.common.dto.MediaResponse;
-import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
@@ -30,6 +29,8 @@ public class RestoDto {
 	Set<String> labels;
 	String address;
 	List<BusinessHour> businessHours;
+	double lon;
+	double lat;
 	Date creationDate;
 	Account owner;
 	List<MediaResponse> medias;
@@ -47,5 +48,7 @@ public class RestoDto {
 		this.owner = restaurant.getOwner();
 		this.medias = buildMediaUrl(restaurant.getMedias());
 		this.comments = restaurant.getInteractions().stream().map(SocialInteraction::getComment).toList();
+		this.lat = restaurant.getLatitude();
+		this.lon = restaurant.getLatitude();
 	}
 }

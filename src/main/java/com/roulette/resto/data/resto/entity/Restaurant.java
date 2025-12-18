@@ -24,8 +24,8 @@ public class Restaurant {
 	Set<String> foodTypes;
 	Set<String> labels;
 	String address;
-	BigDecimal longitude;
-	BigDecimal latitude;
+	double longitude;
+	double latitude;
 	List<BusinessHour> businessHours;
 	Date creationDate;
 	Account owner;

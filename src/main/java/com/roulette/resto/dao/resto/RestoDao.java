@@ -76,6 +76,30 @@ public class RestoDao {
 		}
 	}
 
+	public int createRestoWithoutOwner(Restaurant restaurant) {
+		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+		Date createdDate = new Date(System.currentTimeMillis());
+		String query = "INSERT INTO resto (display_name, created_at) " +
+				"VALUES (?, ?)";
+			try {
+				jdbcTemplate.update(conn -> {
+					PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+					preparedStatement.setString(1, restaurant.getDisplayName());
+					preparedStatement.setDate(2, createdDate);
+					log.debug("Executing query {}",preparedStatement);
+					return preparedStatement;
+				}, generatedKeyHolder);
+				int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
+				this.createRestoInfos(restaurant, restoId);
+				this.linkFoodsType(restoId, restaurant.getFoodTypes());
+				this.addLabelsToResto(restoId, restaurant.getLabels());
+				return restoId;
+			} catch (DuplicateKeyException e) {
+				log.error(e.getMessage());
+				throw e;
+			}
+	}
+
 	private void linkFoodsType( int restoId,Set<String> foodTypes) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		for (String foodType: foodTypes) {
@@ -92,16 +116,14 @@ public class RestoDao {
 	}
 
 	private void createRestoInfos(Restaurant restaurant, int restoId){
-		String query = "INSERT INTO resto_info (name, address, lon, lat, resto_id) " +
-				"VALUES (?, ?, ?, ?, ?)";
+		String query = "INSERT INTO resto_info (name, address, resto_id) " +
+				"VALUES (?, ?, ?)";
 		try {
 				jdbcTemplate.update(conn -> {
 					PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 					preparedStatement.setString(1, restaurant.getName());
 					preparedStatement.setString(2, restaurant.getAddress());
-					preparedStatement.setBigDecimal(3, restaurant.getLongitude());
-					preparedStatement.setBigDecimal(4, restaurant.getLatitude());
-					preparedStatement.setInt(5,restoId);
+					preparedStatement.setInt(3,restoId);
 					log.debug("Executing query {}",preparedStatement);
 					return preparedStatement;
 				});

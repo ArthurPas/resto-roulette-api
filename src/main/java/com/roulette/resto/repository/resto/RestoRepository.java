@@ -42,7 +42,10 @@ public class RestoRepository {
 
 	public int createResto(Restaurant restaurant) {
 		try {
-			return restoDao.createResto(restaurant);
+			if(restaurant.getOwner() == null){
+				return restoDao.createRestoWithoutOwner(restaurant);
+			}
+			return createResto(restaurant);
 		}catch (Exception e) {
 			log.error(e.getMessage());
 			throw  e;

@@ -43,10 +43,11 @@ public class RestoService {
 		restaurant.setDisplayName(newRestaurant.getDisplayName());
 		restaurant.setLabels(newRestaurant.getLabels());
 		try{
-			//Remove from newRestaurant payload food type that not exists in db
 			Set<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
 			restaurant.setFoodTypes(existingFoodtype);
-			restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
+			if(newRestaurant.getLoginOwner() != null && !newRestaurant.getLoginOwner().isEmpty()){
+				restaurant.setOwner(accountRepository.getAccountByLogin(newRestaurant.getLoginOwner()));
+			}
 		}catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}

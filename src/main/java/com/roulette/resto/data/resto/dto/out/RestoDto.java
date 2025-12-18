@@ -49,6 +49,6 @@ public class RestoDto {
 		this.medias = buildMediaUrl(restaurant.getMedias());
 		this.comments = restaurant.getInteractions().stream().map(SocialInteraction::getComment).toList();
 		this.lat = restaurant.getLatitude();
-		this.lon = restaurant.getLatitude();
+		this.lon = restaurant.getLongitude();
 	}
 }

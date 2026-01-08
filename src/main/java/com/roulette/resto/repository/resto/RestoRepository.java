@@ -45,7 +45,7 @@ public class RestoRepository {
 			if(restaurant.getOwner() == null){
 				return restoDao.createRestoWithoutOwner(restaurant);
 			}
-			return createResto(restaurant);
+			return restoDao.createResto(restaurant);
 		}catch (Exception e) {
 			log.error(e.getMessage());
 			throw  e;

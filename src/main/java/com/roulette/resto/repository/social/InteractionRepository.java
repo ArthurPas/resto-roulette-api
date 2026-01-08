@@ -38,8 +38,8 @@ public class InteractionRepository {
 		return interactionDao.removeLikeToResto(Integer.parseInt(restoId), accountId);
 	}
 
-	public int addCommentToResto(String restoId, int accountId, NewComment comment) {
-		return interactionDao.newCommentByUserToResto(Integer.parseInt(restoId),accountId,comment);
+	public int addCommentToResto(String activity_id, int accountId, NewComment comment) {
+		return interactionDao.newCommentByUserToResto(Integer.parseInt(activity_id),accountId,comment);
 	}
 
 	public Set<Integer> getLikedRestoByAccountId(int accountId) {

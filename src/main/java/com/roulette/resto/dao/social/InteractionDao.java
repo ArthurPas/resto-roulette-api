@@ -28,11 +28,11 @@ public class InteractionDao {
 
 
 	public List<SocialInteraction> getInteractionsByAccountId(int id) {
-		String query = "select account.account_id, c.resto_id, r.display_name as resto_name, content, c.comment_id " +
+		String query = "select account.account_id, content, c.comment_id, a.activity_id " +
 				"from " +
 				"account " +
 				"JOIN resto_roulette.comment c on account.account_id = c.account_id " +
-				"JOIN resto_roulette.resto r on c.resto_id = r.resto_id " +
+				"JOIN activity a on c.activity_id = a.activity_id "+
 				"WHERE account.account_id = ?";
 		try {
 			return jdbcTemplate.query(query, new InteractionRowMapper(), id);
@@ -66,20 +66,20 @@ public class InteractionDao {
 		}
 	}
 
-	public int newCommentByUserToResto(int restoId, int accountId, NewComment comment) {
-		int commentId = insertComment(accountId,restoId, comment);
+	public int newCommentByUserToResto(int activity_id, int accountId, NewComment comment) {
+		int commentId = insertComment(accountId,activity_id, comment);
 		return commentId;
 
 	}
 
-	private int insertComment(int accountId, int restoId, NewComment comment) {
-		String insertCommentQuery = "INSERT INTO comment (content,account_id, resto_id) VALUES (?, ?, ?)";
+	private int insertComment(int accountId, int activity_id, NewComment comment) {
+		String insertCommentQuery = "INSERT INTO comment (content,account_id, activity_id) VALUES (?, ?, ?)";
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		jdbcTemplate.update(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(insertCommentQuery, Statement.RETURN_GENERATED_KEYS);
 			preparedStatement.setString(1, comment.getComment());
 			preparedStatement.setInt(2, accountId);
-			preparedStatement.setInt(3, restoId);
+			preparedStatement.setInt(3, activity_id);
 			log.debug(preparedStatement.toString());
 			return preparedStatement;
 		}, generatedKeyHolder);

@@ -54,8 +54,8 @@ public class InteractionsService {
 		return likedResto;
 	}
 
-	public int addComment(String restoId, int accountId, NewComment comment) {
-		return interactionRepository.addCommentToResto(restoId, accountId, comment);
+	public int addComment(String activity_id, int accountId, NewComment comment) {
+		return interactionRepository.addCommentToResto(activity_id, accountId, comment);
 	}
 	public int editComment(String commentId, @Valid NewComment comment) {
 		log.info(commentId);
@@ -77,26 +77,7 @@ public class InteractionsService {
 	}
 
 	public List<SocialInteraction> getInteractionsByAccountId(int accountId) {
-		List<SocialInteraction> socialInteractions = interactionRepository.getInteractionsByAccountId(accountId);
-		Set<Integer> restosLiked = getUserLikedRestoIds(accountId).getRestoIds();
-		for (SocialInteraction interaction : socialInteractions) {
-			if(restosLiked.contains(interaction.getRestoId())) {
-				interaction.setHas_liked(true);
-				restosLiked.removeIf(id -> Objects.equals(interaction.getRestoId(), id));
-			}
-		}
-		List<Restaurant> restaurantsLikedNotCommented = restoService.getRestosBasicInfoByIds(restosLiked);
-		if(!restaurantsLikedNotCommented.isEmpty()){
-			for (Restaurant restaurant : restaurantsLikedNotCommented) {
-				SocialInteraction socialInteraction = new SocialInteraction();
-				socialInteraction.setRestoId(restaurant.getId());
-				socialInteraction.setHas_liked(true);
-				socialInteraction.setRestoName(restaurant.getDisplayName());
-				socialInteraction.setAccountId(accountId);
-				socialInteractions.add(socialInteraction);
-			}
-		}
-		return socialInteractions;
+		return interactionRepository.getInteractionsByAccountId(accountId);
 	}
 
 }

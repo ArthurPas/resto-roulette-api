@@ -49,13 +49,13 @@ public class InteractionController {
 		return new ResponseEntity<>(likedResto,HttpStatus.OK);
 	}
 
-	@PostMapping("/resto/{restoId}/add-comment")
-	@Operation(summary = "Add comment on resto")
-	public ResponseEntity<?> newComment(Authentication authentication, @PathVariable String restoId,
+	@PostMapping("/resto/{activity_id}/add-comment")
+	@Operation(summary = "Add comment on an activity")
+	public ResponseEntity<?> newComment(Authentication authentication, @PathVariable String activity_id,
 										@RequestBody @Valid NewComment newComment){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		record CommentResponse(String comment, int id){};
-		int commentId = interactionsService.addComment(restoId, accountId,newComment);
+		int commentId = interactionsService.addComment(activity_id, accountId,newComment);
 		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
 	@PatchMapping("/edit-comment/{comment_id}")
@@ -72,7 +72,7 @@ public class InteractionController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	@GetMapping("/me")
-	@Operation(summary = "Get my interactions")
+	@Operation(summary = "Get my social interactions (comments)")
 	public ResponseEntity<?> myInteractions(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		List<SocialInteraction> comment = interactionsService.getInteractionsByAccountId(accountId);

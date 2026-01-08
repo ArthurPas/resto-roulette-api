@@ -11,15 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SocialInteraction {
-	@Schema(example = "1")
 	Integer accountId;
-	@Schema(example = "2")
-	Integer restoId;
-	@Schema(example = "pizza de la mama")
-	String restoName;
-	@Schema(example = "Je me suis ré-ga-lé")
+	int activityId;
 	String comment;
 	Integer commentId;
-	@Schema(example = "True")
-	Boolean has_liked;
 }

@@ -13,7 +13,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -36,7 +40,6 @@ public class KpiController {
 		this.kpiService = kpiService;
 		this.adminService = adminService;
 	}
-
 	@GetMapping("/yearlyRegistrations")
 	@Operation(summary = "New accounts account for a year", description = "Return an array of 12 integer " +
 			"which represent the amount of created accounts by month (first index for january, second for february .." +

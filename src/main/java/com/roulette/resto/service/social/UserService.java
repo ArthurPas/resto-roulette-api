@@ -63,7 +63,9 @@ public class UserService {
 		}
 		userInfoDto.setUserInfo(account.getUserInfo());
 		userInfoDto.setLogin(account.getLogin());
+
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
+		log.info(mediaResources.toString()+"COUCOU");
 		userInfoDto.setMedias(
 				buildMediaUrl(mediaResources.stream()
 						.filter(mediaResource -> !mediaResource.getMediaType().equals(MediaType.AVATAR)).toList()));
@@ -97,10 +99,12 @@ public class UserService {
 			if(updatedRows == 0) {
 				throw new SQLException("no rows updated");
 			}
-			return accountRepository.getUserInfoById(userId);
+			return accountRepository.getAccountById(userId).getUserInfo();
 		} catch (SQLException e) {
 			log.error(e.getMessage());
 			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 	}
 

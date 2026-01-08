@@ -47,6 +47,7 @@ public class SendEmailDao {
 
 
 		HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+		log.info(request.toString());
 		restTemplate.postForEntity(API_URL, request, String.class);
 
 	}

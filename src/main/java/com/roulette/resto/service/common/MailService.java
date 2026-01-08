@@ -23,7 +23,6 @@ public class MailService {
 			emailRepository.sendEmail(emailContent);
 		} catch (Exception e) {
 			log.error(e.getMessage());
-			throw e;
 		}
 	}
 

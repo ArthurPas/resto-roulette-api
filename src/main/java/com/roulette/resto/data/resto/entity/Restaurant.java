@@ -31,4 +31,5 @@ public class Restaurant {
 	Account owner;
 	List<MediaResource> medias;
 	List<SocialInteraction> interactions;
+	Boolean isVerified;
 }

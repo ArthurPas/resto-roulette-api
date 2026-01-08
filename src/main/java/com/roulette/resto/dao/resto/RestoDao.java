@@ -11,14 +11,12 @@ import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.resto.entity.mapper.BusinessHoursRowMapper;
 import com.roulette.resto.data.resto.entity.mapper.RestoRowMapper;
-import com.roulette.resto.exception.APIError;
 import com.roulette.resto.exception.RestoNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -26,7 +24,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
-import javax.sql.DataSource;
 import java.sql.*;
 import java.sql.Date;
 import java.time.LocalTime;
@@ -142,6 +139,7 @@ public class RestoDao {
 					" address," +
 					" lon," +
 					" lat," +
+					" is_verified," +
 					" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
 					"  FROM resto_resto_types" +
 					"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
@@ -228,6 +226,7 @@ public class RestoDao {
 				" address," +
 				" lon," +
 				" lat," +
+				" is_verified, "+
 				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
 				"  FROM resto_resto_types" +
 				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
@@ -482,6 +481,7 @@ public class RestoDao {
 				" address," +
 				" lon," +
 				" lat," +
+				" is_verified," +
 				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
 				"  FROM resto_resto_types" +
 				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
@@ -650,5 +650,19 @@ public class RestoDao {
 			restaurant.setName(rs.getString("display_name"));
 			return restaurant;
 		});
+	}
+
+	public void updatVerifyStatus(int id, boolean status) throws RestoNotFoundException {
+		String query = "UPDATE resto set is_verified = ? WHERE resto_id = ?";
+		int row = jdbcTemplate.update(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query);
+			preparedStatement.setBoolean(1, status);
+			preparedStatement.setInt(2, id);
+			log.debug("Executing query {}",preparedStatement);
+			return preparedStatement;
+		});
+		if (row == 0) {
+			throw new RestoNotFoundException("resto not found cant delete");
+		}
 	}
 }

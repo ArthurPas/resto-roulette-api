@@ -158,8 +158,48 @@ public class RestoController {
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
 	}
-	@GetMapping("/labels")
 
+	@PutMapping(path = "verify/{id}")
+	@Tag(name = "Resto | Admin management")
+	@Operation(summary = "Add verified restaurant")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> verifyResto(Authentication authentication,@PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			restoService.verifyResto(id);
+			record okResponse(String successMessage) {}
+			return ResponseEntity.ok(new okResponse("Resto is verified"));
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+
+	}
+	@PutMapping(path = "unverify/{id}")
+	@Tag(name = "Resto | Admin management")
+	@Operation(summary = "Add verified restaurant")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> unverifyResto(Authentication authentication,@PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			restoService.unverifyResto(id);
+			record okResponse(String successMessage) {}
+			return ResponseEntity.ok(new okResponse("verification status removed"));
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+
+	}
+	@GetMapping("/labels")
 	@Tag(name = "Resto")
 	@Operation(summary = "Get existing labels")
 	@ApiResponses(value = {
@@ -279,4 +319,6 @@ public class RestoController {
 		restoService.removeMedia(uuid);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+
 }

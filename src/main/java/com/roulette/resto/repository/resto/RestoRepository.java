@@ -176,4 +176,11 @@ public class RestoRepository {
 	public List<Restaurant> getRestosBasicInfoByIds(Set<Integer> ids) {
 		return restoDao.getRestosBasicInfoByIds(ids);
 	}
+
+	public void verifyResto(String id) throws RestoNotFoundException {
+		restoDao.updatVerifyStatus(Integer.parseInt(id), true);
+	}
+	public void unVerifyResto(String id) throws RestoNotFoundException {
+		restoDao.updatVerifyStatus(Integer.parseInt(id), false);
+	}
 }

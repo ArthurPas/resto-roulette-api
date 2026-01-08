@@ -30,6 +30,7 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		String aggregatedComments = rs.getString("aggregated_comments");
 		restaurant.setInteractions(splitCommentsIntoSocialInteractions(aggregatedComments));
 		restaurant.setCreationDate(rs.getDate("created_at"));
+		restaurant.setIsVerified(rs.getBoolean("is_verified"));
 		return restaurant;
 	}
 

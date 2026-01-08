@@ -35,6 +35,7 @@ public class RestoDto {
 	Account owner;
 	List<MediaResponse> medias;
 	List<String> comments;
+	Boolean isVerified;
 
 	public RestoDto(Restaurant restaurant) {
 		this.id = restaurant.getId();
@@ -50,5 +51,6 @@ public class RestoDto {
 		this.comments = restaurant.getInteractions().stream().map(SocialInteraction::getComment).toList();
 		this.lat = restaurant.getLatitude();
 		this.lon = restaurant.getLongitude();
+		this.isVerified = restaurant.getIsVerified();
 	}
 }

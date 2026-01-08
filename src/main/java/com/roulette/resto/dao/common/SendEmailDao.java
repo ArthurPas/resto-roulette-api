@@ -28,7 +28,7 @@ public class SendEmailDao {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-		headers.set("api-key", API_KEY);
+		headers.set("api-key", API_KEY.trim());
 
 		Map<String, Object> body = new HashMap<>();
 		Map<String, String> sender = Map.of(

@@ -20,17 +20,11 @@ public class UserInfoRowMapper implements RowMapper<UserInfo> {
 		userInfo.setEmailVerified(rs.getBoolean("email_verified"));
 		userInfo.setRole(UserRole.fromValue(rs.getInt("role")));
 		userInfo.setLastLoginAt(rs.getTimestamp("last_login_at"));
-		userInfo.setAvatar(rs.getString("avatar") == null ? null : rs.getString("avatar"));
-		return userInfo;
-	}
-	private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
-		ResultSetMetaData rsmd = rs.getMetaData();
-		int columns = rsmd.getColumnCount();
-		for (int x = 1; x <= columns; x++) {
-			if (columnName.equalsIgnoreCase(rsmd.getColumnName(x))) {
-				return true;
-			}
+		try {
+			userInfo.setAvatar(rs.getString("avatar"));
+		}catch (SQLException e) {
+			log.error(e.getMessage());
 		}
-		return false;
+		return userInfo;
 	}
 }

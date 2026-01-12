@@ -33,7 +33,7 @@ public class InteractionController {
 		this.interactionsService = interactionsService;
 		this.jwtService = jwtService;
 	}
-
+	@Tag(name = "Account | Resto interactions")
 	@PostMapping("/resto/{restoId}/like")
 	@Operation(summary = "Like a resto", description = "Basic like interaction")
 	public ResponseEntity<?> likeResto(Authentication authentication,@PathVariable String restoId){
@@ -41,14 +41,15 @@ public class InteractionController {
 		LikedResto likedResto = interactionsService.likeResto(restoId, accountId);
 		return new ResponseEntity<>(likedResto,HttpStatus.OK);
 	}
+	@Tag(name = "Account | Resto interactions")
 	@DeleteMapping("/resto/{restoId}/unlike")
-	@Operation(summary = "dislike a resto", description = "Basic dislike interaction")
+	@Operation(summary = "Remove like of a resto previously liked", description = "Basic dislike interaction")
 	public ResponseEntity<?> dislikeResto(Authentication authentication,@PathVariable String restoId){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		LikedResto likedResto = interactionsService.dislikeResto(restoId, accountId);
 		return new ResponseEntity<>(likedResto,HttpStatus.OK);
 	}
-
+	@Tag(name = "Account | Social interactions")
 	@PostMapping("/resto/{activity_id}/add-comment")
 	@Operation(summary = "Add comment on an activity")
 	public ResponseEntity<?> newComment(Authentication authentication, @PathVariable String activity_id,
@@ -58,19 +59,26 @@ public class InteractionController {
 		int commentId = interactionsService.addComment(activity_id, accountId,newComment);
 		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
+
+	@Tag(name = "Account | Social interactions")
 	@PatchMapping("/edit-comment/{comment_id}")
-	@Operation(summary = "Change previous comment")
+	@Operation(summary = "Change comment")
 	public ResponseEntity<?> editComment(Authentication authentication, @PathVariable String comment_id,
 										@RequestBody @Valid NewComment newComment){
 		record CommentResponse(String comment, int id){};
 		int commentId = interactionsService.editComment(comment_id,newComment);
 		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
+
+	@Tag(name = "Account | Social interactions")
 	@DeleteMapping("/delete-comment/{comment_id}")
+	@Operation(summary = "Delete comment")
 	public ResponseEntity<?> deleteComment(Authentication authentication, @PathVariable String comment_id){
 		interactionsService.deleteComment(comment_id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	@Tag(name = "Account | Social interactions")
 	@GetMapping("/me")
 	@Operation(summary = "Get my social interactions (comments)")
 	public ResponseEntity<?> myInteractions(Authentication authentication) {
@@ -78,4 +86,5 @@ public class InteractionController {
 		List<SocialInteraction> comment = interactionsService.getInteractionsByAccountId(accountId);
 		return new ResponseEntity<>(comment, HttpStatus.OK);
 	}
+
 }

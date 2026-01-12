@@ -1,7 +1,6 @@
 package com.roulette.resto.service.social;
 
-import com.roulette.resto.data.resto.entity.Restaurant;
-import com.roulette.resto.data.social.UserLikedRestos;
+import com.roulette.resto.data.social.dto.UserLikedRestos;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
@@ -16,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 @Service

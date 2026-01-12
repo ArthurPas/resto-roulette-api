@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Random;
 
@@ -84,12 +86,13 @@ public class AccountService implements UserDetailsService {
 		account.setLogin(registerDto.getLogin());
 		if(registerDto.getPassword() != null)
 			account.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-		account.setVerificationToken(generateVerificationToken(8));
+		account.setVerificationToken(generateVerificationToken(6));
 		UserInfo userInfo = new UserInfo();
 		userInfo.setEmail(registerDto.getEmail());
 		userInfo.setFirstName(registerDto.getFirstName());
 		userInfo.setLastName(registerDto.getLastName());
 		userInfo.setRole(UserRole.ROLE_USER);
+		userInfo.setLastLoginAt(Timestamp.from(Instant.now()));
 		account.setUserInfo(userInfo);
 		try {
 			int accountId = accountRepository.registerAccount(account);
@@ -104,7 +107,7 @@ public class AccountService implements UserDetailsService {
 	public static String generateVerificationToken(int length) {
 		Random rand = new Random();
 		StringBuilder res = new StringBuilder();
-		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+		String chars = "123456789";
 		for (int i = 0; i < length; i++) {
 			int randIndex = rand.nextInt(chars.length());
 			res.append(chars.charAt(randIndex));
@@ -129,7 +132,7 @@ public class AccountService implements UserDetailsService {
 				throw new APIError(700, HttpStatus.BAD_REQUEST);
 			} else {
 				accountRepository.updateMailVerificationStatus(account.getAccountId(), true);
-				accountRepository.updateVerificationToken(generateVerificationToken(8), account.getAccountId());
+				accountRepository.updateVerificationToken(generateVerificationToken(6), account.getAccountId());
 			}
 		} catch (SQLException e) {
 			throw new APIError(500, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -142,7 +145,7 @@ public class AccountService implements UserDetailsService {
 	public void sendVerificationCode(String email) throws APIError {
 		try {
 			Account account = accountRepository.getAccountByEmail(email);
-			String newToken = generateVerificationToken(8);
+			String newToken = generateVerificationToken(6);
 			accountRepository.updateVerificationToken(newToken, account.getAccountId());
 			account.setVerificationToken(newToken);
 			mailService.sendSecurityCode(account);

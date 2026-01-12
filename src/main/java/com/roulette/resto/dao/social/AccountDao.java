@@ -22,10 +22,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -66,8 +63,8 @@ public class AccountDao {
 
 	public int registerUserInfo(Account account) {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		String query = "INSERT INTO user_info (last_name, first_name,email, type_id) " +
-				"VALUES (?, ?, ?, ?)";
+		String query = "INSERT INTO user_info (last_name, first_name,email, type_id,last_login_at) " +
+				"VALUES (?, ?, ?, ?, ?)";
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -75,6 +72,7 @@ public class AccountDao {
 				preparedStatement.setString(2, account.getUserInfo().getFirstName());
 				preparedStatement.setString(3, account.getUserInfo().getEmail());
 				preparedStatement.setInt(4, account.getUserInfo().getRole().getRoleId());
+				preparedStatement.setTimestamp(5, account.getUserInfo().getLastLoginAt());
 				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			}, generatedKeyHolder);

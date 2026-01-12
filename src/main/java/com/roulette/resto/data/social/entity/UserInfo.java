@@ -1,5 +1,6 @@
 package com.roulette.resto.data.social.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,6 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserInfo {
 	@Schema(example = "fan@resto.com", requiredMode = REQUIRED)
 	private String email;
@@ -24,9 +24,10 @@ public class UserInfo {
 	@Schema(example = "d'resto", requiredMode = NOT_REQUIRED)
 	private String lastName;
 	private Timestamp lastLoginAt;
+	@JsonIgnore
 	UserRole role;
 	private boolean emailVerified;
-	private String avatar;
+	private String avatar = "";
 	public void setAvatar(String avatar){
 		this.avatar = buildMediaUrl(avatar);
 	}

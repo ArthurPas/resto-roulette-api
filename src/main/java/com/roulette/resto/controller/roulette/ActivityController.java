@@ -36,7 +36,7 @@ public class ActivityController {
 		activityService.removeAccountFromActivity(accountId,activityId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	@Tag(name = "Account | Social interactions")
+
 	@GetMapping("/me")
 	@Operation(summary = "Get my activities")
 	public ResponseEntity<?> myInteractions(Authentication authentication) {

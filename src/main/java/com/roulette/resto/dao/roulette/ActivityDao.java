@@ -29,12 +29,24 @@ public class ActivityDao {
 	}
 
 	public List<ActivityDto> getActivitiesByAccountId(int accountId) {
-		String query = "SELECT activity_id, account_id, resto_id, description FROM activity WHERE account_id = ?";
+		String query =
+				"SELECT t1.*, " +
+						"  (SELECT GROUP_CONCAT(DISTINCT account_id SEPARATOR ',') " +
+						"   FROM activity t3 " +
+						"   WHERE t3.session_id = t1.session_id) as participantsId " +
+						"FROM activity t1 " +
+						"WHERE t1.session_id IN ( " +
+						"    SELECT DISTINCT session_id " +
+						"    FROM activity " +
+						"    WHERE account_id = ? " +
+						") " +
+						"AND t1.account_id = ?";
 		try {
 			return jdbcTemplate.query(
 					connection -> {
 						PreparedStatement preparedStatement = connection.prepareStatement(query);
 						preparedStatement.setInt(1, accountId);
+						preparedStatement.setInt(2, accountId);
 						log.debug(preparedStatement.toString());
 						return preparedStatement;
 					},
@@ -45,4 +57,24 @@ public class ActivityDao {
 			return Collections.emptyList();
 		}
 	}
+	
+	public List<ActivityDto> getActivitiesBySessionId(String sessionId) {
+		String query = "SELECT activity_id, account_id, resto_id, description, session_id FROM activity WHERE session_id " +
+				"= ?";
+		try {
+			return jdbcTemplate.query(
+					connection -> {
+						PreparedStatement preparedStatement = connection.prepareStatement(query);
+						preparedStatement.setString(1, sessionId);
+						log.debug(preparedStatement.toString());
+						return preparedStatement;
+					},
+					new ActivityRowMapper()
+			);
+		} catch (DataAccessException e) {
+			log.warn("failed to get all accounts from database");
+			return Collections.emptyList();
+		}
+	}
+
 }

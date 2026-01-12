@@ -2,20 +2,37 @@ package com.roulette.resto.data.social.mapper;
 
 import com.roulette.resto.data.roulette.Activity;
 import com.roulette.resto.data.roulette.dto.out.ActivityDto;
+import com.roulette.resto.data.roulette.dto.out.RouletteSessionDto;
 import com.roulette.resto.data.social.entity.Account;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ActivityRowMapper implements RowMapper<ActivityDto> {
 	@Override
 	public ActivityDto mapRow(ResultSet rs, int rowNum) throws SQLException {
 		ActivityDto activityDto = new ActivityDto();
+		activityDto.setActivityId(rs.getInt("activity_id"));
 		activityDto.setAccountId(rs.getInt("account_id"));
 		activityDto.setDescription(rs.getString("description"));
-		activityDto.setRestoId(rs.getInt("resto_id"));
-		activityDto.setActivityId(rs.getInt("activity_id"));
+
+		RouletteSessionDto rouletteSessionDto = new RouletteSessionDto();
+		rouletteSessionDto.setSessionId(rs.getString("session_id"));
+		rouletteSessionDto.setRestoId(rs.getInt("resto_id"));
+		String participantsRaw = rs.getString("participantsId");
+		if (participantsRaw != null) {
+			List<Integer> participantIds = Arrays.stream(participantsRaw.split(","))
+					.map(String::trim)
+					.map(Integer::parseInt)
+					.collect(Collectors.toList());
+			rouletteSessionDto.setParticipantIds(participantIds);
+		}
+
+		activityDto.setDetails(rouletteSessionDto);
 		return activityDto;
 	}
 }

@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,13 +18,12 @@ import lombok.NoArgsConstructor;
 public class ActivityDto {
 	public int activityId;
 	public int accountId;
-	public int restoId;
 	public String description;
+	public RouletteSessionDto details;
 
 	public ActivityDto(Activity activity) {
 		this.activityId = activity.getActivityId();
 		this.accountId = activity.getAccount().getAccountId();
-		this.restoId = activity.getResto().getId();
 		this.description = activity.getDescription();
 	}
 }

@@ -206,4 +206,8 @@ public class UserService {
 		}
 		return false;
 	}
+
+	public void askForFollow(int accountAsker, String accountAsked) {
+			accountRepository.askForFollow(accountAsker, accountAsked);
+	}
 }

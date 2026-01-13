@@ -145,4 +145,13 @@ public class AccountRepository {
 			throw e;
 		}
 	}
+
+	public void askForFollow(int accountAsker, String accountAsked) {
+		try {
+
+			accountDao.newFollowRequest(accountAsker,Integer.parseInt(accountAsked));
+		}catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
+	}
 }

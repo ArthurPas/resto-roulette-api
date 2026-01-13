@@ -6,6 +6,7 @@ import com.roulette.resto.data.social.dto.out.LikedResto;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.service.social.InteractionsService;
+import com.roulette.resto.service.social.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,11 +28,13 @@ import java.util.List;
 public class InteractionController {
 
 	final InteractionsService interactionsService;
+	final UserService userService;
 	final JwtService jwtService;
 
-	public InteractionController(InteractionsService interactionsService, JwtService jwtService) {
+	public InteractionController(InteractionsService interactionsService, JwtService jwtService, UserService userService, UserService userService1) {
 		this.interactionsService = interactionsService;
 		this.jwtService = jwtService;
+		this.userService = userService1;
 	}
 	@Tag(name = "Account | Resto interactions")
 	@PostMapping("/resto/{restoId}/like")
@@ -86,5 +89,16 @@ public class InteractionController {
 		List<SocialInteraction> comment = interactionsService.getInteractionsByAccountId(accountId);
 		return new ResponseEntity<>(comment, HttpStatus.OK);
 	}
+
+	@Tag(name = "Account | Users interactions")
+	@PostMapping("/ask-for-follow/{accountAskedId}")
+	@Operation(summary = "Following request from account who proceed api call to accountAsked")
+	public ResponseEntity<?> follow(Authentication authentication, @PathVariable String accountAskedId){
+		int accountAsker = jwtService.getAccountIdAuthenticated(authentication);
+		userService.askForFollow(accountAsker,accountAskedId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+
 
 }

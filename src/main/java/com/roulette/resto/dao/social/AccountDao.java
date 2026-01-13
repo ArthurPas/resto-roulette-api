@@ -11,6 +11,7 @@ import com.roulette.resto.data.social.mapper.UserInfoRowMapper;
 import com.roulette.resto.exception.APIError;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
@@ -470,6 +471,23 @@ public class AccountDao {
 		} catch (DataAccessException e) {
 			log.error(e.getMessage());
 			throw e;
+		}
+	}
+
+	public void newFollowRequest(int accountAsker, int accountAsked) throws AccountNotFoundException {
+		try {
+			String query = "INSERT INTO follower (ask_account_id,asked_account_id) " +
+					"VALUES (?, ?)";
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setInt(1, accountAsker);
+				preparedStatement.setInt(2, accountAsked);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		} catch (DataIntegrityViolationException e) {
+			log.error(e.getMessage());
+			throw new AccountNotFoundException("accountAsked for follow doesnt exist");
 		}
 	}
 }

@@ -4,6 +4,7 @@ import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.service.social.InteractionsService;
 import com.roulette.resto.service.social.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +35,7 @@ public class SocialController {
 		this.jwtService = jwtService;
 		this.userService = userService1;
 	}
-	@Tag(name = "Account | Resto interactions")
+	@Tag(name = "Social | Resto interactions")
 	@PostMapping("/resto/{restoId}/like")
 	@Operation(summary = "Like a resto", description = "Basic like interaction")
 	public ResponseEntity<?> likeResto(Authentication authentication,@PathVariable String restoId){
@@ -42,7 +43,7 @@ public class SocialController {
 		LikedResto likedResto = interactionsService.likeResto(restoId, accountId);
 		return new ResponseEntity<>(likedResto,HttpStatus.OK);
 	}
-	@Tag(name = "Account | Resto interactions")
+	@Tag(name = "Social | Resto interactions")
 	@DeleteMapping("/resto/{restoId}/unlike")
 	@Operation(summary = "Remove like of a resto previously liked", description = "Basic dislike interaction")
 	public ResponseEntity<?> dislikeResto(Authentication authentication,@PathVariable String restoId){
@@ -50,7 +51,7 @@ public class SocialController {
 		LikedResto likedResto = interactionsService.dislikeResto(restoId, accountId);
 		return new ResponseEntity<>(likedResto,HttpStatus.OK);
 	}
-	@Tag(name = "Account | Social interactions")
+	@Tag(name = "Social | Comments ")
 	@PostMapping("/resto/{activity_id}/add-comment")
 	@Operation(summary = "Add comment on an activity")
 	public ResponseEntity<?> newComment(Authentication authentication, @PathVariable String activity_id,
@@ -61,7 +62,7 @@ public class SocialController {
 		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
 
-	@Tag(name = "Account | Social interactions")
+	@Tag(name = "Social | Comments")
 	@PatchMapping("/edit-comment/{comment_id}")
 	@Operation(summary = "Change comment")
 	public ResponseEntity<?> editComment(Authentication authentication, @PathVariable String comment_id,
@@ -71,7 +72,7 @@ public class SocialController {
 		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
 
-	@Tag(name = "Account | Social interactions")
+	@Tag(name = "Social | Comments")
 	@DeleteMapping("/delete-comment/{comment_id}")
 	@Operation(summary = "Delete comment")
 	public ResponseEntity<?> deleteComment(Authentication authentication, @PathVariable String comment_id){
@@ -79,7 +80,7 @@ public class SocialController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Tag(name = "Account | Social interactions")
+	@Tag(name = "Social | Comments")
 	@GetMapping("/me")
 	@Operation(summary = "Get my social interactions (comments)")
 	public ResponseEntity<?> myInteractions(Authentication authentication) {
@@ -88,7 +89,7 @@ public class SocialController {
 		return new ResponseEntity<>(comment, HttpStatus.OK);
 	}
 
-	@Tag(name = "Account | Users interactions")
+	@Tag(name = "Account | Followers")
 	@PostMapping("/ask-for-follow/{accountAskedId}")
 	@Operation(summary = "Following request from account who proceed api call to accountAsked")
 	public ResponseEntity<?> follow(Authentication authentication, @PathVariable String accountAskedId){
@@ -97,7 +98,7 @@ public class SocialController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Tag(name = "Account | Users interactions")
+	@Tag(name = "Account | Followers")
 	@PostMapping("/accept-follow/{accountAskerId}")
 	@Operation(summary = "Accept following request from accountAskerId ")
 	public ResponseEntity<?> acceptFollow(Authentication authentication, @PathVariable String accountAskerId){
@@ -106,7 +107,7 @@ public class SocialController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Tag(name = "Account | Users interactions")
+	@Tag(name = "Account | Followers")
 	@PostMapping("/unfollow/{accountToUnfollow}")
 	@Operation(summary = "Unfollow accountToUnfollow")
 	public ResponseEntity<?> unfollow(Authentication authentication, @PathVariable String accountToUnfollow){
@@ -114,4 +115,13 @@ public class SocialController {
 		userService.unfollow(accountAsked,accountToUnfollow);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+	@Tag(name = "Account | Followers")
+	@GetMapping("/followers")
+	@Operation(summary = "Get my followers")
+	public ResponseEntity<?> getFollowersList(Authentication authentication){
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
+		return new ResponseEntity<>(followers,HttpStatus.OK);
+	}
+
 }

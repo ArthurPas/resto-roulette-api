@@ -8,8 +8,8 @@ import com.roulette.resto.data.social.dto.in.ResetPasswordDto;
 import com.roulette.resto.data.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.dto.out.UserInfoDto;
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.repository.social.AccountRepository;
@@ -232,5 +232,9 @@ public class UserService {
 		catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
+	}
+
+	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
+		return accountRepository.getFollowersByAccountId(accountId);
 	}
 }

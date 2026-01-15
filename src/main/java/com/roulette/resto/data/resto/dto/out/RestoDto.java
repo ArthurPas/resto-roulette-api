@@ -34,7 +34,6 @@ public class RestoDto {
 	Date creationDate;
 	Account owner;
 	List<MediaResponse> medias;
-	List<String> comments;
 	Boolean isVerified;
 
 	public RestoDto(Restaurant restaurant) {
@@ -48,7 +47,6 @@ public class RestoDto {
 		this.creationDate = restaurant.getCreationDate();
 		this.owner = restaurant.getOwner();
 		this.medias = buildMediaUrl(restaurant.getMedias());
-		this.comments = restaurant.getInteractions().stream().map(SocialInteraction::getComment).toList();
 		this.lat = restaurant.getLatitude();
 		this.lon = restaurant.getLongitude();
 		this.isVerified = restaurant.getIsVerified();

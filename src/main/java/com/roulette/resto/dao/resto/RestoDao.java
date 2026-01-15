@@ -149,11 +149,7 @@ public class RestoDao {
 					"  FROM resto_resto_labels" +
 					"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
 					"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-					" ) AS aggregated_labels, " +
-					" (SELECT GROUP_CONCAT(content SEPARATOR ';;')" +
-					"  FROM comment " +
-					"  WHERE comment.resto_id = resto.resto_id" +
-					" ) AS aggregated_comments " +
+					" ) AS aggregated_labels " +
 					" FROM resto_roulette.resto " +
 					"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
 				".resto_id" +
@@ -236,11 +232,7 @@ public class RestoDao {
 				"  FROM resto_resto_labels" +
 				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
 				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-				" ) AS aggregated_labels, " +
-				" (SELECT GROUP_CONCAT(content SEPARATOR ';;')" +
-				"  FROM comment" +
-				"  WHERE comment.resto_id = resto.resto_id" +
-				" ) AS aggregated_comments " +
+				" ) AS aggregated_labels " +
 				" FROM resto_roulette.resto " +
 				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id " +
 				" WHERE is_deleted = false "+
@@ -491,11 +483,7 @@ public class RestoDao {
 				"  FROM resto_resto_labels" +
 				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
 				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-				" ) AS aggregated_labels, " +
-				" (SELECT GROUP_CONCAT(content SEPARATOR ';;')" +
-				"  FROM comment " +
-				"  WHERE comment.resto_id = resto.resto_id" +
-				" ) AS aggregated_comments " +
+				" ) AS aggregated_labels " +
 				" FROM resto_roulette.resto " +
 				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id" +
 				" WHERE" +

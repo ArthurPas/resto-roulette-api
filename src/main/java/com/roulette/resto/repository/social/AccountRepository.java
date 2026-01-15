@@ -154,4 +154,8 @@ public class AccountRepository {
 	public void acceptFollow(String accountAskerId, int accountAskedId) throws AccountNotFoundException {
 		accountDao.acceptFollowRequest(Integer.parseInt(accountAskerId),accountAskedId);
 	}
+
+	public void unfollow(int accountId, String accountToUnfollow) throws AccountNotFoundException {
+		accountDao.unfollow(Integer.parseInt(accountToUnfollow),accountId);
+	}
 }

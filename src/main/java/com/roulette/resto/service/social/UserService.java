@@ -224,4 +224,13 @@ public class UserService {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 	}
+
+	public void unfollow(int accountId, String accountToUnfollow) {
+		try {
+			accountRepository.unfollow(accountId, accountToUnfollow);
+		}
+		catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
+	}
 }

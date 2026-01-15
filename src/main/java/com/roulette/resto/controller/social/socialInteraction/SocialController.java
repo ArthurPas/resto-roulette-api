@@ -23,7 +23,6 @@ import java.util.List;
 @RequestMapping("/users/social")
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "Bearer Authentication")
-@Tag(name = "Account | Social interactions")
 public class SocialController {
 
 	final InteractionsService interactionsService;
@@ -93,18 +92,26 @@ public class SocialController {
 	@PostMapping("/ask-for-follow/{accountAskedId}")
 	@Operation(summary = "Following request from account who proceed api call to accountAsked")
 	public ResponseEntity<?> follow(Authentication authentication, @PathVariable String accountAskedId){
-		int accountAsker = jwtService.getAccountIdAuthenticated(authentication);
-		userService.askForFollow(accountAsker,accountAskedId);
+		int accountAskerId = jwtService.getAccountIdAuthenticated(authentication);
+		userService.askForFollow(accountAskerId,accountAskedId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 	@Tag(name = "Account | Users interactions")
 	@PostMapping("/accept-follow/{accountAskerId}")
-	@Operation(summary = "Following request from account who proceed api call to accountAsked")
+	@Operation(summary = "Accept following request from accountAskerId ")
 	public ResponseEntity<?> acceptFollow(Authentication authentication, @PathVariable String accountAskerId){
-		int accountAsked = jwtService.getAccountIdAuthenticated(authentication);
-		userService.acceptFollow(accountAsked,accountAskerId);
+		int accountAskedId = jwtService.getAccountIdAuthenticated(authentication);
+		userService.acceptFollow(accountAskedId,accountAskerId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-
+	@Tag(name = "Account | Users interactions")
+	@PostMapping("/unfollow/{accountToUnfollow}")
+	@Operation(summary = "Unfollow accountToUnfollow")
+	public ResponseEntity<?> unfollow(Authentication authentication, @PathVariable String accountToUnfollow){
+		int accountAsked = jwtService.getAccountIdAuthenticated(authentication);
+		userService.unfollow(accountAsked,accountToUnfollow);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }

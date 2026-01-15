@@ -18,14 +18,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class SwaggerConfig implements WebMvcConfigurer {
 
 	@Bean
-	public GroupedOpenApi publicApi() {
-		return GroupedOpenApi.builder()
-				.group("resto-roulette")
-				.pathsToMatch("/**")
-				.build();
-	}
-
-	@Bean
 	public OpenAPI customOpenAPI() {
 		return new OpenAPI()
 				.info(new Info()
@@ -33,7 +25,61 @@ public class SwaggerConfig implements WebMvcConfigurer {
 						.version("1.0")
 						.description(
 								"eyJhbGciOiJIUzM4NCJ9.eyJ1c2VySWQiOjEsInN1YiI6ImZhbjJyZXN0byIsImlhdCI6MTc2NTAyNjk1Myw" +
-								"iZXhwIjoyMDgwMzg2OTUzfQ.Uf9awermXQ1GGGC6gyFMA-IhmobIMOAk8ZjZMgYAtrEDsq7qiqsxfgSah_T2" +
-								"LDW8"));
+										"iZXhwIjoyMDgwMzg2OTUzfQ.Uf9awermXQ1GGGC6gyFMA-IhmobIMOAk8ZjZMgYAtrEDsq7qiqsxfgSah_T2" +
+										"LDW8"));
+	}
+
+	@Bean
+	public GroupedOpenApi adminApi() {
+		return GroupedOpenApi.builder()
+				.group("Admin")
+				.packagesToScan("com.roulette.resto.controller.administration")
+				.build();
+	}
+
+	@Bean
+	public GroupedOpenApi restoApi() {
+		return GroupedOpenApi.builder()
+				.group("Resto")
+				.packagesToScan("com.roulette.resto.controller.resto")
+				.build();
+	}
+
+	@Bean
+	public GroupedOpenApi commonApi() {
+		return GroupedOpenApi.builder()
+				.group("Common")
+				.packagesToScan("com.roulette.resto.controller.common")
+				.build();
+	}
+
+	@Bean
+	public GroupedOpenApi rouletteApi() {
+		return GroupedOpenApi.builder()
+				.group("Roulette")
+				.packagesToScan("com.roulette.resto.controller.roulette")
+				.build();
+	}
+
+	@Bean
+	public GroupedOpenApi socialApi() {
+		return GroupedOpenApi.builder()
+				.group("Social")
+				.packagesToScan("com.roulette.resto.controller.social.interaction")
+				.build();
+	}
+	@Bean
+	public GroupedOpenApi accountApi() {
+		return GroupedOpenApi.builder()
+				.group("Account")
+				.packagesToScan("com.roulette.resto.controller.social.account")
+				.build();
+	}
+	@Bean
+	public GroupedOpenApi authApi() {
+		return GroupedOpenApi.builder()
+				.group("Auth")
+				.packagesToScan("com.roulette.resto.controller.social.auth")
+				.build();
 	}
 }

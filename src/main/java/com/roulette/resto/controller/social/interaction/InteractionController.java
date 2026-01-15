@@ -1,10 +1,9 @@
-package com.roulette.resto.controller.social;
+package com.roulette.resto.controller.social.interaction;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
-import com.roulette.resto.exception.APIError;
 import com.roulette.resto.service.social.InteractionsService;
 import com.roulette.resto.service.social.UserService;
 import io.swagger.v3.oas.annotations.Operation;

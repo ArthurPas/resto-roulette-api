@@ -2,7 +2,7 @@ package com.roulette.resto.business.social.controllers;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.exception.APIError;
-import com.roulette.resto.controller.social.AuthController;
+import com.roulette.resto.controller.social.auth.AuthController;
 import com.roulette.resto.data.social.dto.in.LoginDto;
 import com.roulette.resto.data.social.dto.in.RegisterDto;
 import com.roulette.resto.data.social.dto.in.VerifyEmailDto;

@@ -1,4 +1,4 @@
-package com.roulette.resto.controller.social;
+package com.roulette.resto.controller.social.account;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.administration.dto.out.AccountsInfos;
@@ -26,8 +26,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.annotation.MultipartConfig;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,9 +33,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.security.auth.login.AccountNotFoundException;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;

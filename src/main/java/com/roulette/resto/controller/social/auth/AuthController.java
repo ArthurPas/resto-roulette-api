@@ -1,11 +1,10 @@
-package com.roulette.resto.controller.social;
+package com.roulette.resto.controller.social.auth;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.*;
 import com.roulette.resto.data.social.dto.out.AuthResponse;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.exception.APIError;
-import com.roulette.resto.exception.ErrorResponse;
 import com.roulette.resto.service.social.AccountService;
 import com.roulette.resto.service.social.AuthService;
 import com.roulette.resto.service.social.UserService;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -188,5 +186,12 @@ public class AuthController {
 	public ResponseEntity<?> sendMail(@RequestBody SendEmailDto emailDto) {
 			accountService.sendVerificationCode(emailDto.getEmail());
 			return new ResponseEntity<>(HttpStatus.OK);
+	}
+	@PostMapping("/verifyVerificationCode")
+	@Operation(summary = "verify security token")
+	public ResponseEntity<?> verifyToken(@RequestBody VerifyTokenDto verifyEmailDto) throws APIError {
+		String token = accountService.verifyToken(verifyEmailDto);
+		record TokenResponse(String verifiedToken) {};
+		return new ResponseEntity<>(new TokenResponse(token), HttpStatus.CREATED);
 	}
 }

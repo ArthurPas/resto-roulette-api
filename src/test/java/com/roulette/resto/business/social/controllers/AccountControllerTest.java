@@ -1,7 +1,7 @@
 package com.roulette.resto.business.social.controllers;
 
 import com.roulette.resto.configuration.JwtService;
-import com.roulette.resto.controller.social.AccountController;
+import com.roulette.resto.controller.social.account.AccountController;
 import com.roulette.resto.data.social.dto.in.ChangePasswordDto;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.dto.out.AuthResponse;

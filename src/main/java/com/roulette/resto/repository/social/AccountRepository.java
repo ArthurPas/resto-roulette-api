@@ -1,6 +1,5 @@
 package com.roulette.resto.repository.social;
 
-import com.roulette.resto.dao.resto.RestoDao;
 import com.roulette.resto.dao.social.AccountDao;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
@@ -8,6 +7,7 @@ import com.roulette.resto.data.social.dto.in.DeleteAccount;
 import com.roulette.resto.data.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.service.common.MediaService;
@@ -157,5 +157,9 @@ public class AccountRepository {
 
 	public void unfollow(int accountId, String accountToUnfollow) throws AccountNotFoundException {
 		accountDao.unfollow(Integer.parseInt(accountToUnfollow),accountId);
+	}
+
+	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
+		return accountDao.getFollowersByAccountId(accountId);
 	}
 }

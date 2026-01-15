@@ -5,8 +5,10 @@ import com.roulette.resto.data.common.entity.MediaType;
 import com.roulette.resto.data.common.entity.mappers.MediaMapper;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.data.social.mapper.AccountUserRowMapper;
+import com.roulette.resto.data.social.mapper.MinimalAccountRowMapper;
 import com.roulette.resto.data.social.mapper.UserInfoRowMapper;
 import com.roulette.resto.exception.APIError;
 import lombok.extern.log4j.Log4j2;
@@ -16,13 +18,11 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.security.auth.login.AccountNotFoundException;
-import javax.sql.DataSource;
 import java.sql.*;
 import java.time.Instant;
 import java.util.Collections;
@@ -523,5 +523,29 @@ public class AccountDao {
 			log.error(e.getMessage());
 			throw new AccountNotFoundException("accountAsked for follow doesnt exist");
 		}
+	}
+
+	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
+		String query =	"SELECT  account.login, account.account_id, uum.resource_id AS avatar " +
+				"FROM account " +
+				"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
+				"LEFT JOIN resto_roulette.user_user_medias uum " +
+				"  ON account.account_id = uum.account_id " +
+				" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
+				"WHERE account.account_id IN (SELECT follower.asked_account_id " +
+						"FROM account " +
+						"JOIN follower on  account.account_id = follower.ask_account_id " +
+						"WHERE follower.accepted_date IS NOT NULL and account.account_id = ?)";
+
+		List<MinimalAccountInfo> accounts = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement preparedStatement = connection.prepareStatement(query);
+					preparedStatement.setInt(1, accountId);
+					log.debug(preparedStatement.toString());
+					return preparedStatement;
+				},
+				new MinimalAccountRowMapper()
+		);
+		return accounts;
 	}
 }

@@ -1,4 +1,4 @@
-package com.roulette.resto.controller.social.interaction;
+package com.roulette.resto.controller.social.socialInteraction;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.NewComment;
@@ -24,13 +24,13 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "Bearer Authentication")
 @Tag(name = "Account | Social interactions")
-public class InteractionController {
+public class SocialController {
 
 	final InteractionsService interactionsService;
 	final UserService userService;
 	final JwtService jwtService;
 
-	public InteractionController(InteractionsService interactionsService, JwtService jwtService, UserService userService, UserService userService1) {
+	public SocialController(InteractionsService interactionsService, JwtService jwtService, UserService userService, UserService userService1) {
 		this.interactionsService = interactionsService;
 		this.jwtService = jwtService;
 		this.userService = userService1;
@@ -97,7 +97,14 @@ public class InteractionController {
 		userService.askForFollow(accountAsker,accountAskedId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
+	@Tag(name = "Account | Users interactions")
+	@PostMapping("/accept-follow/{accountAskerId}")
+	@Operation(summary = "Following request from account who proceed api call to accountAsked")
+	public ResponseEntity<?> acceptFollow(Authentication authentication, @PathVariable String accountAskerId){
+		int accountAsked = jwtService.getAccountIdAuthenticated(authentication);
+		userService.acceptFollow(accountAsked,accountAskerId);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 
 
 }

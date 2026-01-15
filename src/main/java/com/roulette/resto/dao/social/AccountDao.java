@@ -490,4 +490,22 @@ public class AccountDao {
 			throw new AccountNotFoundException("accountAsked for follow doesnt exist");
 		}
 	}
+
+	public void acceptFollowRequest(int accountAskerId, int accountAskedId) throws AccountNotFoundException {
+		try {
+			String query = 	"UPDATE follower SET accepted_date = ? " +
+							"WHERE asked_account_id = ? AND ask_account_id = ?";
+			jdbcTemplate.update(connection -> {
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setDate(1, new Date(System.currentTimeMillis()));
+				preparedStatement.setInt(2, accountAskedId);
+				preparedStatement.setInt(3, accountAskerId);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		} catch (DataIntegrityViolationException e) {
+			log.error(e.getMessage());
+			throw new AccountNotFoundException("accountAsked for follow doesnt exist");
+		}
+	}
 }

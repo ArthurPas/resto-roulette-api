@@ -208,6 +208,20 @@ public class UserService {
 	}
 
 	public void askForFollow(int accountAsker, String accountAsked) {
+		try {
 			accountRepository.askForFollow(accountAsker, accountAsked);
+		}
+		catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
+	}
+
+	public void acceptFollow(int accountAskedId, String accountAskerId) {
+		try {
+			accountRepository.acceptFollow(accountAskerId, accountAskedId);
+		}
+		catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
 }

@@ -65,7 +65,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
 	public GroupedOpenApi socialApi() {
 		return GroupedOpenApi.builder()
 				.group("Social")
-				.packagesToScan("com.roulette.resto.controller.social.interaction")
+				.packagesToScan("com.roulette.resto.controller.social.socialInteraction")
 				.build();
 	}
 	@Bean

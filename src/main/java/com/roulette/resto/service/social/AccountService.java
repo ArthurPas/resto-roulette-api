@@ -3,6 +3,7 @@ package com.roulette.resto.service.social;
 import com.roulette.resto.data.social.dto.in.DeleteAccount;
 import com.roulette.resto.data.social.dto.in.RegisterDto;
 import com.roulette.resto.data.social.dto.in.VerifyEmailDto;
+import com.roulette.resto.data.social.dto.in.VerifyTokenDto;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.data.social.entity.UserRole;
@@ -13,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -140,6 +140,19 @@ public class AccountService implements UserDetailsService {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
 		return true;
+	}
+
+	public String verifyToken(VerifyTokenDto verifyEmailDto) throws APIError {
+		try {
+			Account account = accountRepository.getAccountByEmail(verifyEmailDto.getEmail());
+			if(!(Objects.equals(account.getVerificationToken(), verifyEmailDto.getVerificationCode()))) {
+				throw new APIError(700, HttpStatus.BAD_REQUEST);
+			} else {
+				return verifyEmailDto.getVerificationCode();
+			}
+		} catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
 
 	public void sendVerificationCode(String email) throws APIError {

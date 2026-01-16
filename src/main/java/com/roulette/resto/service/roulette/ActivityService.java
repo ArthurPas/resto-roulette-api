@@ -5,6 +5,7 @@ import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.repository.roulette.ActivityRepository;
 import com.roulette.resto.service.social.AccountService;
+import com.roulette.resto.service.social.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +17,13 @@ import java.util.List;
 @Service
 public class ActivityService {
 	final ActivityRepository activityRepository;
-	private final AccountService accountService;
+	final AccountService accountService;
+	final UserService userService;
 
-	public ActivityService(ActivityRepository activityRepository, AccountService accountService) {
+	public ActivityService(ActivityRepository activityRepository, AccountService accountService, UserService userService) {
 		this.activityRepository = activityRepository;
 		this.accountService = accountService;
+		this.userService = userService;
 	}
 
 	public void removeAccountFromActivity(int accountId, String activityId) {
@@ -30,9 +33,9 @@ public class ActivityService {
 		}
 	}
 
-	public List<ActivityDto> getMyActivities(int accountId) {
+	public List<ActivityDto> getActivityByAccountId(int accountId) {
 
-		List<ActivityDto> activities =  activityRepository.getMyActivities(accountId);
+		List<ActivityDto> activities =  activityRepository.getActivityByAccountId(accountId);
 		for (ActivityDto activity : activities) {
 			try {
 				List<MinimalAccountInfo> participantsInfo = new ArrayList<>();
@@ -49,6 +52,16 @@ public class ActivityService {
 
 	public ActivityDto getActivity(String activityId) {
 		return activityRepository.getActivity(activityId);
+	}
+
+	public List<ActivityDto> getMyFollowersActivities(int accountId) {
+		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
+		List<ActivityDto> activities = new ArrayList<>();
+		for (MinimalAccountInfo follower: followers) {
+			List<ActivityDto> followerActivities = getActivityByAccountId(follower.getAccountId());
+			activities.addAll(followerActivities);
+		}
+		return activities;
 	}
 }
 

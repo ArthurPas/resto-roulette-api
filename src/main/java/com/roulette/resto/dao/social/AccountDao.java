@@ -12,6 +12,8 @@ import com.roulette.resto.data.social.mapper.MinimalAccountRowMapper;
 import com.roulette.resto.data.social.mapper.UserInfoRowMapper;
 import com.roulette.resto.exception.APIError;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Repository;
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.*;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -219,6 +222,42 @@ public class AccountDao {
 			log.error("failed to get account id : {}, error :{}",id, e.getMessage());
 			throw new AccountNotFoundException(e.getMessage());
 		}
+	}
+	public List<Account> getAccountByIds(int[] ids) throws AccountNotFoundException {
+		if (ids == null || ids.length == 0) {
+			throw new AccountNotFoundException("ids is empty");
+		}
+
+		String placeholders = String.join(",", Collections.nCopies(ids.length, "?"));
+
+		String query =
+				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
+						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
+						"uum.resource_id AS avatar " +
+						"FROM account " +
+						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
+						"LEFT JOIN resto_roulette.user_user_medias uum " +
+						"  ON account.account_id = uum.account_id " +
+						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
+						"WHERE account.account_id IN (" + placeholders + ")";
+
+		List<Account> accounts = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(query);
+					for (int i = 0; i < ids.length; i++) {
+						ps.setInt(i + 1, ids[i]);
+					}
+					log.debug(ps.toString());
+					return ps;
+				},
+				new AccountUserRowMapper()
+		);
+
+		if (accounts.isEmpty()) {
+			throw new AccountNotFoundException("No account found");
+		}
+
+		return accounts;
 	}
 
 	public int updateUserInfo(String id, UpdateUserInfo newUserInfo) throws SQLException {

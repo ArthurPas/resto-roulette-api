@@ -1,5 +1,6 @@
 package com.roulette.resto.service.social;
 
+import com.roulette.resto.dao.social.AccountDao;
 import com.roulette.resto.data.social.dto.in.DeleteAccount;
 import com.roulette.resto.data.social.dto.in.RegisterDto;
 import com.roulette.resto.data.social.dto.in.VerifyEmailDto;
@@ -24,8 +25,10 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 
 
 @Slf4j
@@ -34,12 +37,14 @@ public class AccountService implements UserDetailsService {
 	final AccountRepository accountRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final MailService mailService;
+	private final AccountDao accountDao;
 
 
-	public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder,MailService mailService) {
+	public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder, MailService mailService, AccountDao accountDao) {
 		this.accountRepository = accountRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.mailService = mailService;
+		this.accountDao = accountDao;
 	}
 
 	public Account getAccountByLogin(String login) throws AccountNotFoundException {
@@ -190,5 +195,11 @@ public class AccountService implements UserDetailsService {
 		} catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
+	}
+	public List<Account> getAccountsByIds(Set<Integer> ids) throws AccountNotFoundException {
+		int[] arrayIds = ids.stream()
+				.mapToInt(Integer::intValue)
+				.toArray();
+		return accountDao.getAccountByIds(arrayIds);
 	}
 }

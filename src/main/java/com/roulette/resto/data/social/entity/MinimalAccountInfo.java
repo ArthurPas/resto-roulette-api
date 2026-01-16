@@ -11,4 +11,10 @@ public class MinimalAccountInfo {
 	private int accountId;
 	private String login;
 	private String avatar = "";
+
+	public MinimalAccountInfo(Account account) {
+		this.setAvatar(account.getUserInfo().getAvatar());
+		this.setLogin(account.getLogin());
+		this.setAccountId(account.getAccountId());
+	}
 }

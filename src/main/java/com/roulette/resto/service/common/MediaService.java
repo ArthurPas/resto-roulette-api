@@ -70,6 +70,9 @@ public class MediaService {
 		return response;
 	}
 	public static String buildMediaUrl(String resourceId) {
+		if(resourceId == null || resourceId.isEmpty()) {
+			return null;
+		}
 		return ServletUriComponentsBuilder.fromCurrentContextPath()
 				.path("/medias/")
 				.path(resourceId)

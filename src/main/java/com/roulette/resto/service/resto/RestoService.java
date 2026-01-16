@@ -243,7 +243,15 @@ public class RestoService {
 	public void verifyResto(String id){
 		restoRepository.verifyResto(id);
 	}
+
 	public void unverifyResto(String id) {
 		restoRepository.unVerifyResto(id);
+	}
+
+	public void submitVerification(String id){
+		restoRepository.submitVerification(id);
+	}
+	public void rejectVerification(String id){
+		restoRepository.rejectVerification(id);
 	}
 }

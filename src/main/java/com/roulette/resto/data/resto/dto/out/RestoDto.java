@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.resto.entity.VerificationStatus;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,7 @@ public class RestoDto {
 	Date creationDate;
 	Account owner;
 	List<MediaResponse> medias;
-	Boolean isVerified;
+	VerificationStatus verificationStatus;
 
 	public RestoDto(Restaurant restaurant) {
 		this.id = restaurant.getId();
@@ -49,6 +50,6 @@ public class RestoDto {
 		this.medias = buildMediaUrl(restaurant.getMedias());
 		this.lat = restaurant.getLatitude();
 		this.lon = restaurant.getLongitude();
-		this.isVerified = restaurant.getIsVerified();
+		this.verificationStatus = restaurant.getVerificationStatus();
 	}
 }

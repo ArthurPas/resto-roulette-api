@@ -9,6 +9,7 @@ import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.resto.entity.VerificationStatus;
 import com.roulette.resto.data.resto.entity.mapper.BusinessHoursRowMapper;
 import com.roulette.resto.data.resto.entity.mapper.RestoRowMapper;
 import com.roulette.resto.exception.RestoNotFoundException;
@@ -46,8 +47,8 @@ public class RestoDao {
 	public int createResto(Restaurant restaurant) {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		Date createdDate = new Date(System.currentTimeMillis());
-		String query = "INSERT INTO resto (display_name, owner_id, created_at) " +
-				"VALUES (?, ?, ?)";
+		String query = "INSERT INTO resto (display_name, owner_id, created_at, verification_status) " +
+				"VALUES (?, ?, ?, ?)";
 		try {
 			int accountId = accountDao.getAccountId(restaurant.getOwner());
 		try {
@@ -56,6 +57,7 @@ public class RestoDao {
 				preparedStatement.setString(1, restaurant.getDisplayName());
 				preparedStatement.setInt(2, accountId);
 				preparedStatement.setDate(3, createdDate);
+				preparedStatement.setString(4, VerificationStatus.UNVERIFIED.toString());
 				log.debug("Executing query {}",preparedStatement);
 				return preparedStatement;
 			}, generatedKeyHolder);
@@ -139,7 +141,7 @@ public class RestoDao {
 					" address," +
 					" lon," +
 					" lat," +
-					" is_verified," +
+					" verification_status," +
 					" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
 					"  FROM resto_resto_types" +
 					"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
@@ -222,7 +224,7 @@ public class RestoDao {
 				" address," +
 				" lon," +
 				" lat," +
-				" is_verified, "+
+				" verification_status, "+
 				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
 				"  FROM resto_resto_types" +
 				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
@@ -473,7 +475,7 @@ public class RestoDao {
 				" address," +
 				" lon," +
 				" lat," +
-				" is_verified," +
+				" verification_status," +
 				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
 				"  FROM resto_resto_types" +
 				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
@@ -640,11 +642,12 @@ public class RestoDao {
 		});
 	}
 
-	public void updatVerifyStatus(int id, boolean status) throws RestoNotFoundException {
-		String query = "UPDATE resto set is_verified = ? WHERE resto_id = ?";
+	public void updateVerifyStatus(int id, VerificationStatus status) throws RestoNotFoundException {
+		String query = "UPDATE resto set verification_status = ? WHERE resto_id = ?";
+		log.error(status.toString());
 		int row = jdbcTemplate.update(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setBoolean(1, status);
+			preparedStatement.setString(1, status.toString());
 			preparedStatement.setInt(2, id);
 			log.debug("Executing query {}",preparedStatement);
 			return preparedStatement;

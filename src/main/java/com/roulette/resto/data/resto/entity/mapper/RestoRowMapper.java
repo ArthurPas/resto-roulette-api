@@ -1,6 +1,7 @@
 package com.roulette.resto.data.resto.entity.mapper;
 
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.resto.entity.VerificationStatus;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		String aggregatedLabels = rs.getString("aggregated_labels");
 		restaurant.setLabels(aggregatedToSet(aggregatedLabels));
 		restaurant.setCreationDate(rs.getDate("created_at"));
-		restaurant.setIsVerified(rs.getBoolean("is_verified"));
+		restaurant.setVerificationStatus(VerificationStatus.valueOf(rs.getString("verification_status")));
 		return restaurant;
 	}
 
@@ -45,17 +46,5 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 			}
 		}
 		return result;
-	}
-	private List<SocialInteraction> splitCommentsIntoSocialInteractions(String aggregated_comments) {
-		if(aggregated_comments == null) {
-			return Collections.emptyList();
-		}
-		List<SocialInteraction> socialInteractions = new ArrayList<>();
-		for (String resultStr : aggregated_comments.split(";;")) {
-			SocialInteraction socialInteraction = new SocialInteraction();
-			socialInteraction.setComment(resultStr.trim());
-			socialInteractions.add(socialInteraction);
-		}
-		return socialInteractions;
 	}
 }

@@ -4,10 +4,13 @@ import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.resto.entity.VerificationStatus;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.service.social.AccountService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -15,6 +18,7 @@ import java.util.*;
 @Component
 @Slf4j
 public class RestoRowMapper implements RowMapper<Restaurant> {
+
 	@Override
 	public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
 		Restaurant restaurant = new Restaurant();
@@ -30,6 +34,9 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setLabels(aggregatedToSet(aggregatedLabels));
 		restaurant.setCreationDate(rs.getDate("created_at"));
 		restaurant.setVerificationStatus(VerificationStatus.valueOf(rs.getString("verification_status")));
+		Account account = new Account();
+		account.setAccountId(rs.getInt("owner_id"));
+		restaurant.setOwner(account);
 		return restaurant;
 	}
 
@@ -47,4 +54,5 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		}
 		return result;
 	}
+
 }

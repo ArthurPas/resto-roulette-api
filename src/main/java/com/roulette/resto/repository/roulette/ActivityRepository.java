@@ -20,7 +20,7 @@ public class ActivityRepository {
 		return activityDao.removeAccountFromActivity(accountId,Integer.parseInt(activityId));
 	}
 
-	public List<ActivityDto> getMyActivities(int accountId) {
+	public List<ActivityDto> getActivityByAccountId(int accountId) {
 		return activityDao.getActivitiesByAccountId(accountId);
 	}
 

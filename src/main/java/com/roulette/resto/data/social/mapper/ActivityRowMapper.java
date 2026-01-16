@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,10 +29,9 @@ public class ActivityRowMapper implements RowMapper<ActivityDto> {
 			List<Integer> participantIds = Arrays.stream(participantsRaw.split(","))
 					.map(String::trim)
 					.map(Integer::parseInt)
-					.collect(Collectors.toList());
-			rouletteSessionDto.setParticipantIds(participantIds);
+					.toList();
+			rouletteSessionDto.setParticipantIds(new HashSet<>(participantIds));
 		}
-
 		activityDto.setDetails(rouletteSessionDto);
 		return activityDto;
 	}

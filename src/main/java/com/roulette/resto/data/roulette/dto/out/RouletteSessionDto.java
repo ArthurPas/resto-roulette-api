@@ -1,11 +1,13 @@
 package com.roulette.resto.data.roulette.dto.out;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -14,5 +16,6 @@ import java.util.List;
 public class RouletteSessionDto {
 	public String sessionId;
 	public int restoId;
-	public List<Integer> participantIds;
+	public Set<Integer> participantIds;
+	public List<MinimalAccountInfo> participantInfos;
 }

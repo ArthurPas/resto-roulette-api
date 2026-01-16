@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/activities")
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "Bearer Authentication")
-@Tag(name = "App | Activity")
+
 public class ActivityController {
 	final JwtService jwtService;
 	final ActivityService activityService;
@@ -29,14 +29,14 @@ public class ActivityController {
 		this.jwtService = jwtService;
 		this.activityService = activityService;
 	}
-
+	@Tag(name = "App | Activity")
 	@DeleteMapping("/leave-activity/{activityId}")
 	public ResponseEntity<?> removeAffectedActivity(Authentication authentication,@PathVariable	String activityId) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		activityService.removeAccountFromActivity(accountId,activityId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
+	@Tag(name = "App | Activity")
 	@GetMapping("/me")
 	@Operation(summary = "Get my activities")
 	public ResponseEntity<?> myInteractions(Authentication authentication) {
@@ -44,5 +44,6 @@ public class ActivityController {
 		List<ActivityDto> comment = activityService.getMyActivities(accountId);
 		return new ResponseEntity<>(comment, HttpStatus.OK);
 	}
+	
 
 }

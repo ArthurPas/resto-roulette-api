@@ -9,6 +9,7 @@ import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Label;
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.resto.entity.VerificationStatus;
 import com.roulette.resto.exception.RestoNotFoundException;
 import com.roulette.resto.repository.social.AccountRepository;
 import com.roulette.resto.service.common.MediaService;
@@ -178,9 +179,16 @@ public class RestoRepository {
 	}
 
 	public void verifyResto(String id) throws RestoNotFoundException {
-		restoDao.updatVerifyStatus(Integer.parseInt(id), true);
+		restoDao.updateVerifyStatus(Integer.parseInt(id), VerificationStatus.VERIFIED);
 	}
 	public void unVerifyResto(String id) throws RestoNotFoundException {
-		restoDao.updatVerifyStatus(Integer.parseInt(id), false);
+		restoDao.updateVerifyStatus(Integer.parseInt(id), VerificationStatus.UNVERIFIED);
+	}
+	public void submitVerification(String id) throws RestoNotFoundException {
+		restoDao.updateVerifyStatus(Integer.parseInt(id), VerificationStatus.PENDING);
+	}
+
+	public void rejectVerification(String id) {
+		restoDao.updateVerifyStatus(Integer.parseInt(id), VerificationStatus.REJECTED);
 	}
 }

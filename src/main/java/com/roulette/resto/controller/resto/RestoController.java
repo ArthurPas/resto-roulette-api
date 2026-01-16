@@ -1,5 +1,6 @@
 package com.roulette.resto.controller.resto;
 
+import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
@@ -8,6 +9,7 @@ import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.resto.entity.VerificationStatus;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.exception.ErrorResponse;
 import com.roulette.resto.service.administration.AdminService;
@@ -43,10 +45,12 @@ public class RestoController {
 
 	final private RestoService restoService;
 	private final AdminService adminService;
+	private final JwtService jwtService;
 
-	public RestoController(RestoService restoService, AdminService adminService) {
+	public RestoController(RestoService restoService, AdminService adminService, JwtService jwtService) {
 		this.restoService = restoService;
 		this.adminService = adminService;
+		this.jwtService = jwtService;
 	}
 
 	@PostMapping("/create")
@@ -161,7 +165,7 @@ public class RestoController {
 
 	@PutMapping(path = "verify/{id}")
 	@Tag(name = "Resto | Admin management")
-	@Operation(summary = "Add verified restaurant")
+	@Operation(summary = "Verify restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
@@ -171,8 +175,8 @@ public class RestoController {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			restoService.verifyResto(id);
-			record okResponse(String successMessage) {}
-			return ResponseEntity.ok(new okResponse("Resto is verified"));
+			record okResponse(VerificationStatus verificationStatus) {}
+			return ResponseEntity.ok(new okResponse(VerificationStatus.VERIFIED));
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
@@ -181,7 +185,7 @@ public class RestoController {
 	}
 	@PutMapping(path = "unverify/{id}")
 	@Tag(name = "Resto | Admin management")
-	@Operation(summary = "Add verified restaurant")
+	@Operation(summary = "Remove verify status restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Success",
@@ -191,13 +195,49 @@ public class RestoController {
 		try {
 			adminService.rightCheckIsAdmin(authentication);
 			restoService.unverifyResto(id);
-			record okResponse(String successMessage) {}
-			return ResponseEntity.ok(new okResponse("verification status removed"));
+			record okResponse(VerificationStatus verificationStatus) {}
+			return ResponseEntity.ok(new okResponse(VerificationStatus.UNVERIFIED));
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);
 			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 		}
-
+	}
+	@PutMapping(path = "submitVerification/{id}")
+	@Tag(name = "Resto | Admin management")
+	@Operation(summary = "Submit verification request")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> submitVerification(@PathVariable String id) {
+		try {
+			restoService.submitVerification(id);
+			record okResponse(VerificationStatus verificationStatus) {}
+			return ResponseEntity.ok(new okResponse(VerificationStatus.PENDING));
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
+	}
+	@PutMapping(path = "rejectVerification/{id}")
+	@Tag(name = "Resto | Admin management")
+	@Operation(summary = "Reject verification request")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Success",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Integer.class)))})
+	public ResponseEntity<?> rejectVerification(Authentication authentication, @PathVariable String id) {
+		try {
+			adminService.rightCheckIsAdmin(authentication);
+			restoService.submitVerification(id);
+			record okResponse(VerificationStatus verificationStatus) {}
+			return ResponseEntity.ok(new okResponse(VerificationStatus.REJECTED));
+		} catch (APIError e) {
+			ErrorResponse errorResponse = new ErrorResponse(e);
+			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+		}
 	}
 	@GetMapping("/labels")
 	@Tag(name = "Resto")
@@ -209,7 +249,6 @@ public class RestoController {
 							schema = @Schema(implementation = List.class)))})
 	public ResponseEntity<?> getAll(Authentication authentication) {
 		try {
-			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(restoService.getLabels(),HttpStatus.OK);
 		} catch (APIError e) {
 			ErrorResponse errorResponse = new ErrorResponse(e);

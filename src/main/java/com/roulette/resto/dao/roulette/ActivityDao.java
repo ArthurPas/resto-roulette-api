@@ -1,11 +1,10 @@
 package com.roulette.resto.dao.roulette;
 
-import com.roulette.resto.data.roulette.Activity;
 import com.roulette.resto.data.roulette.dto.out.ActivityDto;
-import com.roulette.resto.data.social.mapper.AccountUserRowMapper;
 import com.roulette.resto.data.social.mapper.ActivityRowMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -77,4 +76,23 @@ public class ActivityDao {
 		}
 	}
 
+	public ActivityDto getActivityById(int activityId) {
+		String query =
+				"SELECT t1.*, " +
+						"  (SELECT GROUP_CONCAT(DISTINCT account_id SEPARATOR ',') " +
+						"   FROM activity t3 " +
+						"   WHERE t3.session_id = t1.session_id) as participantsId " +
+						"FROM activity t1 " +
+						"WHERE t1.activity_id = ?";
+		List<ActivityDto> results = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement preparedStatement = connection.prepareStatement(query);
+					preparedStatement.setInt(1, activityId);
+					log.debug(preparedStatement.toString());
+					return preparedStatement;
+				},
+				new ActivityRowMapper()
+		);
+		return DataAccessUtils.requiredSingleResult(results);
+	}
 }

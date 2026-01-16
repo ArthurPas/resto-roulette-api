@@ -46,6 +46,10 @@ public class ActivityService {
 		}
 		return activities;
 	}
+
+	public ActivityDto getActivity(String activityId) {
+		return activityRepository.getActivity(activityId);
+	}
 }
 
 

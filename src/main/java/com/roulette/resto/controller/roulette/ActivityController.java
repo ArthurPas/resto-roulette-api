@@ -41,9 +41,15 @@ public class ActivityController {
 	@Operation(summary = "Get my activities")
 	public ResponseEntity<?> myInteractions(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<ActivityDto> comment = activityService.getMyActivities(accountId);
+		List<ActivityDto> activities = activityService.getMyActivities(accountId);
+		return new ResponseEntity<>(activities, HttpStatus.OK);
+	}
+	@Tag(name = "App | Activity")
+	@GetMapping("/{id}")
+	@Operation(summary = "Get my activities")
+	public ResponseEntity<?> getActivity(@PathVariable String id) {
+		ActivityDto comment = activityService.getActivity(id);
 		return new ResponseEntity<>(comment, HttpStatus.OK);
 	}
-	
 
 }

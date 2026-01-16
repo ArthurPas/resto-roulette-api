@@ -1,7 +1,6 @@
 package com.roulette.resto.repository.roulette;
 
 import com.roulette.resto.dao.roulette.ActivityDao;
-import com.roulette.resto.data.roulette.Activity;
 import com.roulette.resto.data.roulette.dto.out.ActivityDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -23,5 +22,9 @@ public class ActivityRepository {
 
 	public List<ActivityDto> getMyActivities(int accountId) {
 		return activityDao.getActivitiesByAccountId(accountId);
+	}
+
+	public ActivityDto getActivity(String activityId) {
+		return activityDao.getActivityById(Integer.parseInt(activityId));
 	}
 }

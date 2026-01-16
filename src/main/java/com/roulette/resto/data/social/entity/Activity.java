@@ -1,8 +1,6 @@
-package com.roulette.resto.data.roulette;
+package com.roulette.resto.data.social.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.roulette.resto.data.social.entity.Account;
-import com.roulette.resto.data.social.entity.Resto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

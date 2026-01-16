@@ -17,8 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Account implements UserDetails {
-	//account
-	@JsonIgnore
 	private int accountId;
 	private String login;
 	@JsonIgnore

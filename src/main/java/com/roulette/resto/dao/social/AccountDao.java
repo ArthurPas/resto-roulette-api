@@ -223,6 +223,8 @@ public class AccountDao {
 			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
+
+	// TODO: optimize sql request (cache ?)
 	public List<Account> getAccountByIds(int[] ids) throws AccountNotFoundException {
 		if (ids == null || ids.length == 0) {
 			throw new AccountNotFoundException("ids is empty");

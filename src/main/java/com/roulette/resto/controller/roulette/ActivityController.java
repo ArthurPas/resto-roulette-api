@@ -2,6 +2,7 @@ package com.roulette.resto.controller.roulette;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.roulette.dto.out.ActivityDto;
+import com.roulette.resto.data.roulette.in.NewSessionDto;
 import com.roulette.resto.service.roulette.ActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,6 +48,14 @@ public class ActivityController {
 	@Operation(summary = "Get an activity")
 	public ResponseEntity<?> getActivity(@PathVariable String id) {
 		ActivityDto activity = activityService.getActivity(id);
+		return new ResponseEntity<>(activity, HttpStatus.OK);
+	}
+	@Tag(name = "App | Activity")
+	@PostMapping("/new-session")
+	@Operation(summary = "Upload a new session")
+	public ResponseEntity<?> uploadNewSession(Authentication authentication, @RequestBody NewSessionDto session) {
+		int accountSessionHost = jwtService.getAccountIdAuthenticated(authentication);
+		List<ActivityDto> activity = activityService.createNewSession(accountSessionHost, session);
 		return new ResponseEntity<>(activity, HttpStatus.OK);
 	}
 

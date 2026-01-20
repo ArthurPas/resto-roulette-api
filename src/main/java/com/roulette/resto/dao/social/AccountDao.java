@@ -589,4 +589,31 @@ public class AccountDao {
 		);
 		return accounts;
 	}
+
+	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {
+		String query = """
+							SELECT
+								a.login,
+								a.account_id,
+								uum.resource_id AS avatar
+							FROM follower f
+							JOIN account a ON f.ask_account_id = a.account_id
+							LEFT JOIN resto_roulette.user_user_medias uum ON a.account_id = uum.account_id
+								AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+							WHERE
+								f.asked_account_id = ?
+								AND f.accepted_date IS NULL
+						""";
+
+		List<MinimalAccountInfo> accounts = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement preparedStatement = connection.prepareStatement(query);
+					preparedStatement.setInt(1, accountId);
+					log.debug(preparedStatement.toString());
+					return preparedStatement;
+				},
+				new MinimalAccountRowMapper()
+		);
+		return accounts;
+	}
 }

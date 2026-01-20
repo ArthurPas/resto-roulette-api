@@ -32,13 +32,11 @@ public class SocialController {
 	final InteractionsService interactionsService;
 	final UserService userService;
 	final JwtService jwtService;
-	private final ActivityService activityService;
 
-	public SocialController(InteractionsService interactionsService, JwtService jwtService, UserService userService, UserService userService1, ActivityService activityService) {
+	public SocialController(InteractionsService interactionsService, JwtService jwtService,UserService userService) {
 		this.interactionsService = interactionsService;
 		this.jwtService = jwtService;
-		this.userService = userService1;
-		this.activityService = activityService;
+		this.userService = userService;
 	}
 	@Tag(name = "Social | Resto interactions")
 	@PostMapping("/resto/{restoId}/like")
@@ -93,6 +91,14 @@ public class SocialController {
 		List<SocialInteraction> comment = interactionsService.getInteractionsByAccountId(accountId);
 		return new ResponseEntity<>(comment, HttpStatus.OK);
 	}
+	@Tag(name = "Account | Followers")
+	@GetMapping("/following-request")
+	@Operation(summary = "Get my following request that was not accepted yet")
+	public ResponseEntity<?> GetFollowingRequest(Authentication authentication){
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		return new ResponseEntity<>( userService.getFollowingRequest(accountId),HttpStatus.OK);
+	}
+
 
 	@Tag(name = "Account | Followers")
 	@PostMapping("/ask-for-follow/{accountAskedId}")
@@ -127,14 +133,6 @@ public class SocialController {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
 		return new ResponseEntity<>(followers,HttpStatus.OK);
-	}
-	@Tag(name = "Account | Followers")
-	@GetMapping("/followers/feed")
-	@Operation(summary = "Get my followers recents activities")
-	public ResponseEntity<?> getFollowersFeed(Authentication authentication){
-		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<ActivityDto> activities = activityService.getMyFollowersActivities(accountId);
-		return new ResponseEntity<>(activities,HttpStatus.OK);
 	}
 
 }

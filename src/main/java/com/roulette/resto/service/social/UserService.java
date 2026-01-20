@@ -237,4 +237,10 @@ public class UserService {
 	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
 		return accountRepository.getFollowersByAccountId(accountId);
 	}
+
+	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {
+		return accountRepository.getFollowingRequestByAccount(accountId);
+
+
+	}
 }

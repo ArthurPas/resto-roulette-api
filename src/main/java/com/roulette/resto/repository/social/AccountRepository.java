@@ -162,4 +162,8 @@ public class AccountRepository {
 	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
 		return accountDao.getFollowersByAccountId(accountId);
 	}
+
+	public List<MinimalAccountInfo> getFollowingRequestByAccount(int accountId) {
+		return accountDao.getFollowingRequest(accountId);
+	}
 }

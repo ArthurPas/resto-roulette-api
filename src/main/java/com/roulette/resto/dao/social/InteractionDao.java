@@ -43,12 +43,15 @@ public class InteractionDao {
 
 
 	public List<SocialInteraction> getInteractionsByAccountId(int id) {
-		String query = "select account.account_id, content, c.comment_id, a.activity_id " +
-				"from " +
-				"account " +
-				"JOIN resto_roulette.comment c on account.account_id = c.account_id " +
-				"JOIN activity a on c.activity_id = a.activity_id "+
-				"WHERE account.account_id = ?";
+		String query = """
+							select account.account_id, content, c.comment_id, a.activity_id
+							FROM
+								account
+							JOIN resto_roulette.comment c on account.account_id = c.account_id
+							JOIN activity a on c.activity_id = a.activity_id
+							WHERE
+							    account.account_id = ?
+						""";
 		try {
 			return jdbcTemplate.query(query, new InteractionRowMapper(), id);
 		} catch (DataAccessException e) {

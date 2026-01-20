@@ -47,44 +47,19 @@ public class RestoDao {
 	public int createResto(Restaurant restaurant) {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		Date createdDate = new Date(System.currentTimeMillis());
-		String query = "INSERT INTO resto (display_name, owner_id, created_at, verification_status) " +
-				"VALUES (?, ?, ?, ?)";
+		String query = """
+             INSERT INTO resto (display_name, owner_id, created_at, verification_status)
+             VALUES (?, ?, ?, ?)
+             """;
 		try {
 			int accountId = accountDao.getAccountId(restaurant.getOwner());
-		try {
-			jdbcTemplate.update(conn -> {
-				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-				preparedStatement.setString(1, restaurant.getDisplayName());
-				preparedStatement.setInt(2, accountId);
-				preparedStatement.setDate(3, createdDate);
-				preparedStatement.setString(4, VerificationStatus.UNVERIFIED.toString());
-				log.debug("Executing query {}",preparedStatement);
-				return preparedStatement;
-			}, generatedKeyHolder);
-			int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
-			this.createRestoInfos(restaurant, restoId);
-			this.linkFoodsType(restoId, restaurant.getFoodTypes());
-			this.addLabelsToResto(restoId, restaurant.getLabels());
-			return restoId;
-		} catch (DuplicateKeyException e) {
-			log.error(e.getMessage());
-			throw e;
-		}
-		} catch (AccountNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public int createRestoWithoutOwner(Restaurant restaurant) {
-		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		Date createdDate = new Date(System.currentTimeMillis());
-		String query = "INSERT INTO resto (display_name, created_at) " +
-				"VALUES (?, ?)";
 			try {
 				jdbcTemplate.update(conn -> {
 					PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 					preparedStatement.setString(1, restaurant.getDisplayName());
-					preparedStatement.setDate(2, createdDate);
+					preparedStatement.setInt(2, accountId);
+					preparedStatement.setDate(3, createdDate);
+					preparedStatement.setString(4, VerificationStatus.UNVERIFIED.toString());
 					log.debug("Executing query {}",preparedStatement);
 					return preparedStatement;
 				}, generatedKeyHolder);
@@ -97,13 +72,44 @@ public class RestoDao {
 				log.error(e.getMessage());
 				throw e;
 			}
+		} catch (AccountNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public int createRestoWithoutOwner(Restaurant restaurant) {
+		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+		Date createdDate = new Date(System.currentTimeMillis());
+		String query = """
+             INSERT INTO resto (display_name, created_at)
+             VALUES (?, ?)
+             """;
+		try {
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setString(1, restaurant.getDisplayName());
+				preparedStatement.setDate(2, createdDate);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, generatedKeyHolder);
+			int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
+			this.createRestoInfos(restaurant, restoId);
+			this.linkFoodsType(restoId, restaurant.getFoodTypes());
+			this.addLabelsToResto(restoId, restaurant.getLabels());
+			return restoId;
+		} catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	private void linkFoodsType( int restoId,Set<String> foodTypes) throws DuplicateKeyException {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 		for (String foodType: foodTypes) {
-			String query = "INSERT INTO resto_resto_types (resto_id,type_id) " +
-					"VALUES (?, (SELECT id FROM resto_type WHERE food_type = ?))";
+			String query = """
+                INSERT INTO resto_resto_types (resto_id,type_id)
+                VALUES (?, (SELECT id FROM resto_type WHERE food_type = ?))
+                """;
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setInt(1, restoId);
@@ -115,48 +121,51 @@ public class RestoDao {
 	}
 
 	private void createRestoInfos(Restaurant restaurant, int restoId){
-		String query = "INSERT INTO resto_info (name, address, resto_id) " +
-				"VALUES (?, ?, ?)";
+		String query = """
+             INSERT INTO resto_info (name, address, resto_id)
+             VALUES (?, ?, ?)
+             """;
 		try {
-				jdbcTemplate.update(conn -> {
-					PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-					preparedStatement.setString(1, restaurant.getName());
-					preparedStatement.setString(2, restaurant.getAddress());
-					preparedStatement.setInt(3,restoId);
-					log.debug("Executing query {}",preparedStatement);
-					return preparedStatement;
-				});
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setString(1, restaurant.getName());
+				preparedStatement.setString(2, restaurant.getAddress());
+				preparedStatement.setInt(3,restoId);
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			});
 		} catch (DataAccessException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	public Restaurant getRestoById(int restoId) throws RestoNotFoundException {
-		String query = "SELECT " +
-					" resto.resto_id," +
-					" resto.owner_id," +
-					" display_name," +
-					" created_at," +
-					" name," +
-					" address," +
-					" lon," +
-					" lat," +
-					" verification_status," +
-					" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
-					"  FROM resto_resto_types" +
-					"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
-					"  WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
-					" ) AS aggregated_food_types," +
-					" (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
-					"  FROM resto_resto_labels" +
-					"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
-					"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-					" ) AS aggregated_labels " +
-					" FROM resto_roulette.resto " +
-					"LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info" +
-				".resto_id" +
-					" WHERE" +
-					" resto_roulette.resto.resto_id = ? AND resto.is_deleted = false";
+		String query = """
+             SELECT
+              resto.resto_id,
+              resto.owner_id,
+              display_name,
+              created_at,
+              name,
+              address,
+              lon,
+              lat,
+              verification_status,
+              (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')
+               FROM resto_resto_types
+               JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id
+               WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id
+              ) AS aggregated_food_types,
+              (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')
+               FROM resto_resto_labels
+               JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id
+               WHERE resto_resto_labels.resto_id = resto.resto_id
+              ) AS aggregated_labels
+              FROM resto_roulette.resto
+             LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id
+              WHERE
+              resto_roulette.resto.resto_id = ? AND resto.is_deleted = false
+             """;
 		try {
 			List<Restaurant> results = jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -171,7 +180,9 @@ public class RestoDao {
 	}
 
 	public void createFoodType(String foodType) {
-		String query = "INSERT INTO resto_type (food_type) VALUES (?)";
+		String query = """
+             INSERT INTO resto_type (food_type) VALUES (?)
+             """;
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -186,7 +197,9 @@ public class RestoDao {
 	}
 
 	public Set<String> getFoodTypes() {
-		String query = "SELECT food_type FROM resto_type";
+		String query = """
+             SELECT food_type FROM resto_type
+             """;
 		try {
 			List<String> types = jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -201,7 +214,9 @@ public class RestoDao {
 	}
 
 	public List<String> getFoodType(String foodType) {
-		String query = "SELECT food_type FROM resto_type where food_type like ?";
+		String query = """
+             SELECT food_type FROM resto_type where food_type like ?
+             """;
 		try {
 			return jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -216,31 +231,33 @@ public class RestoDao {
 	}
 
 	public List<Restaurant> getAllRestos(int limit, int offset) throws RestoNotFoundException {
-			String query ="SELECT resto.resto_id," +
-				" resto.owner_id," +
-				" display_name," +
-				" created_at," +
-				" name," +
-				" address," +
-				" lon," +
-				" lat," +
-				" verification_status, "+
-				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
-				"  FROM resto_resto_types" +
-				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
-				"  WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
-				" ) AS aggregated_food_types," +
-				" (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
-				"  FROM resto_resto_labels" +
-				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
-				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-				" ) AS aggregated_labels " +
-				" FROM resto_roulette.resto " +
-				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id " +
-				" WHERE is_deleted = false "+
-				" GROUP BY resto_roulette.resto.resto_id "+
-				" ORDER BY resto.resto_id " +
-				" LIMIT ? OFFSET ? ";
+		String query = """
+             SELECT resto.resto_id,
+              resto.owner_id,
+              display_name,
+              created_at,
+              name,
+              address,
+              lon,
+              lat,
+              verification_status,
+              (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')
+               FROM resto_resto_types
+               JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id
+               WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id
+              ) AS aggregated_food_types,
+              (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')
+               FROM resto_resto_labels
+               JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id
+               WHERE resto_resto_labels.resto_id = resto.resto_id
+              ) AS aggregated_labels
+              FROM resto_roulette.resto
+              LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id
+              WHERE is_deleted = false
+              GROUP BY resto_roulette.resto.resto_id
+              ORDER BY resto.resto_id
+              LIMIT ? OFFSET ?
+             """;
 		try {
 			return jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -256,7 +273,9 @@ public class RestoDao {
 	}
 
 	public List<BusinessHour> getBusinessHoursByRestoId(int restoId) {
-		String query = "SELECT * FROM business_hour WHERE resto_id = ?";
+		String query = """
+             SELECT * FROM business_hour WHERE resto_id = ?
+             """;
 		return jdbcTemplate.query(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(query);
 			preparedStatement.setInt(1, restoId);
@@ -272,8 +291,10 @@ public class RestoDao {
 
 				LocalTime openHours = convertToLocalTime(businessHour.getOpeningHour());
 				LocalTime closingHours = convertToLocalTime(businessHour.getClosingHour());
-				String query = "INSERT INTO resto_roulette.business_hour (resto_id, week_day, opening_hour, closing_hour, is_lunch) " +
-						"VALUES (?, ?, ?, ?, ?)";
+				String query = """
+                   INSERT INTO resto_roulette.business_hour (resto_id, week_day, opening_hour, closing_hour, is_lunch)
+                   VALUES (?, ?, ?, ?, ?)
+                   """;
 				jdbcTemplate.update(conn -> {
 					PreparedStatement preparedStatement = conn.prepareStatement(query);
 					preparedStatement.setInt(1, restoId);
@@ -300,9 +321,11 @@ public class RestoDao {
 	}
 
 	public List<BusinessHour> changeBusinessHours(List<UpdateBusinessHours> updateBusinessHoursList, int restoId) {
-		String query = "UPDATE business_hour " +
-				" SET opening_hour = ?, closing_hour = ? " +
-				" WHERE week_day = ? AND resto_id = ? and is_lunch = ?";
+		String query = """
+             UPDATE business_hour
+             SET opening_hour = ?, closing_hour = ?
+             WHERE week_day = ? AND resto_id = ? and is_lunch = ?
+             """;
 
 		jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
 			@Override
@@ -325,8 +348,12 @@ public class RestoDao {
 	}
 
 	public Restaurant updateResto(int restoId, int ownerId, NewRestaurant newRestaurant) {
-		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?";
-		String queryResto = "UPDATE resto SET display_name = ?, resto.owner_id = ? WHERE resto_id = ?";
+		String queryRestoInfo = """
+             UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?
+             """;
+		String queryResto = """
+             UPDATE resto SET display_name = ?, resto.owner_id = ? WHERE resto_id = ?
+             """;
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(queryRestoInfo);
@@ -353,8 +380,12 @@ public class RestoDao {
 
 
 	public Restaurant updateResto(int restoId, NewRestaurant newRestaurant) {
-		String queryRestoInfo = "UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?";
-		String queryResto = "UPDATE resto SET display_name = ? WHERE resto_id = ?";
+		String queryRestoInfo = """
+             UPDATE resto_info SET name = ?, address = ? WHERE resto_id = ?
+             """;
+		String queryResto = """
+             UPDATE resto SET display_name = ? WHERE resto_id = ?
+             """;
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(queryRestoInfo);
@@ -379,7 +410,9 @@ public class RestoDao {
 	}
 
 	public String newLabel(String label) {
-		String query = "INSERT INTO resto_label (label_name) VALUES (?)";
+		String query = """
+             INSERT INTO resto_label (label_name) VALUES (?)
+             """;
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -395,7 +428,9 @@ public class RestoDao {
 	}
 
 	public int labelExist(String label) {
-		String query = "SELECT label_id FROM resto_label WHERE label_name = ?";
+		String query = """
+             SELECT label_id FROM resto_label WHERE label_name = ?
+             """;
 		try {
 			List<Integer> ids = jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -411,7 +446,9 @@ public class RestoDao {
 	}
 
 	public Set<String> getAllLabels() {
-		String query = "SELECT label_name FROM  resto_label";
+		String query = """
+             SELECT label_name FROM  resto_label
+             """;
 		try {
 			List<String> labels = jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -425,10 +462,12 @@ public class RestoDao {
 	}
 
 	public Set<String> getLabelByRestoId(int restoId) {
-		String query = "SELECT label_name FROM resto_label " +
-				"JOIN resto_roulette.resto_resto_labels ON resto_label.label_id = resto_resto_labels.label_id " +
-				"JOIN resto_roulette.resto r on resto_resto_labels.resto_id = r.resto_id " +
-				"WHERE r.resto_id = ?";
+		String query = """
+             SELECT label_name FROM resto_label
+             JOIN resto_roulette.resto_resto_labels ON resto_label.label_id = resto_resto_labels.label_id
+             JOIN resto_roulette.resto r on resto_resto_labels.resto_id = r.resto_id
+             WHERE r.resto_id = ?
+             """;
 		try {
 			List<String> labels = jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -448,8 +487,10 @@ public class RestoDao {
 		}
 		try {
 			for (String label : labels) {
-				String query = "INSERT INTO resto_resto_labels (resto_id,label_id) " +
-						"VALUES (?, (SELECT label_id FROM resto_label WHERE label_name = ?))";
+				String query = """
+                   INSERT INTO resto_resto_labels (resto_id,label_id)
+                   VALUES (?, (SELECT label_id FROM resto_label WHERE label_name = ?))
+                   """;
 				jdbcTemplate.update(conn -> {
 					PreparedStatement preparedStatement = conn.prepareStatement(query);
 					preparedStatement.setInt(1, restoId);
@@ -466,31 +507,33 @@ public class RestoDao {
 	}
 
 	public List<Restaurant> getRestoByOwner(int accountId) {
-		String query = "SELECT " +
-				" resto.resto_id," +
-				" resto.owner_id," +
-				" display_name," +
-				" created_at," +
-				" name," +
-				" address," +
-				" lon," +
-				" lat," +
-				" verification_status," +
-				" (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')" +
-				"  FROM resto_resto_types" +
-				"  JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id" +
-				"  WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id" +
-				" ) AS aggregated_food_types," +
-				" (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')" +
-				"  FROM resto_resto_labels" +
-				"  JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id" +
-				"  WHERE resto_resto_labels.resto_id = resto.resto_id" +
-				" ) AS aggregated_labels " +
-				" FROM resto_roulette.resto " +
-				" LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id" +
-				" WHERE" +
-				" resto_roulette.resto.owner_id = ? " +
-				" AND resto_roulette.resto.is_deleted = false";
+		String query = """
+             SELECT
+              resto.resto_id,
+              resto.owner_id,
+              display_name,
+              created_at,
+              name,
+              address,
+              lon,
+              lat,
+              verification_status,
+              (SELECT GROUP_CONCAT(food_table.food_type SEPARATOR ',')
+               FROM resto_resto_types
+               JOIN resto_type as food_table ON resto_resto_types.type_id = food_table.id
+               WHERE resto_resto_types.resto_id = resto_roulette.resto.resto_id
+              ) AS aggregated_food_types,
+              (SELECT GROUP_CONCAT(label_table.label_name SEPARATOR ',')
+               FROM resto_resto_labels
+               JOIN resto_label as label_table ON resto_resto_labels.label_id = label_table.label_id
+               WHERE resto_resto_labels.resto_id = resto.resto_id
+              ) AS aggregated_labels
+              FROM resto_roulette.resto
+              LEFT OUTER JOIN  resto_roulette.resto_info ON resto_roulette.resto.resto_id = resto_info.resto_id
+              WHERE
+              resto_roulette.resto.owner_id = ?
+              AND resto_roulette.resto.is_deleted = false
+             """;
 		return jdbcTemplate.query(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(query);
 			preparedStatement.setInt(1, accountId);
@@ -501,7 +544,9 @@ public class RestoDao {
 
 	public void saveRestoMedia(int restoId, String uuid, MediaType type) {
 		try {
-			String query = "INSERT INTO resto_resto_medias (resto_id,resource_id, media_type_id) VALUES (?, ?, ?)";
+			String query = """
+                INSERT INTO resto_resto_medias (resto_id,resource_id, media_type_id) VALUES (?, ?, ?)
+                """;
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
 				preparedStatement.setInt(1, restoId);
@@ -517,7 +562,9 @@ public class RestoDao {
 	}
 
 	public List<MediaResource> getRestoPictureByRestoId(String id) {
-		String query = "SELECT resource_id, media_type_id FROM resto_roulette.resto_resto_medias m WHERE m.resto_id = ?";
+		String query = """
+             SELECT resource_id, media_type_id FROM resto_roulette.resto_resto_medias m WHERE m.resto_id = ?
+             """;
 		try {
 			return jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -532,7 +579,9 @@ public class RestoDao {
 	}
 
 	public void deleteResto(String id) throws RestoNotFoundException {
-		String query = "UPDATE resto SET resto.is_deleted = true WHERE resto_id = ?";
+		String query = """
+             UPDATE resto SET resto.is_deleted = true WHERE resto_id = ?
+             """;
 		int row = jdbcTemplate.update(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(query);
 			preparedStatement.setString(1, id);
@@ -553,10 +602,12 @@ public class RestoDao {
 	}
 
 	private void removeLabelFromResto(int restoId, Set<String> labelsToDelete) {
-		String query = "DELETE t FROM resto_resto_labels t" +
-				" JOIN resto_label rt ON rt.label_id = t.label_id " +
-				" WHERE rt.label_name = ?" +
-				" AND t.resto_id = ?";
+		String query = """
+             DELETE t FROM resto_resto_labels t
+             JOIN resto_label rt ON rt.label_id = t.label_id
+             WHERE rt.label_name = ?
+             AND t.resto_id = ?
+             """;
 		List<String> labelsList = new ArrayList<>(labelsToDelete);
 
 		jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
@@ -594,10 +645,12 @@ public class RestoDao {
 	}
 
 	private void removeRestoFoodTypes(int restoId, Set<String> removeFoodTypes) {
-		String query = "DELETE t FROM resto_resto_types t" +
-				" JOIN resto_type rt ON rt.id = t.type_id " +
-				" WHERE rt.food_type = ?" +
-				" AND t.resto_id = ?";
+		String query = """
+             DELETE t FROM resto_resto_types t
+             JOIN resto_type rt ON rt.id = t.type_id
+             WHERE rt.food_type = ?
+             AND t.resto_id = ?
+             """;
 
 		List<String> foodTypesList = new ArrayList<>(removeFoodTypes);
 
@@ -617,7 +670,9 @@ public class RestoDao {
 
 
 	public void deleteRestoPictureDb(String uuid) throws RestoNotFoundException {
-		String query = "DELETE FROM resto_resto_medias WHERE resource_id = ?";
+		String query = """
+             DELETE FROM resto_resto_medias WHERE resource_id = ?
+             """;
 		int row = jdbcTemplate.update(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(query);
 			preparedStatement.setString(1, uuid);
@@ -633,7 +688,8 @@ public class RestoDao {
 		String placeholders = ids.stream()
 				.map(id -> "?")
 				.collect(Collectors.joining(", "));
-		String query = "SELECT resto_id, display_name FROM resto WHERE resto_id IN (" + placeholders + ")";
+		String query = """
+             SELECT resto_id, display_name FROM resto WHERE resto_id IN (""" + placeholders + ")";
 		return jdbcTemplate.query(query, ids.toArray(), (rs, rowNum) -> {
 			Restaurant restaurant = new Restaurant();
 			restaurant.setId(rs.getInt("resto_id"));
@@ -643,7 +699,9 @@ public class RestoDao {
 	}
 
 	public void updateVerifyStatus(int id, VerificationStatus status) throws RestoNotFoundException {
-		String query = "UPDATE resto set verification_status = ? WHERE resto_id = ?";
+		String query = """
+             UPDATE resto set verification_status = ? WHERE resto_id = ?
+             """;
 		log.error(status.toString());
 		int row = jdbcTemplate.update(conn -> {
 			PreparedStatement preparedStatement = conn.prepareStatement(query);

@@ -45,8 +45,10 @@ public class AccountDao {
 		int userInfoId = registerUserInfo(account);
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 
-		String query = "INSERT INTO account (login, password, user_info_id, verification_token) " +
-				"VALUES (?, ?, ?, ?)";
+		String query = """
+             INSERT INTO account (login, password, user_info_id, verification_token)
+             VALUES (?, ?, ?, ?)
+             """;
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -67,8 +69,10 @@ public class AccountDao {
 
 	public int registerUserInfo(Account account) {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-		String query = "INSERT INTO user_info (last_name, first_name,email, type_id,last_login_at) " +
-				"VALUES (?, ?, ?, ?, ?)";
+		String query = """
+             INSERT INTO user_info (last_name, first_name,email, type_id,last_login_at)
+             VALUES (?, ?, ?, ?, ?)
+             """;
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -89,16 +93,17 @@ public class AccountDao {
 	}
 
 	public Account getAccountByLogin(String login) throws AccountNotFoundException {
-		String query =
-				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
-						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
-						"uum.resource_id AS avatar " +
-						"FROM account " +
-						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
-						"LEFT JOIN resto_roulette.user_user_medias uum " +
-						"  ON account.account_id = uum.account_id " +
-						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
-						"WHERE login = ?";
+		String query = """
+             SELECT account.account_id, login, password, verification_token, email, type_id AS role,
+             last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted,
+             uum.resource_id AS avatar
+             FROM account
+             JOIN user_info ON account.user_info_id = user_info.user_info_id
+             LEFT JOIN resto_roulette.user_user_medias uum
+               ON account.account_id = uum.account_id
+              AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+             WHERE login = ?
+             """;
 
 		try {
 			List<Account> accounts = jdbcTemplate.query(
@@ -119,16 +124,17 @@ public class AccountDao {
 	}
 
 	public Account getAccountByEmail(String email) throws AccountNotFoundException {
-		String query =
-				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
-						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
-						"uum.resource_id AS avatar " +
-						"FROM account " +
-						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
-						"LEFT JOIN resto_roulette.user_user_medias uum " +
-						"  ON account.account_id = uum.account_id " +
-						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
-						"WHERE email = ?";
+		String query = """
+             SELECT account.account_id, login, password, verification_token, email, type_id AS role,
+             last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted,
+             uum.resource_id AS avatar
+             FROM account
+             JOIN user_info ON account.user_info_id = user_info.user_info_id
+             LEFT JOIN resto_roulette.user_user_medias uum
+               ON account.account_id = uum.account_id
+              AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+             WHERE email = ?
+             """;
 		try {
 			List<Account> accounts = jdbcTemplate.query(
 					connection -> {
@@ -147,10 +153,12 @@ public class AccountDao {
 	}
 
 	public UserInfo getUserInfoByLogin(String login) {
-		String query = "SELECT last_name, first_name, email, type_id as role, login " +
-				"FROM user_info " +
-				"JOIN account on user_info.user_info_id = account.user_info_id " +
-				"WHERE account.login = ? ";
+		String query = """
+             SELECT last_name, first_name, email, type_id as role, login
+             FROM user_info
+             JOIN account on user_info.user_info_id = account.user_info_id
+             WHERE account.login = ?
+             """;
 		try {
 			List<UserInfo> users = jdbcTemplate.query(
 					connection -> {
@@ -172,10 +180,12 @@ public class AccountDao {
 	}
 
 	public UserInfo getUserInfoById(int id) {
-		String query = "SELECT last_name, first_name, email, type_id as role, login, email_verified,last_login_at " +
-				"FROM user_info " +
-				"JOIN account on user_info.user_info_id = account.user_info_id " +
-				"WHERE account.account_id = ? ";
+		String query = """
+             SELECT last_name, first_name, email, type_id as role, login, email_verified,last_login_at
+             FROM user_info
+             JOIN account on user_info.user_info_id = account.user_info_id
+             WHERE account.account_id = ?
+             """;
 		try {
 			List<UserInfo> users = jdbcTemplate.query(
 					connection -> {
@@ -197,16 +207,17 @@ public class AccountDao {
 	}
 
 	public Account getAccountById(int id) throws AccountNotFoundException {
-		String query =
-				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
-						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
-						"uum.resource_id AS avatar " +
-						"FROM account " +
-						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
-						"LEFT JOIN resto_roulette.user_user_medias uum " +
-						"  ON account.account_id = uum.account_id " +
-						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
-							"WHERE account.account_id = ? ";
+		String query = """
+             SELECT account.account_id, login, password, verification_token, email, type_id AS role,
+             last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted,
+             uum.resource_id AS avatar
+             FROM account
+             JOIN user_info ON account.user_info_id = user_info.user_info_id
+             LEFT JOIN resto_roulette.user_user_medias uum
+               ON account.account_id = uum.account_id
+              AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+             WHERE account.account_id = ?
+             """;
 		try {
 			List<Account> accounts = jdbcTemplate.query(
 					connection -> {
@@ -232,16 +243,16 @@ public class AccountDao {
 
 		String placeholders = String.join(",", Collections.nCopies(ids.length, "?"));
 
-		String query =
-				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
-						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
-						"uum.resource_id AS avatar " +
-						"FROM account " +
-						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
-						"LEFT JOIN resto_roulette.user_user_medias uum " +
-						"  ON account.account_id = uum.account_id " +
-						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
-						"WHERE account.account_id IN (" + placeholders + ")";
+		String query = """
+             SELECT account.account_id, login, password, verification_token, email, type_id AS role,
+             last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted,
+             uum.resource_id AS avatar
+             FROM account
+             JOIN user_info ON account.user_info_id = user_info.user_info_id
+             LEFT JOIN resto_roulette.user_user_medias uum
+               ON account.account_id = uum.account_id
+              AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+             WHERE account.account_id IN (""" + placeholders + ")";
 
 		List<Account> accounts = jdbcTemplate.query(
 				connection -> {
@@ -264,10 +275,12 @@ public class AccountDao {
 
 	public int updateUserInfo(String id, UpdateUserInfo newUserInfo) throws SQLException {
 
-		String query = "UPDATE user_info " +
-				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
-				" SET user_info.email = ?, user_info.last_name = ?, user_info.first_name = ?" +
-				" WHERE account_id = ?";
+		String query = """
+             UPDATE user_info
+             JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id
+             SET user_info.email = ?, user_info.last_name = ?, user_info.first_name = ?
+             WHERE account_id = ?
+             """;
 		try {
 			return jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -289,9 +302,11 @@ public class AccountDao {
 	}
 
 	public void changePassword(int id, String newPassword) {
-		String query = "UPDATE account " +
-				" SET password = ? " +
-				" WHERE account_id = ?";
+		String query = """
+             UPDATE account
+             SET password = ?
+             WHERE account_id = ?
+             """;
 		try {
 
 			jdbcTemplate.update(connection -> {
@@ -308,9 +323,11 @@ public class AccountDao {
 	}
 
 	public void updateMailVerificationStatus(int accountId, boolean isVerified) throws SQLException {
-		String query = "UPDATE user_info " +
-				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
-				" SET user_info.email_verified = ? WHERE account_id = ?";
+		String query = """
+             UPDATE user_info
+             JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id
+             SET user_info.email_verified = ? WHERE account_id = ?
+             """;
 		try {
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -326,9 +343,11 @@ public class AccountDao {
 	}
 
 	public void updateVerificationToken(String token, int accountId) {
-		String query = "UPDATE account " +
-				"SET account.verification_token = ? " +
-				"WHERE account_id = ?";
+		String query = """
+             UPDATE account
+             SET account.verification_token = ?
+             WHERE account_id = ?
+             """;
 		try {
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -344,18 +363,19 @@ public class AccountDao {
 	}
 
 	public List<Account> getAll(int limit, int offset) {
-		String query =
-				"SELECT account.account_id, login, password, verification_token, email, type_id AS role, " +
-						"last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted, " +
-						"uum.resource_id AS avatar " +
-						"FROM account " +
-						"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
-						"LEFT JOIN resto_roulette.user_user_medias uum " +
-						"  ON account.account_id = uum.account_id " +
-						" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
-						"ORDER BY account_id " +
-						"LIMIT ? "+
-						"OFFSET ? ";
+		String query = """
+             SELECT account.account_id, login, password, verification_token, email, type_id AS role,
+             last_name, first_name, email_verified, account.created_at, user_info.last_login_at, is_deleted,
+             uum.resource_id AS avatar
+             FROM account
+             JOIN user_info ON account.user_info_id = user_info.user_info_id
+             LEFT JOIN resto_roulette.user_user_medias uum
+               ON account.account_id = uum.account_id
+              AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+             ORDER BY account_id
+             LIMIT ?
+             OFFSET ?
+             """;
 		try {
 			return jdbcTemplate.query(
 					connection -> {
@@ -374,9 +394,11 @@ public class AccountDao {
 	}
 
 	public void updateAccountRole(int roleId, int accountId) {
-		String query = "UPDATE user_info " +
-				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
-				" SET user_info.type_id = ? WHERE account_id = ?";
+		String query = """
+             UPDATE user_info
+             JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id
+             SET user_info.type_id = ? WHERE account_id = ?
+             """;
 		try {
 
 			jdbcTemplate.update(connection -> {
@@ -393,7 +415,9 @@ public class AccountDao {
 	}
 
 	public void deleteAccount(int accountId) {
-		String query = "UPDATE account SET account.is_deleted = true WHERE account_id = ?";
+		String query = """
+             UPDATE account SET account.is_deleted = true WHERE account_id = ?
+             """;
 		try {
 
 			jdbcTemplate.update(connection -> {
@@ -408,7 +432,9 @@ public class AccountDao {
 		}
 	}
 	public void recoverAccount(int accountId) {
-		String query = "UPDATE account SET account.is_deleted = false WHERE account_id = ?";
+		String query = """
+             UPDATE account SET account.is_deleted = false WHERE account_id = ?
+             """;
 		try {
 
 			jdbcTemplate.update(connection -> {
@@ -424,7 +450,9 @@ public class AccountDao {
 	}
 
 	public int getAccountId(Account account) throws AccountNotFoundException {
-		String query = "SELECT account_id FROM account WHERE login = ? LIMIT 1";
+		String query = """
+             SELECT account_id FROM account WHERE login = ? LIMIT 1
+             """;
 		try {
 			List<Integer> ids = jdbcTemplate.query(
 					connection -> {
@@ -442,9 +470,11 @@ public class AccountDao {
 	}
 
 	public void updateLoginDate(int accountId) throws SQLException {
-		String query = "UPDATE user_info " +
-				" JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id " +
-				" SET user_info.last_login_at = ? WHERE account_id = ?";
+		String query = """
+             UPDATE user_info
+             JOIN resto_roulette.account a on  user_info.user_info_id = a.user_info_id
+             SET user_info.last_login_at = ? WHERE account_id = ?
+             """;
 		try {
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -461,8 +491,11 @@ public class AccountDao {
 
 	public void saveMedia(int accountId, String uuid, MediaType mediaType) {
 		try {
-			String query = "INSERT INTO resto_roulette.user_user_medias (account_id,resource_id, media_type_id) " +
-					"VALUES (?, ?, ?)";
+			String query =
+					"""
+					   INSERT INTO resto_roulette.user_user_medias 
+					   (account_id,resource_id, media_type_id) VALUES (?, ?, ?)
+					""";
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
 				preparedStatement.setInt(1, accountId);
@@ -478,9 +511,11 @@ public class AccountDao {
 	}
 
 	public List<MediaResource> getAccountPictures(int id) {
-		String query = "SELECT resource_id, media_type_id " +
-				" FROM resto_roulette.user_user_medias m " +
-				" WHERE m.account_id = ? ";
+		String query =     """
+                      SELECT resource_id, media_type_id
+                      FROM resto_roulette.user_user_medias m
+                      WHERE m.account_id = ? 
+                   """;
 		try {
 			return jdbcTemplate.query(
 					connection -> {
@@ -497,9 +532,10 @@ public class AccountDao {
 	}
 
 	public void updateAvatar(int accountId, String uuid) {
-		String query = "UPDATE resto_roulette.user_user_medias m " +
-				" SET m.resource_id = ? " +
-				" WHERE m.account_id = ? AND m.media_type_id = ?";
+		String query = """
+                      UPDATE resto_roulette.user_user_medias m SET m.resource_id = ? 
+                      WHERE m.account_id = ? AND m.media_type_id = ?
+                   """;
 		try {
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -517,8 +553,9 @@ public class AccountDao {
 
 	public void newFollowRequest(int accountAsker, int accountAsked) throws AccountNotFoundException {
 		try {
-			String query = "INSERT INTO follower (ask_account_id,asked_account_id) " +
-					"VALUES (?, ?)";
+			String query = """
+              INSERT INTO follower (ask_account_id,asked_account_id) VALUES (?, ?)
+              """;
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
 				preparedStatement.setInt(1, accountAsker);
@@ -534,8 +571,9 @@ public class AccountDao {
 
 	public void acceptFollowRequest(int accountAskerId, int accountAskedId) throws AccountNotFoundException {
 		try {
-			String query = 	"UPDATE follower SET accepted_date = ? " +
-							"WHERE asked_account_id = ? AND ask_account_id = ?";
+			String query = """
+              UPDATE follower SET accepted_date = ? WHERE asked_account_id = ? AND ask_account_id = ?
+              """;
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
 				preparedStatement.setDate(1, new Date(System.currentTimeMillis()));
@@ -552,7 +590,9 @@ public class AccountDao {
 
 	public void unfollow(int accountToUnfollow, int accountId) throws AccountNotFoundException {
 		try {
-			String query = 	"DELETE FROM follower WHERE asked_account_id = ? AND ask_account_id = ?";
+			String query = """
+              DELETE FROM follower WHERE asked_account_id = ? AND ask_account_id = ?
+              """;
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
 				preparedStatement.setInt(1, accountToUnfollow);
@@ -567,16 +607,18 @@ public class AccountDao {
 	}
 
 	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
-		String query =	"SELECT  account.login, account.account_id, uum.resource_id AS avatar " +
-				"FROM account " +
-				"JOIN user_info ON account.user_info_id = user_info.user_info_id " +
-				"LEFT JOIN resto_roulette.user_user_medias uum " +
-				"  ON account.account_id = uum.account_id " +
-				" AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR') " +
-				"WHERE account.account_id IN (SELECT follower.asked_account_id " +
-						"FROM account " +
-						"JOIN follower on  account.account_id = follower.ask_account_id " +
-						"WHERE follower.accepted_date IS NOT NULL and account.account_id = ?)";
+		String query = """
+                      SELECT  account.login, account.account_id, uum.resource_id AS avatar
+                      FROM account
+                      JOIN user_info ON account.user_info_id = user_info.user_info_id
+                      LEFT JOIN resto_roulette.user_user_medias uum
+                        ON account.account_id = uum.account_id
+                       AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+                      WHERE account.account_id IN (SELECT follower.asked_account_id
+                            FROM account
+                            JOIN follower on  account.account_id = follower.ask_account_id
+                            WHERE follower.accepted_date IS NOT NULL and account.account_id = ?)
+                   """;
 
 		List<MinimalAccountInfo> accounts = jdbcTemplate.query(
 				connection -> {
@@ -592,18 +634,18 @@ public class AccountDao {
 
 	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {
 		String query = """
-							SELECT
-								a.login,
-								a.account_id,
-								uum.resource_id AS avatar
-							FROM follower f
-							JOIN account a ON f.ask_account_id = a.account_id
-							LEFT JOIN resto_roulette.user_user_medias uum ON a.account_id = uum.account_id
-								AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
-							WHERE
-								f.asked_account_id = ?
-								AND f.accepted_date IS NULL
-						""";
+                      SELECT
+                         a.login,
+                         a.account_id,
+                         uum.resource_id AS avatar
+                      FROM follower f
+                      JOIN account a ON f.ask_account_id = a.account_id
+                      LEFT JOIN resto_roulette.user_user_medias uum ON a.account_id = uum.account_id
+                         AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+                      WHERE
+                         f.asked_account_id = ?
+                         AND f.accepted_date IS NULL
+                   """;
 
 		List<MinimalAccountInfo> accounts = jdbcTemplate.query(
 				connection -> {

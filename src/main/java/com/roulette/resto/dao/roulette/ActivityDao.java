@@ -28,23 +28,26 @@ public class ActivityDao {
 	}
 
 	public int removeAccountFromActivity(int accountId, int activityId) {
-		String query = "DELETE FROM activity WHERE account_id = ? AND activity_id = ?";
+		String query = """
+             DELETE FROM activity WHERE account_id = ? AND activity_id = ?
+             """;
 		return jdbcTemplate.update(query,accountId,activityId);
 	}
 
 	public List<ActivityDto> getActivitiesByAccountId(int accountId) {
-		String query =
-				"SELECT t1.*, " +
-						"  (SELECT GROUP_CONCAT(DISTINCT account_id SEPARATOR ',') " +
-						"   FROM activity t3 " +
-						"   WHERE t3.session_id = t1.session_id) as participantsId " +
-						"FROM activity t1 " +
-						"WHERE t1.session_id IN ( " +
-						"    SELECT DISTINCT session_id " +
-						"    FROM activity " +
-						"    WHERE account_id = ? " +
-						") " +
-						"AND t1.account_id = ?";
+		String query = """
+             SELECT t1.*,
+               (SELECT GROUP_CONCAT(DISTINCT account_id SEPARATOR ',')
+                FROM activity t3
+                WHERE t3.session_id = t1.session_id) as participantsId
+             FROM activity t1
+             WHERE t1.session_id IN (
+                 SELECT DISTINCT session_id
+                 FROM activity
+                 WHERE account_id = ?
+             )
+             AND t1.account_id = ?
+             """;
 		try {
 			return jdbcTemplate.query(
 					connection -> {
@@ -62,10 +65,12 @@ public class ActivityDao {
 			return Collections.emptyList();
 		}
 	}
-	
+
 	public List<ActivityDto> getActivitiesBySessionId(String sessionId) {
-		String query = "SELECT activity_id, account_id, resto_id, description, session_id FROM activity WHERE session_id " +
-				"= ?";
+		String query = """
+             SELECT activity_id, account_id, resto_id, description, session_id FROM activity WHERE session_id
+             = ?
+             """;
 		try {
 			return jdbcTemplate.query(
 					connection -> {
@@ -85,13 +90,14 @@ public class ActivityDao {
 
 	public ActivityDto getActivityById(int activityId) {
 		try {
-			String query =
-					"SELECT t1.*, " +
-							"  (SELECT GROUP_CONCAT(DISTINCT account_id SEPARATOR ',') " +
-							"   FROM activity t3 " +
-							"   WHERE t3.session_id = t1.session_id) as participantsId " +
-							"FROM activity t1 " +
-							"WHERE t1.activity_id = ?";
+			String query = """
+                SELECT t1.*,
+                  (SELECT GROUP_CONCAT(DISTINCT account_id SEPARATOR ',')
+                   FROM activity t3
+                   WHERE t3.session_id = t1.session_id) as participantsId
+                FROM activity t1
+                WHERE t1.activity_id = ?
+                """;
 			List<ActivityDto> results = jdbcTemplate.query(
 					connection -> {
 						PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -114,8 +120,10 @@ public class ActivityDao {
 	}
 
 	public String createActivity(int accountId, String description, int restoId, String sessionId) {
-		String query = "INSERT INTO activity (resto_id, account_id, description, session_id) " +
-				"VALUES (?, ?,?, ?)";
+		String query = """
+             INSERT INTO activity (resto_id, account_id, description, session_id)
+             VALUES (?, ?,?, ?)
+             """;
 		try {
 			jdbcTemplate.update(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);

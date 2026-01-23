@@ -82,4 +82,11 @@ public class SwaggerConfig implements WebMvcConfigurer {
 				.packagesToScan("com.roulette.resto.controller.social.auth")
 				.build();
 	}
+	@Bean
+	public GroupedOpenApi marketingApi() {
+		return GroupedOpenApi.builder()
+				.group("Marketing")
+				.packagesToScan("com.roulette.resto.controller.marketing")
+				.build();
+	}
 }

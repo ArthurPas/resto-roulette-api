@@ -68,6 +68,7 @@ public class SecurityConfig {
 				.requestMatchers("/admin/**").authenticated()
 				.requestMatchers("/restos/**").authenticated()
 				.requestMatchers("/activities/**").authenticated()
+				.requestMatchers("/marketing/**").authenticated()
 				.requestMatchers("/medias/**").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 		).oauth2Login(oauth2 -> oauth2

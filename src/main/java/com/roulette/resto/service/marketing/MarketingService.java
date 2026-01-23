@@ -1,5 +1,6 @@
 package com.roulette.resto.service.marketing;
 
+import com.roulette.resto.data.marketing.MarketingCampaignInfo;
 import com.roulette.resto.data.marketing.NewMarketingCampaign;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.exception.APIError;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Slf4j
@@ -23,18 +25,26 @@ public class MarketingService {
 	}
 
 	public int createSponsoCampaign(int accountId, NewMarketingCampaign marketingCampaign) {
-		List<Restaurant> ownedResto = restoService.getRestosByOwnerId(accountId);
-		boolean owned = false;
-		for (Restaurant restaurant : ownedResto) {
-			if(restaurant.getId() == marketingCampaign.getRestoId()){
-				owned = true;
-				break;
-			}
-		}
+		boolean owned = restoService.isRestoOwnerByAccountId(marketingCampaign.getRestoId(), accountId);
 		if(!owned) {
 			throw new APIError(21, HttpStatus.FORBIDDEN);
 		}
 		return marketingRepository.createSponsoCampaign(marketingCampaign);
+
+	}
+
+	public MarketingCampaignInfo getCampaign(int accountId, String campaignId) {
+		try {
+
+			MarketingCampaignInfo marketingCampaignInfo = marketingRepository.getSponsoCampaign(campaignId);
+			boolean owned = restoService.isRestoOwnerByAccountId(marketingCampaignInfo.getRestoId(), accountId);
+			if(!owned) {
+				throw new APIError(21, HttpStatus.FORBIDDEN);
+			}
+			return marketingCampaignInfo;
+		}catch (NoSuchElementException e) {
+			throw new APIError(24, HttpStatus.NOT_FOUND);
+		}
 
 	}
 }

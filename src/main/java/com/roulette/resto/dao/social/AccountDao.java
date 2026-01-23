@@ -454,16 +454,7 @@ public class AccountDao {
              SELECT account_id FROM account WHERE login = ? LIMIT 1
              """;
 		try {
-			List<Integer> ids = jdbcTemplate.query(
-					connection -> {
-						PreparedStatement preparedStatement = connection.prepareStatement(query);
-						preparedStatement.setString(1, account.getLogin());
-						log.debug(preparedStatement.toString());
-						return preparedStatement;
-					},
-					(rs, rowNum) -> rs.getInt("account_id")
-			);
-			return DataAccessUtils.requiredSingleResult(ids);
+			return jdbcTemplate.queryForObject(query,Integer.class,account.getAccountId());
 		} catch (DataAccessException | NullPointerException e) {
 			throw new AccountNotFoundException(e.getMessage());
 		}

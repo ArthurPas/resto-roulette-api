@@ -254,4 +254,7 @@ public class RestoService {
 	public void rejectVerification(String id){
 		restoRepository.rejectVerification(id);
 	}
+	public boolean isRestoOwnerByAccountId(int restoId, int accountId) {
+		return restoRepository.isRestoOwnerByAccountId(restoId, accountId);
+	}
 }

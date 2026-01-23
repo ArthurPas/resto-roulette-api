@@ -1,6 +1,7 @@
 package com.roulette.resto.controller.marketing;
 
 import com.roulette.resto.configuration.JwtService;
+import com.roulette.resto.data.marketing.MarketingCampaignInfo;
 import com.roulette.resto.data.marketing.NewMarketingCampaign;
 import com.roulette.resto.service.marketing.MarketingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,8 +27,8 @@ public class MarketingController {
 		this.marketingService = marketingService;
 	}
 
-	@Tag(name = "Marketing | sponsorized post")
-	@PostMapping("/buy-sponso-campaign")
+	@Tag(name = "Marketing | Sponsored post")
+	@PostMapping("/sponso-campaign/new")
 	@Operation(summary = "Create a campaign for your resto")
 	public ResponseEntity<?> createSponsoCampaign(Authentication authentication,
 												  @RequestBody NewMarketingCampaign marketingCampaign) {
@@ -35,6 +36,15 @@ public class MarketingController {
 		int sponsoId = marketingService.createSponsoCampaign(accountId, marketingCampaign);
 		record CampaignResponse(int campaignId){}
 		return new ResponseEntity<>( new CampaignResponse(sponsoId), HttpStatus.CREATED);
+	}
+	@Tag(name = "Marketing | Sponsored post")
+	@GetMapping("/sponso-campaign/{campaignId}")
+	@Operation(summary = "Get campaign info")
+	public ResponseEntity<?> getCampaign(Authentication authentication,
+												  @PathVariable String campaignId) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		MarketingCampaignInfo marketingCampaignInfo = marketingService.getCampaign(accountId, campaignId);
+		return new ResponseEntity<>(marketingCampaignInfo, HttpStatus.CREATED);
 	}
 
 }

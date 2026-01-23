@@ -20,6 +20,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -713,5 +714,19 @@ public class RestoDao {
 		if (row == 0) {
 			throw new RestoNotFoundException("resto not found cant delete");
 		}
+	}
+
+	public int isRestoOwnerByAccountId(int restoId, int accountId) {
+		String query = """
+             SELECT COUNT(resto_id) from resto INNER JOIN account on resto.owner_id = account.account_id
+             WHERE owner_id = ? AND resto_id = ?
+             """;
+		try {
+			return jdbcTemplate.queryForObject(query,Integer.class,accountId,restoId);
+		} catch (EmptyResultDataAccessException e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+
 	}
 }

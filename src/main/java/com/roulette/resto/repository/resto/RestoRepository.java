@@ -191,4 +191,8 @@ public class RestoRepository {
 	public void rejectVerification(String id) {
 		restoDao.updateVerifyStatus(Integer.parseInt(id), VerificationStatus.REJECTED);
 	}
+
+	public boolean isRestoOwnerByAccountId(int restoId, int accountId) {
+		return restoDao.isRestoOwnerByAccountId(restoId, accountId) == 1;
+	}
 }

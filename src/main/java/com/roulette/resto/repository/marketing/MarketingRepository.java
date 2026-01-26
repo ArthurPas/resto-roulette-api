@@ -4,6 +4,7 @@ import com.roulette.resto.dao.marketing.MarketingDao;
 import com.roulette.resto.data.marketing.MarketingCampaignInfo;
 import com.roulette.resto.data.marketing.NewMarketingCampaign;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -16,7 +17,12 @@ public class MarketingRepository {
 	}
 
 	public int createSponsoCampaign(NewMarketingCampaign campaign) {
-		return marketingDao.createSponsoCampaign(campaign);
+		try {
+
+			return marketingDao.createSponsoCampaign(campaign);
+		}catch (DuplicateKeyException e) {
+			throw new DuplicateKeyException(e.getMessage());
+		}
 	}
 
 	public MarketingCampaignInfo getSponsoCampaign(String campaignId) {

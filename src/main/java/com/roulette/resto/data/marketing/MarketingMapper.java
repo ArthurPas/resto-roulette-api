@@ -20,6 +20,7 @@ public class MarketingMapper implements RowMapper<MarketingCampaignInfo> {
 		marketingCampaignInfo.setRestoId(rs.getInt("resto_id"));
 		marketingCampaignInfo.setCampaignId(rs.getString("campaign_id"));
 		marketingCampaignInfo.setMediaId(rs.getString("media_id"));
+		marketingCampaignInfo.setPostLocation(rs.getString("post_location"));
 		return marketingCampaignInfo;
 	}
 }

@@ -7,6 +7,7 @@ import com.roulette.resto.exception.APIError;
 import com.roulette.resto.repository.marketing.MarketingRepository;
 import com.roulette.resto.service.resto.RestoService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +30,11 @@ public class MarketingService {
 		if(!owned) {
 			throw new APIError(21, HttpStatus.FORBIDDEN);
 		}
-		return marketingRepository.createSponsoCampaign(marketingCampaign);
-
+		try {
+			return marketingRepository.createSponsoCampaign(marketingCampaign);
+		}catch (DuplicateKeyException e) {
+			throw new APIError(24, HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	public MarketingCampaignInfo getCampaign(int accountId, String campaignId) {

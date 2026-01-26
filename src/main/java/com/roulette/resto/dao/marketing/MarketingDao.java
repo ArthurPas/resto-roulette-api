@@ -31,8 +31,8 @@ public class MarketingDao {
 		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 
 		String query = """
-             INSERT INTO sponso_campaign (resto_id, start_date, expiration_date, media_id, description)
-             VALUES (?, ?, ?, ?, ?)
+             INSERT INTO sponso_campaign (resto_id, start_date, expiration_date, media_id, description, post_location)
+             VALUES (?, ?, ?, ?, ?, ?)
              """;
 		try {
 			jdbcTemplate.update(conn -> {
@@ -42,6 +42,7 @@ public class MarketingDao {
 				preparedStatement.setDate(3, campaign.getExpirationDate());
 				preparedStatement.setString(4, campaign.getMediaId());
 				preparedStatement.setString(5, campaign.getDescription());
+				preparedStatement.setString(6, campaign.getLocation().name());
 				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			}, generatedKeyHolder);
@@ -54,7 +55,7 @@ public class MarketingDao {
 
 	public MarketingCampaignInfo getCampaignById(Integer campaignId) {
 		String query ="""	
-					SELECT campaign_id, resto_id, start_date, expiration_date, media_id, description
+					SELECT campaign_id, resto_id, start_date, expiration_date, media_id, description, post_location
 					FROM sponso_campaign WHERE campaign_id = ?
 					""";
 		try {

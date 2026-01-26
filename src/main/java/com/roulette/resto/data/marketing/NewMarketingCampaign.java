@@ -14,4 +14,5 @@ public class NewMarketingCampaign {
 	Date startDate;
 	Date expirationDate;
 	String description;
+	PostLocation location;
 }

@@ -62,7 +62,7 @@ public class ActivityController {
 	@Tag(name = "App | Feed ")
 	@GetMapping("/followers/feed")
 	@Operation(summary = "Get my followers recents activities")
-	public ResponseEntity<?> getFollowersFeed(Authentication authentication){
+	public ResponseEntity<List<ActivityDto>> getFollowersFeed(Authentication authentication){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		List<ActivityDto> activities = activityService.getMyFollowersActivities(accountId);
 		return new ResponseEntity<>(activities,HttpStatus.OK);

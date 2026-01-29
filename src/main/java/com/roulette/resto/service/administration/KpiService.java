@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
-
 @Service
 @Slf4j
 public class KpiService {
@@ -29,41 +28,53 @@ public class KpiService {
 	public List<Long> getUsersRegistrationHistoric(String year) {
 		List<UserRegistrationHistory> historic = kpiRepository.getNewUsersByYear(year);
 		List<Long> result = new ArrayList<>();
-		for (UserRegistrationHistory historicUser : historic) {
-			result.add(historicUser.getTotal());
+		if (historic != null) {
+			for (UserRegistrationHistory historicUser : historic) {
+				result.add(historicUser.getTotal());
+			}
 		}
 		return result;
 	}
-
 	public TrendDto getRegistrationTrend() {
-		TrendDto trendDto = new TrendDto();
-		trendDto.setTotal(kpiRepository.getNbUsers());
-		int currentMonth = YearMonth.now().getMonthValue();
-		int lastMonth = YearMonth.now().minusMonths(1).getMonthValue();
-		int currentYear = YearMonth.now().getYear();
-		Float variation = kpiRepository.getRegistrationTrend(currentMonth, lastMonth, currentYear);
-		trendDto.setPercentageVariation(Math.abs(variation));
-		if(variation > 0) {
-			trendDto.setVariationType(Variation.UP);
-		} else if(variation < 0) {
-			trendDto.setVariationType(Variation.DOWN);
-		} else trendDto.setVariationType(Variation.EQUAL);
-		return trendDto;
-	}
+		Long total = kpiRepository.getNbUsers();
+		YearMonth now = YearMonth.now();
+		int currentMonth = now.getMonthValue();
+		int lastMonth = now.minusMonths(1).getMonthValue();
+		int currentYear = now.getYear();
 
+		Float variation = kpiRepository.getRegistrationTrend(currentMonth, lastMonth, currentYear);
+
+		return buildTrendDto(total != null ? total : 0L, variation);
+	}
 	public TrendDto getWheelTrend() {
-		TrendDto trendDto = new TrendDto();
-		trendDto.setTotal(kpiDao.getWheelLaunched());
-		int currentMonth = YearMonth.now().getMonthValue();
-		int lastMonth = YearMonth.now().minusMonths(1).getMonthValue();
-		int currentYear = YearMonth.now().getYear();
+		Long total = kpiDao.getWheelLaunched();
+
+		YearMonth now = YearMonth.now();
+		int currentMonth = now.getMonthValue();
+		int lastMonth = now.minusMonths(1).getMonthValue();
+		int currentYear = now.getYear();
+
 		Float variation = kpiRepository.getWheelTrend(currentMonth, lastMonth, currentYear);
+
+		return buildTrendDto(total != null ? total : 0L, variation);
+	}
+	private TrendDto buildTrendDto(Long total, Float variation) {
+		TrendDto trendDto = new TrendDto();
+		trendDto.setTotal(total);
+		if (variation == null) {
+			trendDto.setPercentageVariation(0f);
+			trendDto.setVariationType(Variation.EQUAL);
+			return trendDto;
+		}
 		trendDto.setPercentageVariation(Math.abs(variation));
-		if(variation > 0) {
+		if (variation > 0) {
 			trendDto.setVariationType(Variation.UP);
-		} else if(variation < 0) {
+		} else if (variation < 0) {
 			trendDto.setVariationType(Variation.DOWN);
-		} else trendDto.setVariationType(Variation.EQUAL);
+		} else {
+			trendDto.setVariationType(Variation.EQUAL);
+		}
+
 		return trendDto;
 	}
 }

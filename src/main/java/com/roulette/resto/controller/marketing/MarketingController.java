@@ -40,7 +40,7 @@ public class MarketingController {
 	@Tag(name = "Marketing | Sponsored post")
 	@GetMapping("/sponso-campaign/{campaignId}")
 	@Operation(summary = "Get campaign info")
-	public ResponseEntity<?> getCampaign(Authentication authentication,
+	public ResponseEntity<MarketingCampaignInfo> getCampaign(Authentication authentication,
 												  @PathVariable String campaignId) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		MarketingCampaignInfo marketingCampaignInfo = marketingService.getCampaign(accountId, campaignId);

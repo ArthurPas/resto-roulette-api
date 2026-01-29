@@ -39,4 +39,8 @@ public class MarketingRepository {
 	public List<Integer> findAllActiveIds() {
 		return marketingDao.findAllActiveIds();
 	}
+
+	public void incrementClick(int restoId, int count) {
+		marketingDao.incrementClick(restoId, count);
+	}
 }

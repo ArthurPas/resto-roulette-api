@@ -56,4 +56,8 @@ public class MarketingService {
 	public void incrementViews(int campaignId, int count) {
 		marketingRepository.incrementViews(campaignId, count);
 	}
+
+	public void incrementRestoClicks(int restoId, int count) {
+		marketingRepository.incrementClick(restoId, count);
+	}
 }

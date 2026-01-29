@@ -1,6 +1,7 @@
 package com.roulette.resto.controller.roulette;
 
 import com.roulette.resto.configuration.JwtService;
+import com.roulette.resto.configuration.TrackCampaign;
 import com.roulette.resto.data.roulette.dto.out.ActivityDto;
 import com.roulette.resto.data.roulette.in.NewSessionDto;
 import com.roulette.resto.service.roulette.ActivityService;
@@ -61,6 +62,7 @@ public class ActivityController {
 
 	@Tag(name = "App | Feed ")
 	@GetMapping("/followers/feed")
+	@TrackCampaign(type = "Feed")
 	@Operation(summary = "Get my followers recents activities")
 	public ResponseEntity<List<ActivityDto>> getFollowersFeed(Authentication authentication){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);

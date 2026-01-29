@@ -18,6 +18,7 @@ public class WebInterceptorConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(campaignInterceptor)
-				.addPathPatterns("/activities/followers/feed");
+				.addPathPatterns("/activities/followers/feed")
+				.addPathPatterns("/restos/**");
 	}
 }

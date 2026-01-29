@@ -16,4 +16,5 @@ public class MarketingCampaignInfo {
 	Date expirationDate;
 	String description;
 	String postLocation;
+
 }

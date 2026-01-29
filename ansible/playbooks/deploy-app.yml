@@ -50,15 +50,19 @@
         executable: /bin/bash
 
     - name: Start Redis container
-      community.docker.docker_container:
-          name: my-redis
-          image: redis:alpine
-          state: started
-          restart_policy: always
-          ports:
-            - "127.0.0.1:6379:6379"
-          volumes:
-            - /opt/redis/data:/data
+      become: yes
+      shell: |
+        docker run -d \
+          --name my-redis \
+          --restart always \
+          -p 127.0.0.1:6379:6379 \
+          -v /opt/redis/data:/data \
+          redis:alpine
+      register: redis_output
+      failed_when:
+        - redis_output.rc != 0
+        - "'already in use' not in redis_output.stderr"
+
     - name: Restart Spring Boot backend
       shell: |
         sudo systemctl restart resto-roulette.service

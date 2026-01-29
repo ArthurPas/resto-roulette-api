@@ -1,6 +1,7 @@
 package com.roulette.resto.controller.resto;
 
 import com.roulette.resto.configuration.JwtService;
+import com.roulette.resto.configuration.TrackCampaign;
 import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
@@ -130,6 +131,7 @@ public class RestoController {
 	@GetMapping("/{id}")
 	@Operation(summary = "Get a restaurant")
 	@Tag(name = "Resto | Resto management")
+	@TrackCampaign(type = "Resto")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					description = "Restaurant info",

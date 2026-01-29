@@ -113,4 +113,22 @@ public class MarketingDao {
 			throw e;
 		}
 	}
+
+	public void incrementClick(int restoId, int count) {
+		String query = """
+					  UPDATE sponso_campaign SET click = click + ? WHERE resto_id = ? AND expiration_date > ?;
+					""";
+		try {
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setInt(1, count);
+				preparedStatement.setInt(2, restoId);
+				preparedStatement.setTimestamp(3, Timestamp.from(Instant.now()));
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+		}catch (NoSuchElementException e){
+			log.error(e.getMessage());
+		}
+	}
 }

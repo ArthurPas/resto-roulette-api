@@ -24,13 +24,13 @@ public class MetricsService {
 	private final StringRedisTemplate redisTemplate;
 	private final MarketingService marketingService;
 
-	private static final String KEY_PREFIX = "sponso_campaign:";
+	private static final String KEY_SPONSO_VIEW = "sponso_campaign:";
+	private static final String KEY_RESTO_CLICK = "resto_click:";
 
 	public MetricsService(StringRedisTemplate redisTemplate, MarketingService marketingService) {
 		this.redisTemplate = redisTemplate;
 		this.marketingService = marketingService;
 	}
-
 
 	@Async
 	public void calculateAndIncrementViews() {
@@ -45,34 +45,51 @@ public class MetricsService {
 			}
 		}
 
+		if (selectedIds.isEmpty()) return;
+
 		redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
 			for (String campaignId : selectedIds) {
-				connection.stringCommands().incr((KEY_PREFIX + campaignId).getBytes());
+				connection.stringCommands().incr((KEY_SPONSO_VIEW + campaignId).getBytes());
 			}
 			return null;
 		});
 	}
+
+	@Async
+	public void calculateAndIncrementRestoClick(String restoId) {
+		redisTemplate.opsForValue().increment(KEY_RESTO_CLICK + restoId);
+		log.debug("Incremented click for resto: {}", restoId);
+	}
+
 	@Scheduled(fixedDelay = 60000)
 	public void syncCountsToDb() {
-		ScanOptions options = ScanOptions.scanOptions().match(KEY_PREFIX + "*").count(100).build();
+		syncType(KEY_SPONSO_VIEW, true);
+		syncType(KEY_RESTO_CLICK, false);
+	}
+
+	private void syncType(String prefix, boolean isView) {
+		ScanOptions options = ScanOptions.scanOptions().match(prefix + "*").count(100).build();
 
 		try (Cursor<String> cursor = redisTemplate.scan(options)) {
 			while (cursor.hasNext()) {
 				String key = cursor.next();
-				String[] parts = key.split(":");
-				if (parts.length < 2) continue;
-
-				String campaignId = parts[1];
+				String idStr = key.substring(prefix.length());
 				String countStr = redisTemplate.opsForValue().getAndDelete(key);
 
 				if (countStr != null) {
 					try {
 						int count = Integer.parseInt(countStr);
+						int id = Integer.parseInt(idStr);
+
 						if (count > 0) {
-							marketingService.incrementViews(Integer.parseInt(campaignId), count);
+							if (isView) {
+								marketingService.incrementViews(id, count);
+							} else {
+								marketingService.incrementRestoClicks(id, count);
+							}
 						}
 					} catch (NumberFormatException e) {
-						log.error("Erreur de format pour la clé " + key);
+						log.error("Erreur de parsing pour l'ID ou le compteur sur la clé : {}", key);
 					}
 				}
 			}

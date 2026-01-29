@@ -43,7 +43,6 @@ public class RestoService {
 		restaurant.setDisplayName(newRestaurant.getDisplayName());
 		restaurant.setLabels(newRestaurant.getLabels());
 		try{
-			log.warn("COUCOU 1");
 			Set<String> existingFoodtype = existingFoodTypesList(newRestaurant.getFoodTypes());
 			restaurant.setFoodTypes(existingFoodtype);
 			if(newRestaurant.getLoginOwner() != null && !newRestaurant.getLoginOwner().isEmpty()){

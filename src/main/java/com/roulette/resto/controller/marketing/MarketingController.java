@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/marketing")
@@ -44,7 +46,15 @@ public class MarketingController {
 												  @PathVariable String campaignId) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		MarketingCampaignInfo marketingCampaignInfo = marketingService.getCampaign(accountId, campaignId);
-		return new ResponseEntity<>(marketingCampaignInfo, HttpStatus.CREATED);
+		return new ResponseEntity<>(marketingCampaignInfo, HttpStatus.OK);
+	}
+	@Tag(name = "Marketing | Sponsored post")
+	@GetMapping("/sponso-campaign/owned")
+	@Operation(summary = "Get campaign info")
+	public ResponseEntity<List<MarketingCampaignInfo>> getMyCampaign(Authentication authentication) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		List<MarketingCampaignInfo> marketingCampaignInfo = marketingService.getCampaignByAccountId(accountId);
+		return new ResponseEntity<>(marketingCampaignInfo, HttpStatus.OK);
 	}
 
 }

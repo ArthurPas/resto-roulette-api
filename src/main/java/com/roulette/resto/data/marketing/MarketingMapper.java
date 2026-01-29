@@ -21,6 +21,8 @@ public class MarketingMapper implements RowMapper<MarketingCampaignInfo> {
 		marketingCampaignInfo.setCampaignId(rs.getString("campaign_id"));
 		marketingCampaignInfo.setMediaId(rs.getString("media_id"));
 		marketingCampaignInfo.setPostLocation(rs.getString("post_location"));
+		marketingCampaignInfo.setClicks(rs.getInt("click"));
+		marketingCampaignInfo.setViews(rs.getInt("viewed"));
 		return marketingCampaignInfo;
 	}
 }

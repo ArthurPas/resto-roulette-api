@@ -43,4 +43,9 @@ public class MarketingRepository {
 	public void incrementClick(int restoId, int count) {
 		marketingDao.incrementClick(restoId, count);
 	}
+
+
+	public List<MarketingCampaignInfo> getCampaignByRestoIds(List<Integer> restoIds) {
+		return marketingDao.getCampaignByRestos(restoIds);
+	}
 }

@@ -3,14 +3,18 @@ package com.roulette.resto.service.marketing;
 import com.roulette.resto.data.marketing.MarketingCampaignInfo;
 import com.roulette.resto.data.marketing.NewMarketingCampaign;
 import com.roulette.resto.data.resto.entity.Restaurant;
+import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.repository.marketing.MarketingRepository;
 import com.roulette.resto.service.resto.RestoService;
+import com.roulette.resto.service.social.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.AccountNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -22,9 +26,12 @@ public class MarketingService {
 
 	final MarketingRepository marketingRepository;
 	final RestoService restoService;
-	public MarketingService(MarketingRepository marketingRepository, RestoService restoService) {
+	private final AccountService accountService;
+
+	public MarketingService(MarketingRepository marketingRepository, RestoService restoService, AccountService accountService) {
 		this.marketingRepository = marketingRepository;
 		this.restoService = restoService;
+		this.accountService = accountService;
 	}
 
 	public int createSponsoCampaign(int accountId, NewMarketingCampaign marketingCampaign) {
@@ -59,5 +66,12 @@ public class MarketingService {
 
 	public void incrementRestoClicks(int restoId, int count) {
 		marketingRepository.incrementClick(restoId, count);
+	}
+
+	public List<MarketingCampaignInfo> getCampaignByAccountId(int accountId)  {
+		List<Restaurant> restosOwned = restoService.getRestosByOwnerId(accountId);
+		List<Integer> restoIds = new ArrayList<>();
+ 		restosOwned.forEach(restaurant ->restoIds.add(restaurant.getId()));
+		return marketingRepository.getCampaignByRestoIds(restoIds);
 	}
 }

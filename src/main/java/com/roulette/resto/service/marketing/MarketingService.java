@@ -17,6 +17,8 @@ import java.util.NoSuchElementException;
 @Service
 @Slf4j
 public class MarketingService {
+	// 1 post out of 10 is sponso
+	public final static double APPARITION_RATE = 0.1;
 
 	final MarketingRepository marketingRepository;
 	final RestoService restoService;
@@ -49,6 +51,9 @@ public class MarketingService {
 		}catch (NoSuchElementException e) {
 			throw new APIError(24, HttpStatus.NOT_FOUND);
 		}
+	}
 
+	public void incrementViews(int campaignId, int count) {
+		marketingRepository.incrementViews(campaignId, count);
 	}
 }

@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -60,7 +61,8 @@ public class MarketingDao {
 
 	public MarketingCampaignInfo getCampaignById(Integer campaignId) {
 		String query ="""	
-					SELECT campaign_id, resto_id, start_date, expiration_date, media_id, description, post_location
+					SELECT campaign_id, resto_id, start_date, expiration_date, media_id, description, post_location,
+					       click,viewed
 					FROM sponso_campaign WHERE campaign_id = ?
 					""";
 		try {
@@ -80,7 +82,7 @@ public class MarketingDao {
 
 	public void incrementViews(int campaignId, int count) {
 		String query = """
-					  UPDATE sponso_campaign SET view = view + ? WHERE campaign_id = ?;
+					  UPDATE sponso_campaign SET viewed = viewed + ? WHERE campaign_id = ?;
 					""";
 		try {
 			jdbcTemplate.update(conn -> {
@@ -130,5 +132,21 @@ public class MarketingDao {
 		}catch (NoSuchElementException e){
 			log.error(e.getMessage());
 		}
+	}
+
+	public List<MarketingCampaignInfo> getCampaignByRestos(List<Integer> restoIds) {
+		if (restoIds == null || restoIds.isEmpty()) {
+			return List.of();
+		}
+		String placeholders = String.join(",", Collections.nCopies(restoIds.size(), "?"));
+
+		String query = String.format("""
+             SELECT campaign_id, resto_id, start_date, expiration_date, media_id, description, post_location,
+                    click, viewed
+             FROM sponso_campaign 
+             WHERE resto_id IN (%s)
+             """, placeholders);
+
+		return jdbcTemplate.query(query, restoIds.toArray(), new MarketingMapper());
 	}
 }

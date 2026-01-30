@@ -1,10 +1,7 @@
 package com.roulette.resto.controller.roulette;
 
 import com.roulette.resto.data.roulette.in.NewSessionDto;
-import com.roulette.resto.data.roulette.websocket.AccountsJoined;
-import com.roulette.resto.data.roulette.websocket.JoinSession;
-import com.roulette.resto.data.roulette.websocket.RouletteSession;
-import com.roulette.resto.data.roulette.websocket.SessionStatus;
+import com.roulette.resto.data.roulette.websocket.*;
 import com.roulette.resto.service.roulette.RouletteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -39,6 +36,14 @@ public class RouletteController {
 		RouletteSession rouletteSession = rouletteService.createNewSession();
 		return new ResponseEntity<>(rouletteSession, HttpStatus.CREATED);
 	}
+	@Tag(name = "App | Roulette")
+	@GetMapping("/roulette/session/{shortId}")
+	@Operation(summary = "get sessionid by short id")
+	public ResponseEntity<?> getSessionUuid(@PathVariable String shortId) {
+		String uuid =  rouletteService.getSessionIdByShortId(shortId);
+		record SessionIdResponse(String sessionId){};
+		return new ResponseEntity<>(new SessionIdResponse(uuid), HttpStatus.OK);
+	}
 
 	@MessageMapping("/start/{sessionId}")
 	@SendTo("/session/{sessionId}")
@@ -50,6 +55,10 @@ public class RouletteController {
 	@SendTo("/session/{sessionId}")
 	public AccountsJoined joinSession(@DestinationVariable String sessionId, JoinSession account) throws Exception {
 		return rouletteService.addAccountToCurrentSession(sessionId, account);
+	}
+	@MessageMapping("/swipe/{sessionId}")
+	public void swipe(@DestinationVariable String sessionId, AccountChoices choices) throws Exception {
+		rouletteService.addFoodChoice(sessionId, choices);
 	}
 
 }

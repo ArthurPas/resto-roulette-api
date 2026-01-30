@@ -46,8 +46,8 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     implementation 'com.mailersend:java-sdk:1.4.1'
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client:3.5.6")
-    implementation 'redis.clients:jedis:5.1.2'
-    implementation 'org.springframework.data:spring-data-redis:3.2.0'
+    implementation "org.springframework.boot:spring-boot-starter-websocket"
+    implementation 'org.redisson:redisson-spring-boot-starter:3.43.0'
 }
 
 tasks.named('test') {

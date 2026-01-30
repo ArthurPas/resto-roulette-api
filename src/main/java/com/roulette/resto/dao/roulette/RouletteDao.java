@@ -1,0 +1,174 @@
+package com.roulette.resto.dao.roulette;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.roulette.resto.data.roulette.websocket.AccountChoices;
+import com.roulette.resto.data.roulette.websocket.PreferenceType;
+import com.roulette.resto.data.roulette.websocket.RouletteSession;
+import org.apache.commons.lang3.RandomStringUtils; // Recommendation: Use Apache Commons or a custom random generator
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
+
+@Repository
+public class RouletteDao {
+
+	private final StringRedisTemplate redisTemplate;
+	private final ObjectMapper objectMapper;
+	private final RedissonClient redissonClient;
+
+	private static final String KEY_PREFIX = "roulette_session:";
+	private static final String KEY_SHORT_PREFIX = "roulette_short:"; // Mapping Key
+	private static final String LOCK_PREFIX = "lock:roulette_session:";
+
+	public RouletteDao(StringRedisTemplate redisTemplate, ObjectMapper objectMapper, RedissonClient redissonClient) {
+		this.redisTemplate = redisTemplate;
+		this.objectMapper = objectMapper;
+		this.redissonClient = redissonClient;
+	}
+
+	public RouletteSession createSession(String sessionId) {
+		String key = KEY_PREFIX + sessionId;
+
+		String shortId = reserveUniqueShortId(sessionId);
+
+		RouletteSession session = new RouletteSession();
+		session.setSessionId(sessionId);
+		session.setShortId(shortId);
+		session.setAccountChoices(new ArrayList<>());
+
+		try {
+			String json = objectMapper.writeValueAsString(session);
+
+			Boolean isCreated = redisTemplate.opsForValue().setIfAbsent(key, json);
+
+			if (Boolean.FALSE.equals(isCreated)) {
+				redisTemplate.delete(KEY_SHORT_PREFIX + shortId);
+				throw new RuntimeException("Session " + sessionId + " already exists.");
+			}
+		} catch (JsonProcessingException e) {
+			redisTemplate.delete(KEY_SHORT_PREFIX + shortId);
+			throw new RuntimeException("Serialization error for session " + sessionId, e);
+		}
+		return session;
+	}
+
+	public String getSessionIdByShortId(String shortId) {
+		String key = KEY_SHORT_PREFIX + shortId;
+		String sessionId = redisTemplate.opsForValue().get(key);
+
+		if (sessionId == null) {
+			throw new RuntimeException("Short ID not found: " + shortId);
+		}
+		return sessionId;
+	}
+
+	public void addAccountIdToSession(String sessionId, int accountId) {
+		String key = KEY_PREFIX + sessionId;
+		String lockKey = LOCK_PREFIX + sessionId;
+		RLock lock = redissonClient.getLock(lockKey);
+		lock.lock();
+		try {
+			String json = redisTemplate.opsForValue().get(key);
+			RouletteSession session;
+
+			if (json != null && !json.isEmpty()) {
+				session = objectMapper.readValue(json, RouletteSession.class);
+			} else {
+				session = new RouletteSession();
+				session.setSessionId(sessionId);
+			}
+			boolean exists = session.getAccountChoices().stream()
+					.anyMatch(choice -> choice.getAccountId() == accountId);
+			if (!exists) {
+				session.getAccountChoices().add(new AccountChoices(accountId, new ArrayList<>(), new ArrayList<>()));
+				String updatedJson = objectMapper.writeValueAsString(session);
+				redisTemplate.opsForValue().set(key, updatedJson);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Error updating session " + sessionId, e);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void addFoodChoice(String sessionId, int accountId, String food, PreferenceType type) {
+		String key = KEY_PREFIX + sessionId;
+		String lockKey = LOCK_PREFIX + sessionId;
+
+		RLock lock = redissonClient.getLock(lockKey);
+		lock.lock();
+		try {
+			String json = redisTemplate.opsForValue().get(key);
+			RouletteSession session;
+
+			if (json != null && !json.isEmpty()) {
+				session = objectMapper.readValue(json, RouletteSession.class);
+			} else {
+				session = new RouletteSession();
+				session.setSessionId(sessionId);
+			}
+			AccountChoices account = session.getAccountChoices().stream()
+					.filter(a -> a.getAccountId() == accountId)
+					.findFirst()
+					.orElseGet(() -> {
+						AccountChoices newAccount = new AccountChoices(accountId, new ArrayList<>(), new ArrayList<>());
+						session.getAccountChoices().add(newAccount);
+						return newAccount;
+					});
+
+			if (type == PreferenceType.LIKE) {
+				account.getFoodLiked().add(food);
+			} else {
+				account.getFoodDisliked().add(food);
+			}
+			String updatedJson = objectMapper.writeValueAsString(session);
+			redisTemplate.opsForValue().set(key, updatedJson);
+		} catch (Exception e) {
+			throw new RuntimeException("Error update food for session " + sessionId, e);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public RouletteSession getSession(String sessionId) {
+		String key = KEY_PREFIX + sessionId;
+		String json = redisTemplate.opsForValue().get(key);
+		if (json == null || json.isEmpty()) {
+			return null;
+		}
+
+		try {
+			return objectMapper.readValue(json, RouletteSession.class);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Impossible to read session " + sessionId, e);
+		}
+	}
+	private String reserveUniqueShortId(String sessionId) {
+		int maxRetries = 5;
+		for (int i = 0; i < maxRetries; i++) {
+			String shortId = generateRandomString(4);
+			String mappingKey = KEY_SHORT_PREFIX + shortId;
+			Boolean success = redisTemplate.opsForValue().setIfAbsent(mappingKey, sessionId);
+
+			if (Boolean.TRUE.equals(success)) {
+				return shortId;
+			}
+		}
+		throw new RuntimeException("Failed to generate unique shortId after retries");
+	}
+
+	private String generateRandomString(int length) {
+		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < length; i++) {
+			int index = ThreadLocalRandom.current().nextInt(chars.length());
+			sb.append(chars.charAt(index));
+		}
+		return sb.toString();
+	}
+}

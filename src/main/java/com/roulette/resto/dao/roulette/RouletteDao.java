@@ -81,14 +81,24 @@ public class RouletteDao {
 			} else {
 				session = new RouletteSession();
 				session.setSessionId(sessionId);
+				session.setAccountChoices(new ArrayList<>());
+			}
+			if (session.getAccountChoices() == null) {
+				session.setAccountChoices(new ArrayList<>());
 			}
 			boolean exists = session.getAccountChoices().stream()
 					.anyMatch(choice -> choice.getAccountId() == accountId);
+
 			if (!exists) {
 				session.getAccountChoices().add(new AccountChoices(accountId, new ArrayList<>(), new ArrayList<>()));
 				String updatedJson = objectMapper.writeValueAsString(session);
 				redisTemplate.opsForValue().set(key, updatedJson);
+
+				System.out.println(">>> SUCCESS : Ajout user " + accountId + " dans session " + sessionId);
+			} else {
+				System.out.println(">>> INFO : User " + accountId + " déjà présent.");
 			}
+
 		} catch (Exception e) {
 			throw new RuntimeException("Error updating session " + sessionId, e);
 		} finally {
@@ -96,7 +106,7 @@ public class RouletteDao {
 		}
 	}
 
-	public void addFoodChoice(String sessionId, int accountId, String food, PreferenceType type) {
+	public void addFoodChoice(String sessionId, AccountChoices choices) {
 		String key = KEY_PREFIX + sessionId;
 		String lockKey = LOCK_PREFIX + sessionId;
 
@@ -111,25 +121,18 @@ public class RouletteDao {
 			} else {
 				session = new RouletteSession();
 				session.setSessionId(sessionId);
+				session.setAccountChoices(new ArrayList<>());
 			}
-			AccountChoices account = session.getAccountChoices().stream()
-					.filter(a -> a.getAccountId() == accountId)
-					.findFirst()
-					.orElseGet(() -> {
-						AccountChoices newAccount = new AccountChoices(accountId, new ArrayList<>(), new ArrayList<>());
-						session.getAccountChoices().add(newAccount);
-						return newAccount;
-					});
-
-			if (type == PreferenceType.LIKE) {
-				account.getFoodLiked().add(food);
-			} else {
-				account.getFoodDisliked().add(food);
+			if (session.getAccountChoices() == null) {
+				session.setAccountChoices(new ArrayList<>());
 			}
+			session.getAccountChoices().removeIf(ac -> ac.getAccountId() == choices.getAccountId());
+			session.getAccountChoices().add(choices);
 			String updatedJson = objectMapper.writeValueAsString(session);
 			redisTemplate.opsForValue().set(key, updatedJson);
+
 		} catch (Exception e) {
-			throw new RuntimeException("Error update food for session " + sessionId, e);
+			throw new RuntimeException("Error updating choices for session " + sessionId, e);
 		} finally {
 			lock.unlock();
 		}

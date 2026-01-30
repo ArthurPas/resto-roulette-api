@@ -31,4 +31,12 @@ public class RouletteRepository {
 	public RouletteSession createNewSession(String sessionId) {
 		return rouletteDao.createSession(sessionId);
 	}
+
+	public String getSessionIdByShortId(String shortId) {
+		return rouletteDao.getSessionIdByShortId(shortId);
+	}
+
+	public void addFoodChoice(String sessionId, AccountChoices choices) {
+		rouletteDao.addFoodChoice(sessionId, choices);
+	}
 }

@@ -1,5 +1,6 @@
 package com.roulette.resto.service.roulette;
 
+import com.roulette.resto.data.roulette.websocket.AccountChoices;
 import com.roulette.resto.data.roulette.websocket.AccountsJoined;
 import com.roulette.resto.data.roulette.websocket.JoinSession;
 import com.roulette.resto.data.roulette.websocket.RouletteSession;
@@ -28,5 +29,13 @@ public class RouletteService {
 	public RouletteSession createNewSession() {
 		String sessionId = UUID.randomUUID().toString().replace("-", "");
 		return rouletteRepository.createNewSession(sessionId);
+	}
+
+	public String getSessionIdByShortId(String shortId) {
+		return rouletteRepository.getSessionIdByShortId(shortId);
+	}
+
+	public void addFoodChoice(String sessionId, AccountChoices choices) {
+		rouletteRepository.addFoodChoice(sessionId, choices);
 	}
 }

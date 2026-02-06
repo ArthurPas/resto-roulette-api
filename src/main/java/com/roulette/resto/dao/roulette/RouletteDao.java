@@ -259,4 +259,23 @@ public class RouletteDao {
 			}
 		}
 	}
+
+	public Set<Integer> getRestosBySession(String sessionId) {
+		String key = KEY_PREFIX + sessionId;
+		try {
+			String json = redisTemplate.opsForValue().get(key);
+			if (json == null || json.isEmpty()) {
+				return new HashSet<>();
+			}
+			RouletteSession session = objectMapper.readValue(json, RouletteSession.class);
+			if (session.getRestoIds() == null) {
+				return new HashSet<>();
+			}
+
+			return session.getRestoIds();
+
+		} catch (Exception e) {
+			throw new RuntimeException("Error fetching restos for session " + sessionId, e);
+		}
+	}
 }

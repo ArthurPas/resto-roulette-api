@@ -69,17 +69,14 @@ public class RouletteController {
 		return restos;
 	}
 	@MessageMapping("/veto/{sessionId}")
-	public void addveto(@DestinationVariable String sessionId, AccountChoices choices) throws Exception {
-		rouletteService.addFoodChoices(sessionId, choices);
+	public void addveto(@DestinationVariable String sessionId, VetoResto veto) {
+		rouletteService.removeResto(sessionId, veto);
 	}
 	@MessageMapping("/veto-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public RestoDto onVetoDone(@DestinationVariable String sessionId,VetoResto veto) {
-		log.info(veto + " " + sessionId);
-		List<RestoDto> remainingRestos = rouletteService.removeResto(sessionId,veto);
+	public RestoDto onVetoDone(@DestinationVariable String sessionId) {
+		List<RestoDto> remainingRestos = rouletteService.getRestoBySession(sessionId);
 		return rouletteService.randomWinnerResto(remainingRestos);
 	}
-
-
 
 }

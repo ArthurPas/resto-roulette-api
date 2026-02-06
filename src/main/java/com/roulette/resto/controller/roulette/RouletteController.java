@@ -74,9 +74,12 @@ public class RouletteController {
 	}
 	@MessageMapping("/veto-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public List<RestoDto> onVetoDone(@DestinationVariable String sessionId,VetoResto veto) {
+	public RestoDto onVetoDone(@DestinationVariable String sessionId,VetoResto veto) {
 		log.info(veto + " " + sessionId);
-		return rouletteService.removeResto(sessionId,veto.getRestoId());
+		List<RestoDto> remainingRestos = rouletteService.removeResto(sessionId,veto);
+		return rouletteService.randomWinnerResto(remainingRestos);
 	}
+
+
 
 }

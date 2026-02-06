@@ -1,12 +1,13 @@
 package com.roulette.resto.repository.roulette;
 
 import com.roulette.resto.dao.roulette.RouletteDao;
-import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.websocket.AccountChoices;
 import com.roulette.resto.data.roulette.websocket.AccountsJoined;
 import com.roulette.resto.data.roulette.websocket.RouletteSession;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,7 +50,11 @@ public class RouletteRepository {
 		rouletteDao.saveMatchingRestos(restoIds,sessionId);
 	}
 
-	public Set<Integer> removeResto(String sessionId, int restoId) {
-		return rouletteDao.removeRestoFromSession(sessionId, restoId);
+	public Set<Integer> removeRestos(String sessionId, Set<Integer> restoIds) {
+		Set<Integer> restosIds = new HashSet<>();
+		for (Integer restoId : restoIds) {
+			restosIds = rouletteDao.removeRestoFromSession(sessionId, restoId);
+		}
+		return restosIds;
 	}
 }

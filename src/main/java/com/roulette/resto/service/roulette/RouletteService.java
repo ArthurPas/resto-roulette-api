@@ -2,18 +2,13 @@ package com.roulette.resto.service.roulette;
 
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.resto.entity.Restaurant;
-import com.roulette.resto.data.roulette.websocket.AccountChoices;
-import com.roulette.resto.data.roulette.websocket.AccountsJoined;
-import com.roulette.resto.data.roulette.websocket.JoinSession;
-import com.roulette.resto.data.roulette.websocket.RouletteSession;
-import com.roulette.resto.data.social.entity.Resto;
+import com.roulette.resto.data.roulette.websocket.*;
 import com.roulette.resto.repository.roulette.RouletteRepository;
 import com.roulette.resto.service.resto.RestoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -71,13 +66,23 @@ public class RouletteService {
 		rouletteRepository.saveMatchingRestos(restoIds,sessionId);
 	}
 
-	public List<RestoDto> removeResto(String sessionId, int restoId) {
-		Set<Integer> ids = rouletteRepository.removeResto(sessionId, restoId);
+	public List<RestoDto> removeResto(String sessionId, VetoResto restoId) {
+		Set<Integer> ids = rouletteRepository.removeRestos(sessionId, restoId.getRestoId());
 		List<RestoDto> restoDtos = new ArrayList<>();
 		List<Restaurant> restos = restoService.getRestosBasicInfoByIds(ids);
 		for (Restaurant resto : restos) {
 			restoDtos.add(new RestoDto(resto));
 		}
 		return restoDtos;
+	}
+
+	public RestoDto randomWinnerResto(List<RestoDto> remainingRestos) {
+		if (remainingRestos == null || remainingRestos.isEmpty()) {
+			return null;
+		}
+		Random random = new Random();
+		int randomIndex = random.nextInt(remainingRestos.size());
+
+		return remainingRestos.get(randomIndex);
 	}
 }

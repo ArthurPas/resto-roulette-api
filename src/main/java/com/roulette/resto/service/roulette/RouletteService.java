@@ -1,17 +1,19 @@
 package com.roulette.resto.service.roulette;
 
 import com.roulette.resto.data.resto.dto.out.RestoDto;
+import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.roulette.websocket.AccountChoices;
 import com.roulette.resto.data.roulette.websocket.AccountsJoined;
 import com.roulette.resto.data.roulette.websocket.JoinSession;
 import com.roulette.resto.data.roulette.websocket.RouletteSession;
+import com.roulette.resto.data.social.entity.Resto;
 import com.roulette.resto.repository.roulette.RouletteRepository;
 import com.roulette.resto.service.resto.RestoService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -39,8 +41,8 @@ public class RouletteService {
 		return rouletteRepository.getSessionIdByShortId(shortId);
 	}
 
-	public void addFoodChoice(String sessionId, AccountChoices choices) {
-		rouletteRepository.addFoodChoice(sessionId, choices);
+	public void addFoodChoices(String sessionId, AccountChoices choices) {
+		rouletteRepository.addFoodChoices(sessionId, choices);
 	}
 
 	public List<RestoDto> getMatchedRestosBySessionId(String sessionId) {
@@ -59,5 +61,23 @@ public class RouletteService {
 		}
 
 		return restoService.getRestosByTypes(foodTypesCommon);
+	}
+
+	public void saveMatchingRestos(List<RestoDto> restoDtos, String sessionId) {
+		Set<Integer> restoIds = new HashSet<>();
+		for (RestoDto restoDto : restoDtos) {
+			restoIds.add(restoDto.getId());
+		}
+		rouletteRepository.saveMatchingRestos(restoIds,sessionId);
+	}
+
+	public List<RestoDto> removeResto(String sessionId, int restoId) {
+		Set<Integer> ids = rouletteRepository.removeResto(sessionId, restoId);
+		List<RestoDto> restoDtos = new ArrayList<>();
+		List<Restaurant> restos = restoService.getRestosBasicInfoByIds(ids);
+		for (Restaurant resto : restos) {
+			restoDtos.add(new RestoDto(resto));
+		}
+		return restoDtos;
 	}
 }

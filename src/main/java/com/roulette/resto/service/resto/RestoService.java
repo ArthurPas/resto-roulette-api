@@ -120,6 +120,7 @@ public class RestoService {
 		}
 	}
 
+
 	public List<BusinessHour> addBusinessHoursToResto(NewBusinessHours businessHours, String id) throws APIError {
 		try{
 			return restoRepository.addBusinessHoursToResto(businessHours, id);
@@ -163,6 +164,13 @@ public class RestoService {
 
 	public List<Restaurant> getRestosByOwnerId(int accountId) throws APIError {
 		return restoRepository.getRestoByOwner(accountId);
+	}
+
+	public List<RestoDto> getRestosByTypes(Set<String> foodTypes) throws APIError {
+		Set<String> existingFoodTypesList = existingFoodTypesList(foodTypes);
+		log.info("Found {} food types for this session", existingFoodTypesList.toString());
+		List<Restaurant> resto = restoRepository.getRestosByTypes(existingFoodTypesList);
+		return new ArrayList<>(resto.stream().map(RestoDto::new).toList());
 	}
 
 	private MediaResource addMenuPicture(String restoId, MultipartFile menuPicture) throws APIError {

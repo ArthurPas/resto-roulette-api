@@ -12,6 +12,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Repository
@@ -90,7 +93,7 @@ public class RouletteDao {
 					.anyMatch(choice -> choice.getAccountId() == accountId);
 
 			if (!exists) {
-				session.getAccountChoices().add(new AccountChoices(accountId, new ArrayList<>(), new ArrayList<>()));
+				session.getAccountChoices().add(new AccountChoices(accountId, new HashSet<>(), new ArrayList<>()));
 				String updatedJson = objectMapper.writeValueAsString(session);
 				redisTemplate.opsForValue().set(key, updatedJson);
 
@@ -173,5 +176,25 @@ public class RouletteDao {
 			sb.append(chars.charAt(index));
 		}
 		return sb.toString();
+	}
+
+	public List<AccountChoices> getChoicesBySession(String sessionId) {
+		if (sessionId == null) {
+			throw new IllegalArgumentException("Session ID cannot be null");
+		}
+
+		String key = KEY_PREFIX + sessionId;
+		String jsonValue = redisTemplate.opsForValue().get(key);
+
+		if (jsonValue == null) {
+			return Collections.emptyList();
+		}
+
+		try {
+			RouletteSession sessionData = objectMapper.readValue(jsonValue, RouletteSession.class);
+			return sessionData.getAccountChoices();
+		} catch (Exception e) {
+			throw new RuntimeException("Error parsing JSON from Redis", e);
+		}
 	}
 }

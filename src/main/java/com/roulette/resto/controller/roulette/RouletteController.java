@@ -1,5 +1,6 @@
 package com.roulette.resto.controller.roulette;
 
+import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.in.NewSessionDto;
 import com.roulette.resto.data.roulette.websocket.*;
 import com.roulette.resto.service.roulette.RouletteService;
@@ -12,9 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @Slf4j
@@ -24,9 +28,10 @@ import org.springframework.web.bind.annotation.*;
 public class RouletteController {
 
 	final RouletteService rouletteService;
-
-	public RouletteController(RouletteService rouletteService) {
+	private final SimpMessagingTemplate messagingTemplate;
+	public RouletteController(RouletteService rouletteService, SimpMessagingTemplate messagingTemplate) {
 		this.rouletteService = rouletteService;
+		this.messagingTemplate = messagingTemplate;
 	}
 
 	@Tag(name = "App | Roulette")
@@ -58,6 +63,15 @@ public class RouletteController {
 	}
 	@MessageMapping("/swipe/{sessionId}")
 	public void swipe(@DestinationVariable String sessionId, AccountChoices choices) throws Exception {
+		rouletteService.addFoodChoice(sessionId, choices);
+	}
+	@MessageMapping("/swipe-done/{sessionId}")
+	@SendTo("/session/{sessionId}")
+	public List<RestoDto> onSwipeDone(@DestinationVariable String sessionId) {
+		return rouletteService.getMatchedRestosBySessionId(sessionId);
+	}
+	@MessageMapping("/veto/{sessionId}")
+	public void addveto(@DestinationVariable String sessionId, AccountChoices choices) throws Exception {
 		rouletteService.addFoodChoice(sessionId, choices);
 	}
 

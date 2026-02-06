@@ -39,4 +39,8 @@ public class RouletteRepository {
 	public void addFoodChoice(String sessionId, AccountChoices choices) {
 		rouletteDao.addFoodChoice(sessionId, choices);
 	}
+
+	public List<AccountChoices> getChoiceBySession(String sessionId) {
+		return rouletteDao.getChoicesBySession(sessionId);
+	}
 }

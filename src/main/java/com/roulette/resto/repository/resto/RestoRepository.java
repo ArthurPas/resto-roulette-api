@@ -6,6 +6,7 @@ import com.roulette.resto.data.common.entity.MediaType;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
+import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Label;
 import com.roulette.resto.data.resto.entity.Restaurant;
@@ -194,5 +195,10 @@ public class RestoRepository {
 
 	public boolean isRestoOwnerByAccountId(int restoId, int accountId) {
 		return restoDao.isRestoOwnerByAccountId(restoId, accountId) == 1;
+	}
+
+	public List<Restaurant> getRestosByTypes(Set<String> existingFoodTypesList) {
+		log.info(restoDao.getRestosByTypes(existingFoodTypesList).toString());
+		return restoDao.getRestosByTypes(existingFoodTypesList);
 	}
 }

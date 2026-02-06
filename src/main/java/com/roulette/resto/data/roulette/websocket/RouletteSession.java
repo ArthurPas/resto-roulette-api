@@ -4,7 +4,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -13,4 +15,5 @@ public class RouletteSession {
 	String sessionId;
 	String shortId;
 	List<AccountChoices> accountChoices = new ArrayList<>();
+	Set<Integer> restoIds = new HashSet<>();
 }

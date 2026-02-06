@@ -3,18 +3,14 @@ package com.roulette.resto.dao.roulette;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roulette.resto.data.roulette.websocket.AccountChoices;
-import com.roulette.resto.data.roulette.websocket.PreferenceType;
 import com.roulette.resto.data.roulette.websocket.RouletteSession;
-import org.apache.commons.lang3.RandomStringUtils; // Recommendation: Use Apache Commons or a custom random generator
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Repository
@@ -109,7 +105,7 @@ public class RouletteDao {
 		}
 	}
 
-	public void addFoodChoice(String sessionId, AccountChoices choices) {
+	public void addFoodChoices(String sessionId, AccountChoices choices) {
 		String key = KEY_PREFIX + sessionId;
 		String lockKey = LOCK_PREFIX + sessionId;
 
@@ -195,6 +191,72 @@ public class RouletteDao {
 			return sessionData.getAccountChoices();
 		} catch (Exception e) {
 			throw new RuntimeException("Error parsing JSON from Redis", e);
+		}
+	}
+
+	public Set<Integer> removeRestoFromSession(String sessionId, int restoId) {
+		String key = KEY_PREFIX + sessionId;
+		String lockKey = LOCK_PREFIX + sessionId;
+
+		RLock lock = redissonClient.getLock(lockKey);
+		lock.lock();
+		try {
+			String json = redisTemplate.opsForValue().get(key);
+			if (json == null || json.isEmpty()) {
+				return Collections.emptySet();
+			}
+
+			RouletteSession session = objectMapper.readValue(json, RouletteSession.class);
+
+			if (session.getRestoIds() != null) {
+				session.getRestoIds().remove(restoId);
+
+				String updatedJson = objectMapper.writeValueAsString(session);
+				redisTemplate.opsForValue().set(key, updatedJson);
+			}
+			return session.getRestoIds();
+
+		} catch (Exception e) {
+			throw new RuntimeException("Error removing resto " + restoId + " from session " + sessionId, e);
+		} finally {
+			if (lock.isHeldByCurrentThread()) {
+				lock.unlock();
+			}
+		}
+	}
+
+	public void saveMatchingRestos(Set<Integer> restoIds, String sessionId) {
+		String key = KEY_PREFIX + sessionId;
+		String lockKey = LOCK_PREFIX + sessionId;
+		RLock lock = redissonClient.getLock(lockKey);
+
+		lock.lock();
+		try {
+			String json = redisTemplate.opsForValue().get(key);
+			RouletteSession session;
+
+			if (json != null && !json.isEmpty()) {
+				session = objectMapper.readValue(json, RouletteSession.class);
+			} else {
+				session = new RouletteSession();
+				session.setSessionId(sessionId);
+			}
+
+			if (session.getRestoIds() == null) {
+				session.setRestoIds(restoIds);
+			} else {
+				session.getRestoIds().addAll(restoIds);
+			}
+
+			String updatedJson = objectMapper.writeValueAsString(session);
+			redisTemplate.opsForValue().set(key, updatedJson);
+
+		} catch (Exception e) {
+			throw new RuntimeException("Error updating session " + sessionId, e);
+		} finally {
+			if (lock.isHeldByCurrentThread()) {
+				lock.unlock();
+			}
 		}
 	}
 }

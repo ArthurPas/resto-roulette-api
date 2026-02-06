@@ -1,13 +1,14 @@
 package com.roulette.resto.repository.roulette;
 
 import com.roulette.resto.dao.roulette.RouletteDao;
+import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.websocket.AccountChoices;
 import com.roulette.resto.data.roulette.websocket.AccountsJoined;
 import com.roulette.resto.data.roulette.websocket.RouletteSession;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -36,11 +37,19 @@ public class RouletteRepository {
 		return rouletteDao.getSessionIdByShortId(shortId);
 	}
 
-	public void addFoodChoice(String sessionId, AccountChoices choices) {
-		rouletteDao.addFoodChoice(sessionId, choices);
+	public void addFoodChoices(String sessionId, AccountChoices choices) {
+		rouletteDao.addFoodChoices(sessionId, choices);
 	}
 
 	public List<AccountChoices> getChoiceBySession(String sessionId) {
 		return rouletteDao.getChoicesBySession(sessionId);
+	}
+
+	public void saveMatchingRestos(Set<Integer> restoIds, String sessionId) {
+		rouletteDao.saveMatchingRestos(restoIds,sessionId);
+	}
+
+	public Set<Integer> removeResto(String sessionId, int restoId) {
+		return rouletteDao.removeRestoFromSession(sessionId, restoId);
 	}
 }

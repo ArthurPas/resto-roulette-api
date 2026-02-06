@@ -1,8 +1,8 @@
 package com.roulette.resto.controller.roulette;
 
 import com.roulette.resto.data.resto.dto.out.RestoDto;
-import com.roulette.resto.data.roulette.in.NewSessionDto;
 import com.roulette.resto.data.roulette.websocket.*;
+import com.roulette.resto.data.social.entity.Resto;
 import com.roulette.resto.service.roulette.RouletteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +26,8 @@ import java.util.List;
 public class RouletteController {
 
 	final RouletteService rouletteService;
-	private final SimpMessagingTemplate messagingTemplate;
-	public RouletteController(RouletteService rouletteService, SimpMessagingTemplate messagingTemplate) {
+	public RouletteController(RouletteService rouletteService) {
 		this.rouletteService = rouletteService;
-		this.messagingTemplate = messagingTemplate;
 	}
 
 	@Tag(name = "App | Roulette")
@@ -63,16 +59,24 @@ public class RouletteController {
 	}
 	@MessageMapping("/swipe/{sessionId}")
 	public void swipe(@DestinationVariable String sessionId, AccountChoices choices) throws Exception {
-		rouletteService.addFoodChoice(sessionId, choices);
+		rouletteService.addFoodChoices(sessionId, choices);
 	}
 	@MessageMapping("/swipe-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
 	public List<RestoDto> onSwipeDone(@DestinationVariable String sessionId) {
-		return rouletteService.getMatchedRestosBySessionId(sessionId);
+		List<RestoDto> restos = rouletteService.getMatchedRestosBySessionId(sessionId);
+		rouletteService.saveMatchingRestos(restos,sessionId);
+		return restos;
 	}
 	@MessageMapping("/veto/{sessionId}")
 	public void addveto(@DestinationVariable String sessionId, AccountChoices choices) throws Exception {
-		rouletteService.addFoodChoice(sessionId, choices);
+		rouletteService.addFoodChoices(sessionId, choices);
+	}
+	@MessageMapping("/veto-done/{sessionId}")
+	@SendTo("/session/{sessionId}")
+	public List<RestoDto> onVetoDone(@DestinationVariable String sessionId,VetoResto veto) {
+		log.info(veto + " " + sessionId);
+		return rouletteService.removeResto(sessionId,veto.getRestoId());
 	}
 
 }

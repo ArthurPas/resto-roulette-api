@@ -66,14 +66,13 @@ public class RouletteService {
 		rouletteRepository.saveMatchingRestos(restoIds,sessionId);
 	}
 
-	public List<RestoDto> removeResto(String sessionId, VetoResto restoId) {
-		Set<Integer> ids = rouletteRepository.removeRestos(sessionId, restoId.getRestoId());
-		List<RestoDto> restoDtos = new ArrayList<>();
-		List<Restaurant> restos = restoService.getRestosBasicInfoByIds(ids);
-		for (Restaurant resto : restos) {
-			restoDtos.add(new RestoDto(resto));
+	public List<RestoDto> removeResto(String sessionId, VetoResto vetoPayload) {
+		if (vetoPayload == null || vetoPayload.getRestoId() == null) {
+			return new ArrayList<>();
 		}
-		return restoDtos;
+
+		Set<Integer> ids = rouletteRepository.removeRestos(sessionId, vetoPayload.getRestoId());
+		return getRestosDtosByIds(ids);
 	}
 
 	public RestoDto randomWinnerResto(List<RestoDto> remainingRestos) {
@@ -84,5 +83,25 @@ public class RouletteService {
 		int randomIndex = random.nextInt(remainingRestos.size());
 
 		return remainingRestos.get(randomIndex);
+	}
+
+	public List<RestoDto> getRestoBySession(String sessionId) {
+
+		Set<Integer> ids = rouletteRepository.getRestosBySession(sessionId);
+		return getRestosDtosByIds(ids);
+	}
+
+	private List<RestoDto> getRestosDtosByIds(Set<Integer> ids) {
+		if (ids == null) {
+			return new ArrayList<>();
+		}
+
+		List<RestoDto> restoDtos = new ArrayList<>();
+		List<Restaurant> restos = restoService.getRestosBasicInfoByIds(ids);
+
+		for (Restaurant resto : restos) {
+			restoDtos.add(new RestoDto(resto));
+		}
+		return restoDtos;
 	}
 }

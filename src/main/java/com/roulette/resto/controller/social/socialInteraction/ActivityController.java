@@ -1,4 +1,4 @@
-package com.roulette.resto.controller.roulette;
+package com.roulette.resto.controller.social.socialInteraction;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.configuration.TrackCampaign;

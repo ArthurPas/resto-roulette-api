@@ -7,6 +7,7 @@ import com.roulette.resto.data.common.entity.mappers.MediaMapper;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
+import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.resto.entity.VerificationStatus;
@@ -727,6 +728,25 @@ public class RestoDao {
 			log.error(e.getMessage());
 			throw e;
 		}
+
+	}
+
+	public List<Restaurant> getRestosByTypes(Set<String> existingFoodTypesList) {
+		String placeholders = existingFoodTypesList.stream()
+				.map(id -> "?")
+				.collect(Collectors.joining(", "));
+		String query = """
+				SELECT resto.resto_id, display_name FROM resto
+				JOIN resto_roulette.resto_resto_types rrt on resto.resto_id = rrt.resto_id
+				JOIN resto_type on rrt.type_id = resto_type.id
+				WHERE resto_type.food_type IN (""" + placeholders + ")";
+		log.info(query);
+		return jdbcTemplate.query(query, existingFoodTypesList.toArray(), (rs, rowNum) -> {
+			Restaurant restaurant = new Restaurant();
+			restaurant.setId(rs.getInt("resto_id"));
+			restaurant.setName(rs.getString("display_name"));
+			return restaurant;
+		});
 
 	}
 }

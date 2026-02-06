@@ -11,6 +11,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,17 +58,22 @@ public class MediaService {
 		}
 	}
 	public static List<MediaResponse> buildMediaUrl(List<MediaResource> pictures) {
-		List<MediaResponse> response = pictures.stream()
-				.map(pic -> {
-					String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-							.path("/medias/")
-							.path(pic.getResourceId())
-							.toUriString();
+		try {
+			List<MediaResponse> response = pictures.stream()
+					.map(pic -> {
+						String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+								.path("/medias/")
+								.path(pic.getResourceId())
+								.toUriString();
 
-					return new MediaResponse(pic.getMediaType().toString(),downloadUrl);
-				})
-				.collect(Collectors.toList());
-		return response;
+						return new MediaResponse(pic.getMediaType().toString(),downloadUrl);
+					})
+					.collect(Collectors.toList());
+			return response;
+		}catch (Exception e) {
+			log.error(e.getMessage());
+			return Collections.emptyList();
+		}
 	}
 	public static String buildMediaUrl(String resourceId) {
 		if(resourceId == null || resourceId.isEmpty()) {

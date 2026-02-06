@@ -5,12 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountChoices {
 	int accountId;
-	List<String> foodLiked;
+	Set<String> foodLiked;
 	List<String> foodDisliked;
 }

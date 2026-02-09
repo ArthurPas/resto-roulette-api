@@ -2,7 +2,7 @@ package com.roulette.resto.controller.roulette;
 
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.websocket.*;
-import com.roulette.resto.data.social.entity.Resto;
+import com.roulette.resto.data.social.dto.out.SessionIdResponse;
 import com.roulette.resto.service.roulette.RouletteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,9 +40,8 @@ public class RouletteController {
 	@Tag(name = "App | Roulette")
 	@GetMapping("/roulette/session/{shortId}")
 	@Operation(summary = "get sessionid by short id")
-	public ResponseEntity<?> getSessionUuid(@PathVariable String shortId) {
+	public ResponseEntity<SessionIdResponse> getSessionUuid(@PathVariable String shortId) {
 		String uuid =  rouletteService.getSessionIdByShortId(shortId);
-		record SessionIdResponse(String sessionId){};
 		return new ResponseEntity<>(new SessionIdResponse(uuid), HttpStatus.OK);
 	}
 

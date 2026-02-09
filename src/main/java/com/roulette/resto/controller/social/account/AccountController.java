@@ -78,7 +78,7 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> usersInfo(Authentication authentication) {
+	public ResponseEntity<UserInfoDto> usersInfo(Authentication authentication) {
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);
 			UserInfoDto userInfoDto = userService.getUserInfoById(accountId);
 			return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
@@ -87,16 +87,10 @@ public class AccountController {
 	@GetMapping("/owned-restaurants")
 	@Tag(name = "Account | User profile")
 	@Operation(summary = "Get restaurant(s) that user owns")
-	public ResponseEntity<?> getOwnedRestos(Authentication authentication) {
+	public ResponseEntity<List<Restaurant>> getOwnedRestos(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		try {
-			List<Restaurant> restaurants = restoService.getRestosByOwnerId(accountId);
-			return new ResponseEntity<>(restaurants, HttpStatus.OK);
-		}
-		catch (APIError e) {
-			ErrorResponse errorResponse = new ErrorResponse(e);
-			return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
-		}
+		List<Restaurant> restaurants = restoService.getRestosByOwnerId(accountId);
+		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
 	@PutMapping("info")
@@ -120,7 +114,7 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> updateUserInfo(@RequestBody UpdateUserInfo userInfo, Authentication authentication) {
+	public ResponseEntity<UserInfo> updateUserInfo(@RequestBody UpdateUserInfo userInfo, Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		UserInfo updateUserInfo = userService.updateUserPersonalInfo(accountId, userInfo);
 		return new ResponseEntity<>(updateUserInfo, HttpStatus.OK);
@@ -129,7 +123,7 @@ public class AccountController {
 	@PostMapping(path = "/add-avatar", consumes = MULTIPART_FORM_DATA_VALUE)
 	@Tag(name = "Account | User profile")
 	@Operation(summary = "Add user profile picture")
-	public ResponseEntity<?> addUserAvatar(Authentication authentication,
+	public ResponseEntity<MediaResource> addUserAvatar(Authentication authentication,
 											   @RequestParam() MultipartFile avatar) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		MediaResource mediaResource = userService.addUserAvatar(accountId,avatar);
@@ -156,7 +150,7 @@ public class AccountController {
 							@ExampleObject(
 									name = "Account not found",
 									value = "{\"message\":\"Account not found\",\"description\":\"\"}")}))})
-	public ResponseEntity<?> updatePassword(@RequestBody ChangePasswordDto changePasswordDto,
+	public ResponseEntity<BasicAuthDto> updatePassword(@RequestBody ChangePasswordDto changePasswordDto,
 											Authentication authentication) {
 			int accountId = jwtService.getAccountIdAuthenticated(authentication);
 			Account account = userService.updatePassword(changePasswordDto, accountId);
@@ -172,7 +166,8 @@ public class AccountController {
 					description = "Accounts info",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountsInfos.class)))})
-	public ResponseEntity<?> getTotalUsersRegistrations(Authentication authentication, @RequestParam(required = false
+	public ResponseEntity<List<AccountsInfos>> getTotalUsersRegistrations(Authentication authentication, @RequestParam(required =
+			false
 			, defaultValue = "0") int page) {
 			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(userService.getAccounts(page), HttpStatus.OK);
@@ -187,7 +182,7 @@ public class AccountController {
 					description = "Total and trend data",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = UserInfoDto.class)))})
-	public ResponseEntity<?> modifyAccountRole (Authentication authentication,
+	public ResponseEntity<UserInfoDto> modifyAccountRole (Authentication authentication,
 												@RequestBody UpdateAccountInfo updateAccountInfo) {
 			adminService.rightCheckIsAdmin(authentication);
 			int accountId = userService.updateUserRole(updateAccountInfo);
@@ -198,7 +193,7 @@ public class AccountController {
 	@DeleteMapping("/admin/delete-account")
 	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Delete account")
-	public ResponseEntity<?> deleteAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
+	public ResponseEntity<Void> deleteAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
 			adminService.rightCheckIsAdmin(authentication);
 			accountService.deleteUser(deleteAccount);
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -206,7 +201,7 @@ public class AccountController {
 	@PatchMapping("/admin/recover-deleted-account")
 	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Recover deleted account")
-	public ResponseEntity<?> recoverAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
+	public ResponseEntity<Void> recoverAccount(@RequestBody DeleteAccount deleteAccount, Authentication authentication) {
 			adminService.rightCheckIsAdmin(authentication);
 			accountService.recoverUser(deleteAccount);
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -214,7 +209,7 @@ public class AccountController {
 	@GetMapping("/admin/{user_login}")
 	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Get specific user info")
-	public ResponseEntity<?> recoverAccount(@PathVariable String user_login, Authentication authentication) {
+	public ResponseEntity<UserInfoDto> recoverAccount(@PathVariable String user_login, Authentication authentication) {
 		adminService.rightCheckIsAdmin(authentication);
 		UserInfoDto userInfoDto = userService.getUserInfoByLogin(user_login);
 		return new ResponseEntity<>(userInfoDto, HttpStatus.OK);

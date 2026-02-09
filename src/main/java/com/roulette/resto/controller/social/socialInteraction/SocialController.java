@@ -114,11 +114,11 @@ public class SocialController {
 	}
 
 	@Tag(name = "Account | Followers")
-	@PostMapping("/unfollow/{accountToUnfollow}")
-	@Operation(summary = "Unfollow accountToUnfollow")
-	public ResponseEntity<Void> unfollow(Authentication authentication, @PathVariable String accountToUnfollow){
+	@PostMapping("/unfollow/{accountIdToUnfollow}")
+	@Operation(summary = "Unfollow accountIdToUnfollow")
+	public ResponseEntity<Void> unfollow(Authentication authentication, @PathVariable String accountIdToUnfollow){
 		int accountAsked = jwtService.getAccountIdAuthenticated(authentication);
-		userService.unfollow(accountAsked,accountToUnfollow);
+		userService.unfollow(accountAsked,accountIdToUnfollow);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	@Tag(name = "Account | Followers")

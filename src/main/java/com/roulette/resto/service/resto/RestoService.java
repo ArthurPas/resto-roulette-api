@@ -1,11 +1,13 @@
 package com.roulette.resto.service.resto;
 
+import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.data.resto.dto.in.NewFoodType;
 import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
+import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
@@ -263,5 +265,20 @@ public class RestoService {
 	}
 	public boolean isRestoOwnerByAccountId(int restoId, int accountId) {
 		return restoRepository.isRestoOwnerByAccountId(restoId, accountId);
+	}
+	public MinimalRestoInfo getMinimalRestoInfo(String restoId) {
+		RestoDto restaurant = this.getRestoById(restoId);
+		MinimalRestoInfo minimalRestoInfo = new MinimalRestoInfo();
+		minimalRestoInfo.setRestoName(restaurant.getDisplayName());
+		minimalRestoInfo.setRestoId(Integer.parseInt(restoId));
+		if(restaurant.getMedias()!=null) {
+			String logoUrl = restaurant.getMedias().stream()
+					.filter(media -> Objects.equals(media.getType(), "LOGO"))
+					.map(MediaResponse::getUrl)
+					.findFirst()
+					.orElse(null);
+			minimalRestoInfo.setLogoUrl(logoUrl);
+		}
+		return minimalRestoInfo;
 	}
 }

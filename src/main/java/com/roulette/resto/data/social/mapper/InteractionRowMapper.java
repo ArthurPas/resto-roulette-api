@@ -1,6 +1,6 @@
 package com.roulette.resto.data.social.mapper;
 
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.data.social.dto.SocialInteraction;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -15,6 +15,7 @@ public class InteractionRowMapper implements RowMapper<SocialInteraction> {
 		interaction.setActivityId(rs.getInt("activity_id"));
 		interaction.setAccountId(rs.getInt("account_id"));
 		interaction.setCommentId(rs.getInt("comment_id"));
+		interaction.setRestoId(rs.getInt("resto_id"));
 		return interaction;
 	}
 }

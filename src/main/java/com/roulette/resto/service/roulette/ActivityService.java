@@ -65,9 +65,9 @@ public class ActivityService {
 			ActivityResponse activityResponse = new ActivityResponse(activity);
 
 			List<MinimalAccountInfo> participantsInfo = getMinimalAccountInfos(activity);
-			activityResponse.getDetails().setParticipantInfos(participantsInfo);
+			activityResponse.setParticipantInfos(participantsInfo);
 
-			MinimalRestoInfo restoInfo = getMinimalRestoInfo(activity);
+			MinimalRestoInfo restoInfo = restoService.getMinimalRestoInfo(String.valueOf(activity.getDetails().getRestoId()));
 			activityResponse.setRestoInfo(restoInfo);
 			return activityResponse;
 		}catch (AccountNotFoundException e) {
@@ -82,23 +82,7 @@ public class ActivityService {
 		accounts.forEach(account -> {participantsInfo.add(new MinimalAccountInfo(account));});
 		return participantsInfo;
 	}
-	private MinimalRestoInfo getMinimalRestoInfo(ActivityDto activity) throws AccountNotFoundException {
 
-		RestoDto restaurant = restoService.getRestoById(String.valueOf(activity.getDetails().getRestoId()));
-		log.info(restaurant.getMedias().toString());
-		MinimalRestoInfo minimalRestoInfo = new MinimalRestoInfo();
-		minimalRestoInfo.setRestoName(restaurant.getDisplayName());
-		minimalRestoInfo.setRestoId(activity.getDetails().getRestoId());
-		if(restaurant.getMedias()!=null) {
-			String logoUrl = restaurant.getMedias().stream()
-					.filter(media -> Objects.equals(media.getType(), "LOGO"))
-					.map(MediaResponse::getUrl)
-					.findFirst()
-					.orElse(null);
-			minimalRestoInfo.setLogoUrl(logoUrl);
-		}
-		return minimalRestoInfo;
-	}
 
 
 	public ActivityResponse getActivity(String activityId) {

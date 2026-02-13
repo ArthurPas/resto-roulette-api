@@ -24,15 +24,10 @@ public class AdminService {
 
 	public void rightCheckIsAdmin(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		try {
-			Account account = accountService.getAccountById(accountId);
-			if(account.getUserInfo().getRole()!= UserRole.ROLE_ADMIN){
-				throw new APIError(71,
-						HttpStatus.UNAUTHORIZED);
-			}
-		}catch (AccountNotFoundException e) {
-			 throw new APIError(64,
-					HttpStatus.NOT_FOUND);
+		Account account = accountService.getAccountById(accountId);
+		if(account.getUserInfo().getRole()!= UserRole.ROLE_ADMIN){
+			throw new APIError(71,
+					HttpStatus.UNAUTHORIZED);
 		}
 	}
 }

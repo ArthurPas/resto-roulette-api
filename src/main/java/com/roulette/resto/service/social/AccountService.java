@@ -51,8 +51,13 @@ public class AccountService implements UserDetailsService {
 		return accountRepository.getAccountByLogin(login);
 	}
 
-	public Account getAccountById(int id) throws AccountNotFoundException {
-		return accountRepository.getAccountById(id);
+	public Account getAccountById(int id) {
+		try {
+
+			return accountRepository.getAccountById(id);
+		}catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
 
 

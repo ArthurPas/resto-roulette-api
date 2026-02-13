@@ -2,12 +2,9 @@ package com.roulette.resto.repository.social;
 
 import com.roulette.resto.dao.resto.RestoDao;
 import com.roulette.resto.dao.social.InteractionDao;
-import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.social.dto.in.NewComment;
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.data.social.dto.SocialInteraction;
 import com.roulette.resto.exception.APIError;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;

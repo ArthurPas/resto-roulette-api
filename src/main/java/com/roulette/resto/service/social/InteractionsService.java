@@ -3,7 +3,8 @@ package com.roulette.resto.service.social;
 import com.roulette.resto.data.social.dto.UserLikedRestos;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.LikedResto;
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.data.social.dto.SocialInteraction;
+import com.roulette.resto.data.social.dto.out.SocialInteractionResponse;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.repository.resto.RestoRepository;
 import com.roulette.resto.repository.social.InteractionRepository;
@@ -14,6 +15,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -74,8 +76,16 @@ public class InteractionsService {
 		return likedResto;
 	}
 
-	public List<SocialInteraction> getInteractionsByAccountId(int accountId) {
-		return interactionRepository.getInteractionsByAccountId(accountId);
+	public List<SocialInteractionResponse> getInteractionsByAccountId(int accountId) {
+		List<SocialInteraction> socialInteractions = interactionRepository.getInteractionsByAccountId(accountId);
+
+		List<SocialInteractionResponse> socialInteractionResponses = new ArrayList<>();
+		for (SocialInteraction  socialInteraction : socialInteractions) {
+			SocialInteractionResponse socialInteractionResponse = new SocialInteractionResponse(socialInteraction);
+			socialInteractionResponse.setRestoInfo(restoService.getMinimalRestoInfo(String.valueOf(socialInteraction.getRestoId())));
+			socialInteractionResponses.add(socialInteractionResponse);
+		}
+		return socialInteractionResponses;
 	}
 
 }

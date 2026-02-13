@@ -3,7 +3,7 @@ package com.roulette.resto.dao.social;
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.dao.roulette.ActivityDao;
 import com.roulette.resto.data.social.dto.in.NewComment;
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.data.social.dto.SocialInteraction;
 import com.roulette.resto.data.social.mapper.InteractionRowMapper;
 import com.roulette.resto.exception.APIError;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class InteractionDao {
 
 	public List<SocialInteraction> getInteractionsByAccountId(int id) {
 		String query = """
-							select account.account_id, content, c.comment_id, a.activity_id
+							select account.account_id, content, c.comment_id, a.activity_id, a.resto_id
 							FROM
 								account
 							JOIN resto_roulette.comment c on account.account_id = c.account_id

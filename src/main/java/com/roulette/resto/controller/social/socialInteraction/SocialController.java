@@ -4,8 +4,10 @@ import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.CommentResponse;
 import com.roulette.resto.data.social.dto.out.LikedResto;
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.data.social.dto.out.SocialInteractionResponse;
+import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.service.social.AccountService;
 import com.roulette.resto.service.social.InteractionsService;
 import com.roulette.resto.service.social.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,10 +32,16 @@ public class SocialController {
 	final InteractionsService interactionsService;
 	final UserService userService;
 	final JwtService jwtService;
-	public SocialController(InteractionsService interactionsService, JwtService jwtService,UserService userService) {
+	private final AccountService accountService;
+
+	public record SocialInteractions(List<SocialInteractionResponse> socialInteractionResponses) {}
+	public record FollowRequests(List<MinimalAccountInfo> requests){}
+	public record Followers(List<MinimalAccountInfo> followers){}
+	public SocialController(InteractionsService interactionsService, JwtService jwtService, UserService userService, AccountService accountService) {
 		this.interactionsService = interactionsService;
 		this.jwtService = jwtService;
 		this.userService = userService;
+		this.accountService = accountService;
 	}
 	@Tag(name = "Social | Resto interactions")
 	@PostMapping("/resto/{restoId}/like")
@@ -81,17 +89,17 @@ public class SocialController {
 	@Tag(name = "Social | Comments")
 	@GetMapping("/me")
 	@Operation(summary = "Get my social interactions (comments)")
-	public ResponseEntity<List<SocialInteraction>> myInteractions(Authentication authentication) {
+	public ResponseEntity<SocialInteractions> myInteractions(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<SocialInteraction> comment = interactionsService.getInteractionsByAccountId(accountId);
-		return new ResponseEntity<>(comment, HttpStatus.OK);
+		List<SocialInteractionResponse> comment = interactionsService.getInteractionsByAccountId(accountId);
+		return new ResponseEntity<>(new SocialInteractions(comment), HttpStatus.OK);
 	}
 	@Tag(name = "Account | Followers")
 	@GetMapping("/following-request")
 	@Operation(summary = "Get my following request that was not accepted yet")
-	public ResponseEntity<List<MinimalAccountInfo>> GetFollowingRequest(Authentication authentication){
+	public ResponseEntity<FollowRequests> GetFollowingRequest(Authentication authentication){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		return new ResponseEntity<>( userService.getFollowingRequest(accountId),HttpStatus.OK);
+		return new ResponseEntity<>( new FollowRequests(userService.getFollowingRequest(accountId)),HttpStatus.OK);
 	}
 
 
@@ -124,10 +132,18 @@ public class SocialController {
 	@Tag(name = "Account | Followers")
 	@GetMapping("/followers")
 	@Operation(summary = "Get my followers")
-	public ResponseEntity<List<MinimalAccountInfo>> getFollowersList(Authentication authentication){
+	public ResponseEntity<Followers> getFollowersList(Authentication authentication){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
-		return new ResponseEntity<>(followers,HttpStatus.OK);
+		return new ResponseEntity<>(new Followers(followers),HttpStatus.OK);
+	}
+
+	@Tag(name = "Account | profile")
+	@GetMapping("/profile/{accountId}")
+	@Operation(summary = "Get profile")
+	public ResponseEntity<MinimalAccountInfo> getProfile(@PathVariable String accountId){
+		Account account = accountService.getAccountById(Integer.parseInt(accountId));
+		return new ResponseEntity<>(new MinimalAccountInfo(account),HttpStatus.OK);
 	}
 
 }

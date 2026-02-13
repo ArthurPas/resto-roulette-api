@@ -5,13 +5,11 @@ import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.resto.entity.VerificationStatus;
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 import java.util.Set;

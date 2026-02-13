@@ -1,5 +1,6 @@
 package com.roulette.resto.data.social.entity;
 
+import com.roulette.resto.data.social.dto.out.UserInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

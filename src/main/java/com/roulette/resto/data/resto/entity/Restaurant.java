@@ -2,13 +2,12 @@ package com.roulette.resto.data.resto.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.roulette.resto.data.common.entity.MediaResource;
-import com.roulette.resto.data.social.dto.out.SocialInteraction;
+import com.roulette.resto.data.social.dto.SocialInteraction;
 import com.roulette.resto.data.social.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 import java.util.Set;

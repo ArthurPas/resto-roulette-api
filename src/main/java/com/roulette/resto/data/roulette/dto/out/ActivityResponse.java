@@ -17,11 +17,10 @@ public class ActivityResponse {
 	String description;
 	public MinimalRestoInfo restoInfo;
 	public List<MinimalAccountInfo> participantInfos;
-	public RouletteSessionDto details;
 
 	public ActivityResponse(ActivityDto activityDto){
 		this.description = activityDto.getDescription();
-		this.details = activityDto.getDetails();
+		this.participantInfos = activityDto.getDetails().getParticipantInfos();
 	}
 
 }

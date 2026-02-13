@@ -69,7 +69,7 @@ public class RouletteDao {
 		return sessionId;
 	}
 
-	public void addAccountIdToSession(String sessionId, int accountId) {
+	public void addAccountIdToSession(String sessionId, String login) {
 		String key = KEY_PREFIX + sessionId;
 		String lockKey = LOCK_PREFIX + sessionId;
 		RLock lock = redissonClient.getLock(lockKey);
@@ -89,16 +89,16 @@ public class RouletteDao {
 				session.setAccountChoices(new ArrayList<>());
 			}
 			boolean exists = session.getAccountChoices().stream()
-					.anyMatch(choice -> choice.getAccountId() == accountId);
+					.anyMatch(choice -> choice.getLogin() == login);
 
 			if (!exists) {
-				session.getAccountChoices().add(new AccountChoices(accountId, new HashSet<>(), new HashSet<>(),false));
+				session.getAccountChoices().add(new AccountChoices(login, new HashSet<>(), new HashSet<>(),false));
 				String updatedJson = objectMapper.writeValueAsString(session);
 				redisTemplate.opsForValue().set(key, updatedJson);
 
-				System.out.println(">>> SUCCESS : Ajout user " + accountId + " dans session " + sessionId);
+				System.out.println(">>> SUCCESS : Ajout user " + login + " dans session " + sessionId);
 			} else {
-				System.out.println(">>> INFO : User " + accountId + " déjà présent.");
+				System.out.println(">>> INFO : User " + login + " déjà présent.");
 			}
 
 		} catch (Exception e) {
@@ -128,7 +128,7 @@ public class RouletteDao {
 			if (session.getAccountChoices() == null) {
 				session.setAccountChoices(new ArrayList<>());
 			}
-			session.getAccountChoices().removeIf(ac -> ac.getAccountId() == choices.getAccountId());
+			session.getAccountChoices().removeIf(ac -> Objects.equals(ac.getLogin(), choices.getLogin()));
 			session.getAccountChoices().add(choices);
 			String updatedJson = objectMapper.writeValueAsString(session);
 			redisTemplate.opsForValue().set(key, updatedJson);
@@ -212,7 +212,7 @@ public class RouletteDao {
 			}
 
 			session.getAccountChoices().stream()
-					.filter(ac -> ac.getAccountId() == vetoResto.getAccountId())
+					.filter(ac -> ac.getLogin() == vetoResto.getLogin())
 					.findFirst()
 					.ifPresent(ac -> ac.setVetoDone(true));
 
@@ -280,7 +280,7 @@ public class RouletteDao {
 		}
 	}
 
-	public void setVetoStatusForAccount(String sessionId, int accountId, boolean status) {
+	public void setVetoStatusForAccount(String sessionId, String login, boolean status) {
 		String key = KEY_PREFIX + sessionId;
 		String lockKey = LOCK_PREFIX + sessionId;
 
@@ -288,33 +288,24 @@ public class RouletteDao {
 		lock.lock();
 		try {
 			String json = redisTemplate.opsForValue().get(key);
-			log.info("COUCOU 1");
 			if (json == null || json.isEmpty()) {
 				return;
 			}
-
-			log.info("COUCOU 2");
 			RouletteSession session = objectMapper.readValue(json, RouletteSession.class);
-
-			log.info("COUCOU 3" + session.toString());
 			if (session.getAccountChoices() != null) {
 				session.getAccountChoices().stream()
-						.filter(ac -> Objects.equals(ac.getAccountId(), accountId))
+						.filter(ac -> Objects.equals(ac.getLogin(), login))
 						.findFirst()
 						.ifPresent(ac -> {
 							ac.setVetoDone(status);
 						});
-				log.info("Recherche de l'accountId : " + accountId);
-				session.getAccountChoices().forEach(ac -> log.info("Compte présent en session : " + ac.getAccountId()));
-
-				log.info("COUCOU 3");
 				String updatedJson = objectMapper.writeValueAsString(session);
 				log.info(updatedJson);
 				redisTemplate.opsForValue().set(key, updatedJson);
 			}
 
 		} catch (Exception e) {
-			throw new RuntimeException("Error updating veto status for account " + accountId + " in session " + sessionId, e);
+			throw new RuntimeException("Error updating veto status for account " + login + " in session " + sessionId, e);
 		} finally {
 			if (lock.isHeldByCurrentThread()) {
 				lock.unlock();

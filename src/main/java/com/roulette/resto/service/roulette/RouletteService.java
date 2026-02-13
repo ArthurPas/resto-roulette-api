@@ -3,11 +3,16 @@ package com.roulette.resto.service.roulette;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.roulette.websocket.*;
+import com.roulette.resto.exception.APIError;
 import com.roulette.resto.repository.roulette.RouletteRepository;
 import com.roulette.resto.service.resto.RestoService;
+import com.roulette.resto.service.social.AccountService;
+import com.roulette.resto.service.social.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,14 +22,18 @@ public class RouletteService {
 
 	final RouletteRepository rouletteRepository;
 	final RestoService restoService;
+	private final UserService userService;
+	private final AccountService accountService;
 
-	public RouletteService(RouletteRepository rouletteRepository, RestoService restoService) {
+	public RouletteService(RouletteRepository rouletteRepository, RestoService restoService, UserService userService, AccountService accountService) {
 		this.rouletteRepository = rouletteRepository;
 		this.restoService = restoService;
+		this.userService = userService;
+		this.accountService = accountService;
 	}
 
-	public AccountsInSession addAccountToCurrentSession(String sessionId, JoinSession account) {
-		return rouletteRepository.addAccountIdToSession(sessionId, account.getAccountId());
+	public AccountsInSession addAccountToCurrentSession(String sessionId, JoinSession account)  {
+		return rouletteRepository.addAccountIdToSession(sessionId, account.getLogin());
 
 	}
 
@@ -43,19 +52,20 @@ public class RouletteService {
 
 	public AccountsInSession getAccountsStatus(String sessionId) {
 		RouletteSession rouletteSession = rouletteRepository.getSessionById(sessionId);
-		List<Integer> accountsId = rouletteSession.getAccountChoices().stream().map(AccountChoices::getAccountId).collect(Collectors.toList());
-		List<Integer> accountsIdSwiped = rouletteSession.getAccountChoices().stream()
+		List<String> accountsId =
+				rouletteSession.getAccountChoices().stream().map(AccountChoices::getLogin).collect(Collectors.toList());
+		List<String> accountsIdSwiped = rouletteSession.getAccountChoices().stream()
 				.filter(ac -> !ac.getFoodLiked().isEmpty() || !ac.getFoodDisliked().isEmpty())
-				.map(AccountChoices::getAccountId)
+				.map(AccountChoices::getLogin)
 				.toList();
-		List<Integer> accountsIdVeto = rouletteSession.getAccountChoices().stream()
+		List<String> accountsIdVeto = rouletteSession.getAccountChoices().stream()
 				.filter(AccountChoices::isVetoDone)
-				.map(AccountChoices::getAccountId)
+				.map(AccountChoices::getLogin)
 				.toList();
 		AccountsInSession accountsInSession = new AccountsInSession();
-		accountsInSession.setAccountsJoinedIds(accountsId);
-		accountsInSession.setAccountsSwipedIds(accountsIdSwiped);
-		accountsInSession.setAccountsVetoIds(accountsIdVeto);
+		accountsInSession.setAccountsJoined(accountsId);
+		accountsInSession.setAccountsSwiped(accountsIdSwiped);
+		accountsInSession.setAccountsVeto(accountsIdVeto);
 		return accountsInSession;
 	}
 	public List<RestoDto> getMatchedRestosBySessionId(String sessionId) {

@@ -8,7 +8,6 @@ import com.roulette.resto.data.roulette.websocket.VetoResto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,12 +22,13 @@ public class RouletteRepository {
 		this.rouletteDao = rouletteDao;
 	}
 
-	public AccountsInSession addAccountIdToSession(String sessionId, int accountId) {
-		rouletteDao.addAccountIdToSession(sessionId, accountId);
+	public AccountsInSession addAccountIdToSession(String sessionId, String login) {
+		rouletteDao.addAccountIdToSession(sessionId, login);
 		RouletteSession rouletteSession = rouletteDao.getSession(sessionId);
-		List<Integer> accountsId = rouletteSession.getAccountChoices().stream().map(AccountChoices::getAccountId).collect(Collectors.toList());
+		List<String> logins =
+				rouletteSession.getAccountChoices().stream().map(AccountChoices::getLogin).collect(Collectors.toList());
 		AccountsInSession accountsJoined = new AccountsInSession();
-		accountsJoined.setAccountsJoinedIds(accountsId);
+		accountsJoined.setAccountsJoined(logins);
 		log.info(accountsJoined.toString());
 		return accountsJoined;
 	}
@@ -60,7 +60,7 @@ public class RouletteRepository {
 	public Set<Integer> removeRestos(String sessionId, VetoResto vetoResto) {
 		Set<Integer> remainingsRestos = rouletteDao.removeRestoFromSession(sessionId, vetoResto);
 		log.info(remainingsRestos.toString());
-		rouletteDao.setVetoStatusForAccount(sessionId,vetoResto.getAccountId(),true);
+		rouletteDao.setVetoStatusForAccount(sessionId,vetoResto.getLogin(),true);
 		return remainingsRestos;
 	}
 

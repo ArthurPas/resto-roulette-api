@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BasicAuthDto {
+
+	private String login;
 	@Schema(example = "eyAZea12588[...]")
 	private String token;
 	@Schema(example = "36000")

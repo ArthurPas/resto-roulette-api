@@ -1,6 +1,6 @@
 package com.roulette.resto.data.social.mapper;
 
-import com.roulette.resto.data.roulette.dto.out.ActivityDto;
+import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.RouletteSessionDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.RowMapper;

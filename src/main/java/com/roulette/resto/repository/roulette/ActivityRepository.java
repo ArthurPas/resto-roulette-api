@@ -1,7 +1,7 @@
 package com.roulette.resto.repository.roulette;
 
 import com.roulette.resto.dao.roulette.ActivityDao;
-import com.roulette.resto.data.roulette.dto.out.ActivityDto;
+import com.roulette.resto.data.roulette.ActivityDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 

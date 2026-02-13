@@ -47,7 +47,7 @@ public class RestoDto {
 		this.businessHours = restaurant.getBusinessHours();
 		this.creationDate = restaurant.getCreationDate();
 		this.owner = restaurant.getOwner();
-//		this.medias = buildMediaUrl(restaurant.getMedias());
+		this.medias = buildMediaUrl(restaurant.getMedias());
 		this.lat = restaurant.getLatitude();
 		this.lon = restaurant.getLongitude();
 		this.verificationStatus = restaurant.getVerificationStatus();

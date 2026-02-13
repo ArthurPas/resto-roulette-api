@@ -10,5 +10,6 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VetoResto {
-	private Set<Integer> restoId;
+	private Set<Integer> restoIds;
+	private int accountId;
 }

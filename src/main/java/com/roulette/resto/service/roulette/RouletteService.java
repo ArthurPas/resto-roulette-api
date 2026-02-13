@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,7 +23,7 @@ public class RouletteService {
 		this.restoService = restoService;
 	}
 
-	public AccountsJoined addAccountToCurrentSession(String sessionId, JoinSession account) {
+	public AccountsInSession addAccountToCurrentSession(String sessionId, JoinSession account) {
 		return rouletteRepository.addAccountIdToSession(sessionId, account.getAccountId());
 
 	}
@@ -40,6 +41,23 @@ public class RouletteService {
 		rouletteRepository.addFoodChoices(sessionId, choices);
 	}
 
+	public AccountsInSession getAccountsStatus(String sessionId) {
+		RouletteSession rouletteSession = rouletteRepository.getSessionById(sessionId);
+		List<Integer> accountsId = rouletteSession.getAccountChoices().stream().map(AccountChoices::getAccountId).collect(Collectors.toList());
+		List<Integer> accountsIdSwiped = rouletteSession.getAccountChoices().stream()
+				.filter(ac -> !ac.getFoodLiked().isEmpty() || !ac.getFoodDisliked().isEmpty())
+				.map(AccountChoices::getAccountId)
+				.toList();
+		List<Integer> accountsIdVeto = rouletteSession.getAccountChoices().stream()
+				.filter(AccountChoices::isVetoDone)
+				.map(AccountChoices::getAccountId)
+				.toList();
+		AccountsInSession accountsInSession = new AccountsInSession();
+		accountsInSession.setAccountsJoinedIds(accountsId);
+		accountsInSession.setAccountsSwipedIds(accountsIdSwiped);
+		accountsInSession.setAccountsVetoIds(accountsIdVeto);
+		return accountsInSession;
+	}
 	public List<RestoDto> getMatchedRestosBySessionId(String sessionId) {
 		List<AccountChoices> choices = rouletteRepository.getChoiceBySession(sessionId);
 		if (choices.isEmpty()) {
@@ -67,11 +85,11 @@ public class RouletteService {
 	}
 
 	public List<RestoDto> removeResto(String sessionId, VetoResto vetoPayload) {
-		if (vetoPayload == null || vetoPayload.getRestoId() == null) {
+		if (vetoPayload == null || vetoPayload.getRestoIds() == null) {
 			return new ArrayList<>();
 		}
+		Set<Integer> ids = rouletteRepository.removeRestos(sessionId, vetoPayload);
 
-		Set<Integer> ids = rouletteRepository.removeRestos(sessionId, vetoPayload.getRestoId());
 		return getRestosDtosByIds(ids);
 	}
 

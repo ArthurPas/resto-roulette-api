@@ -13,5 +13,6 @@ import java.util.Set;
 public class AccountChoices {
 	int accountId;
 	Set<String> foodLiked;
-	List<String> foodDisliked;
+	Set<String> foodDisliked;
+	boolean vetoDone;
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roulette.resto.data.roulette.websocket.AccountChoices;
 import com.roulette.resto.data.roulette.websocket.RouletteSession;
+import com.roulette.resto.data.roulette.websocket.VetoResto;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @Repository
 public class RouletteDao {
 
@@ -89,7 +92,7 @@ public class RouletteDao {
 					.anyMatch(choice -> choice.getAccountId() == accountId);
 
 			if (!exists) {
-				session.getAccountChoices().add(new AccountChoices(accountId, new HashSet<>(), new ArrayList<>()));
+				session.getAccountChoices().add(new AccountChoices(accountId, new HashSet<>(), new HashSet<>(),false));
 				String updatedJson = objectMapper.writeValueAsString(session);
 				redisTemplate.opsForValue().set(key, updatedJson);
 
@@ -194,37 +197,35 @@ public class RouletteDao {
 		}
 	}
 
-	public Set<Integer> removeRestoFromSession(String sessionId, int restoId) {
+	public Set<Integer> removeRestoFromSession(String sessionId, VetoResto vetoResto) {
 		String key = KEY_PREFIX + sessionId;
 		String lockKey = LOCK_PREFIX + sessionId;
-
 		RLock lock = redissonClient.getLock(lockKey);
+
 		lock.lock();
 		try {
-			String json = redisTemplate.opsForValue().get(key);
-			if (json == null || json.isEmpty()) {
-				return Collections.emptySet();
-			}
-
-			RouletteSession session = objectMapper.readValue(json, RouletteSession.class);
+			RouletteSession session = getSession(sessionId);
+			if (session == null) return Collections.emptySet();
 
 			if (session.getRestoIds() != null) {
-				session.getRestoIds().remove(restoId);
-
-				String updatedJson = objectMapper.writeValueAsString(session);
-				redisTemplate.opsForValue().set(key, updatedJson);
+				session.getRestoIds().removeAll(vetoResto.getRestoIds());
 			}
+
+			session.getAccountChoices().stream()
+					.filter(ac -> ac.getAccountId() == vetoResto.getAccountId())
+					.findFirst()
+					.ifPresent(ac -> ac.setVetoDone(true));
+
+			String updatedJson = objectMapper.writeValueAsString(session);
+			redisTemplate.opsForValue().set(key, updatedJson);
+
 			return session.getRestoIds();
-
 		} catch (Exception e) {
-			throw new RuntimeException("Error removing resto " + restoId + " from session " + sessionId, e);
+			throw new RuntimeException("Transaction failed", e);
 		} finally {
-			if (lock.isHeldByCurrentThread()) {
-				lock.unlock();
-			}
+			lock.unlock();
 		}
 	}
-
 	public void saveMatchingRestos(Set<Integer> restoIds, String sessionId) {
 		String key = KEY_PREFIX + sessionId;
 		String lockKey = LOCK_PREFIX + sessionId;
@@ -276,6 +277,48 @@ public class RouletteDao {
 
 		} catch (Exception e) {
 			throw new RuntimeException("Error fetching restos for session " + sessionId, e);
+		}
+	}
+
+	public void setVetoStatusForAccount(String sessionId, int accountId, boolean status) {
+		String key = KEY_PREFIX + sessionId;
+		String lockKey = LOCK_PREFIX + sessionId;
+
+		RLock lock = redissonClient.getLock(lockKey);
+		lock.lock();
+		try {
+			String json = redisTemplate.opsForValue().get(key);
+			log.info("COUCOU 1");
+			if (json == null || json.isEmpty()) {
+				return;
+			}
+
+			log.info("COUCOU 2");
+			RouletteSession session = objectMapper.readValue(json, RouletteSession.class);
+
+			log.info("COUCOU 3" + session.toString());
+			if (session.getAccountChoices() != null) {
+				session.getAccountChoices().stream()
+						.filter(ac -> Objects.equals(ac.getAccountId(), accountId))
+						.findFirst()
+						.ifPresent(ac -> {
+							ac.setVetoDone(status);
+						});
+				log.info("Recherche de l'accountId : " + accountId);
+				session.getAccountChoices().forEach(ac -> log.info("Compte présent en session : " + ac.getAccountId()));
+
+				log.info("COUCOU 3");
+				String updatedJson = objectMapper.writeValueAsString(session);
+				log.info(updatedJson);
+				redisTemplate.opsForValue().set(key, updatedJson);
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException("Error updating veto status for account " + accountId + " in session " + sessionId, e);
+		} finally {
+			if (lock.isHeldByCurrentThread()) {
+				lock.unlock();
+			}
 		}
 	}
 }

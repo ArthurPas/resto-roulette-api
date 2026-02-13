@@ -1,7 +1,6 @@
 package com.roulette.resto.dao.roulette;
 
-import com.roulette.resto.data.roulette.dto.out.ActivityDto;
-import com.roulette.resto.data.roulette.dto.out.RouletteSessionDto;
+import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.social.mapper.ActivityRowMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;

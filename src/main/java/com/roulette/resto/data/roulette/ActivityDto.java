@@ -1,6 +1,7 @@
-package com.roulette.resto.data.roulette.dto.out;
+package com.roulette.resto.data.roulette;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.roulette.resto.data.roulette.dto.out.RouletteSessionDto;
 import com.roulette.resto.data.social.entity.Activity;
 import lombok.AllArgsConstructor;
 import lombok.Data;

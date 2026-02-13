@@ -2,7 +2,8 @@ package com.roulette.resto.controller.social.socialInteraction;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.configuration.TrackCampaign;
-import com.roulette.resto.data.roulette.dto.out.ActivityDto;
+import com.roulette.resto.data.roulette.ActivityDto;
+import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
 import com.roulette.resto.data.roulette.in.NewSessionDto;
 import com.roulette.resto.service.roulette.ActivityService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +26,8 @@ import java.util.List;
 public class ActivityController {
 	final JwtService jwtService;
 	final ActivityService activityService;
+
+	public record ActivitiesResponse(List<ActivityResponse> activities) {}
 	public ActivityController(JwtService jwtService, ActivityService activityService) {
 		this.jwtService = jwtService;
 		this.activityService = activityService;
@@ -39,35 +42,35 @@ public class ActivityController {
 	@Tag(name = "App | Activity")
 	@GetMapping("/me")
 	@Operation(summary = "Get my activities")
-	public ResponseEntity<List<ActivityDto>> myInteractions(Authentication authentication) {
+	public ResponseEntity<ActivitiesResponse> myInteractions(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<ActivityDto> activities = activityService.getActivityByAccountId(accountId);
-		return new ResponseEntity<>(activities, HttpStatus.OK);
+		List<ActivityResponse> activities = activityService.getActivitiesByAccountId(accountId);
+		return new ResponseEntity<>(new ActivitiesResponse(activities), HttpStatus.OK);
 	}
 	@Tag(name = "App | Activity")
 	@GetMapping("/{id}")
 	@Operation(summary = "Get an activity")
-	public ResponseEntity<ActivityDto> getActivity(@PathVariable String id) {
-		ActivityDto activity = activityService.getActivity(id);
+	public ResponseEntity<ActivityResponse> getActivity(@PathVariable String id) {
+		ActivityResponse activity = activityService.getActivity(id);
 		return new ResponseEntity<>(activity, HttpStatus.OK);
 	}
-	@Tag(name = "App | Activity")
-	@PostMapping("/new-session")
-	@Operation(summary = "Upload a new session")
-	public ResponseEntity<List<ActivityDto>> uploadNewSession(Authentication authentication, @RequestBody NewSessionDto session) {
-		int accountSessionHost = jwtService.getAccountIdAuthenticated(authentication);
-		List<ActivityDto> activity = activityService.createNewSession(accountSessionHost, session);
-		return new ResponseEntity<>(activity, HttpStatus.OK);
-	}
+//	@Tag(name = "App | Activity")
+//	@PostMapping("/new-session")
+//	@Operation(summary = "Upload a new session")
+//	public ResponseEntity<List<ActivityDto>> uploadNewSession(Authentication authentication, @RequestBody NewSessionDto session) {
+//		int accountSessionHost = jwtService.getAccountIdAuthenticated(authentication);
+//		List<ActivityDto> activity = activityService.createNewSession(accountSessionHost, session);
+//		return new ResponseEntity<>(activity, HttpStatus.OK);
+//	}
 
 	@Tag(name = "App | Feed ")
 	@GetMapping("/followers/feed")
 	@TrackCampaign(type = "Feed")
 	@Operation(summary = "Get my followers recents activities")
-	public ResponseEntity<List<ActivityDto>> getFollowersFeed(Authentication authentication){
+	public ResponseEntity<ActivitiesResponse> getFollowersFeed(Authentication authentication){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<ActivityDto> activities = activityService.getMyFollowersActivities(accountId);
-		return new ResponseEntity<>(activities,HttpStatus.OK);
+		List<ActivityResponse> activities = activityService.getMyFollowersActivities(accountId);
+		return new ResponseEntity<>(new ActivitiesResponse(activities),HttpStatus.OK);
 	}
 
 }

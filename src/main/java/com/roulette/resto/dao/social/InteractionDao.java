@@ -2,28 +2,19 @@ package com.roulette.resto.dao.social;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.dao.roulette.ActivityDao;
-import com.roulette.resto.data.roulette.dto.out.ActivityDto;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.SocialInteraction;
 import com.roulette.resto.data.social.mapper.InteractionRowMapper;
 import com.roulette.resto.exception.APIError;
-import com.roulette.resto.service.roulette.ActivityService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;

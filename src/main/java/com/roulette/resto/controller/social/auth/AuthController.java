@@ -3,7 +3,9 @@ package com.roulette.resto.controller.social.auth;
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.*;
 import com.roulette.resto.data.social.dto.out.AuthResponse;
+import com.roulette.resto.data.social.dto.out.BasicAuthDto;
 import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.service.social.AccountService;
 import com.roulette.resto.service.social.AuthService;
@@ -34,7 +36,6 @@ public class AuthController {
 	private final AccountService accountService;
 	private final UserService userService;
 	private final AuthService authService;
-
 
 	public AuthController(JwtService jwtService, AccountService accountService, UserService userService, AuthService authService) {
 		this.jwtService = jwtService;
@@ -77,7 +78,9 @@ public class AuthController {
 	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request) throws APIError {
 			Account account = authService.getAccountFromLoginRequest(loginDto);
 			authService.authenticate(loginDto, request, account);
-			return new ResponseEntity<>(jwtService.buildAuthResponse(account), HttpStatus.OK);
+			BasicAuthDto authResponse = jwtService.buildAuthResponse(account);
+			authResponse.setLogin(loginDto.getLogin());
+			return new ResponseEntity<>(authResponse,HttpStatus.OK);
 	}
 
 

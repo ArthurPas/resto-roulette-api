@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountsInSession {
-	List<Integer> accountsJoinedIds;
-	List<Integer> accountsSwipedIds;
-	List<Integer> accountsVetoIds;
+	List<String> accountsJoined;
+	List<String> accountsSwiped;
+	List<String> accountsVeto;
 }

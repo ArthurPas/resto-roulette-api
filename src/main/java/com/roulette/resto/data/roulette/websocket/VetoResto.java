@@ -11,5 +11,5 @@ import java.util.Set;
 @AllArgsConstructor
 public class VetoResto {
 	private Set<Integer> restoIds;
-	private int accountId;
+	private String login;
 }

@@ -56,12 +56,12 @@ public class RouletteController {
 
 	@MessageMapping("/join/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public AccountsInSession joinSession(@DestinationVariable String sessionId, JoinSession account) throws Exception {
+	public AccountsInSession joinSession(@DestinationVariable String sessionId, JoinSession account)  {
 		return rouletteService.addAccountToCurrentSession(sessionId, account);
 	}
 	@MessageMapping("/swipe/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public AccountsInSession swipe(@DestinationVariable String sessionId, AccountChoices choices) throws Exception {
+	public AccountsInSession swipe(@DestinationVariable String sessionId, AccountChoices choices) {
 		rouletteService.addFoodChoices(sessionId, choices);
 		return rouletteService.getAccountsStatus(sessionId);
 	}

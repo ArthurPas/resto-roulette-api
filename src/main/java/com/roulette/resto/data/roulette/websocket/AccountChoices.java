@@ -11,7 +11,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountChoices {
-	int accountId;
+	String login;
 	Set<String> foodLiked;
 	Set<String> foodDisliked;
 	boolean vetoDone;

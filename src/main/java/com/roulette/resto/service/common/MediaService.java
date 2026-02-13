@@ -59,21 +59,22 @@ public class MediaService {
 	}
 	public static List<MediaResponse> buildMediaUrl(List<MediaResource> pictures) {
 		try {
-			List<MediaResponse> response = pictures.stream()
-					.map(pic -> {
-						String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-								.path("/medias/")
-								.path(pic.getResourceId())
-								.toUriString();
+			if(pictures != null && !pictures.isEmpty()) {
+				return pictures.stream()
+						.map(pic -> {
+							String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+									.path("/medias/")
+									.path(pic.getResourceId())
+									.toUriString();
 
-						return new MediaResponse(pic.getMediaType().toString(),downloadUrl);
-					})
-					.collect(Collectors.toList());
-			return response;
+							return new MediaResponse(pic.getMediaType().toString(), downloadUrl);
+						})
+						.collect(Collectors.toList());
+			}
 		}catch (Exception e) {
 			log.error(e.getMessage());
-			return Collections.emptyList();
 		}
+		return Collections.emptyList();
 	}
 	public static String buildMediaUrl(String resourceId) {
 		if(resourceId == null || resourceId.isEmpty()) {

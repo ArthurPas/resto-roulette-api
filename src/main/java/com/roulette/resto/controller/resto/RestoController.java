@@ -176,7 +176,6 @@ public class RestoController {
 	@Tag(name = "Resto")
 	@Operation(summary = "Get all food types available")
 	public ResponseEntity<FoodTypeDto> getAllFoodTypes(Authentication authentication) {
-			adminService.rightCheckIsAdmin(authentication);
 			return new ResponseEntity<>(new FoodTypeDto(restoService.foodTypeList()),HttpStatus.OK);
 	}
 

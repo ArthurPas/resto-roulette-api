@@ -52,20 +52,28 @@ public class RouletteService {
 
 	public AccountsInSession getAccountsStatus(String sessionId) {
 		RouletteSession rouletteSession = rouletteRepository.getSessionById(sessionId);
-		List<String> accountsId =
-				rouletteSession.getAccountChoices().stream().map(AccountChoices::getLogin).collect(Collectors.toList());
-		List<String> accountsIdSwiped = rouletteSession.getAccountChoices().stream()
-				.filter(ac -> !ac.getFoodLiked().isEmpty() || !ac.getFoodDisliked().isEmpty())
-				.map(AccountChoices::getLogin)
-				.toList();
-		List<String> accountsIdVeto = rouletteSession.getAccountChoices().stream()
-				.filter(AccountChoices::isVetoDone)
-				.map(AccountChoices::getLogin)
-				.toList();
+
+		List<String> accountsId = new ArrayList<>();
+		List<String> accountsIdSwiped = new ArrayList<>();
+		List<String> accountsIdVeto = new ArrayList<>();
+
+		for (AccountChoices ac : rouletteSession.getAccountChoices()) {
+			String login = ac.getLogin();
+			accountsId.add(login);
+
+			if (!ac.getFoodLiked().isEmpty() || !ac.getFoodDisliked().isEmpty()) {
+				accountsIdSwiped.add(login);
+			}
+
+			if (ac.isVetoDone()) {
+				accountsIdVeto.add(login);
+			}
+		}
 		AccountsInSession accountsInSession = new AccountsInSession();
 		accountsInSession.setAccountsJoined(accountsId);
 		accountsInSession.setAccountsSwiped(accountsIdSwiped);
 		accountsInSession.setAccountsVeto(accountsIdVeto);
+		log.info("{} veto : {}", sessionId, accountsInSession);
 		return accountsInSession;
 	}
 	public List<RestoDto> getMatchedRestosBySessionId(String sessionId) {

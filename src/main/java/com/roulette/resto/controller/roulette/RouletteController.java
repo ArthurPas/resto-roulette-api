@@ -3,6 +3,7 @@ package com.roulette.resto.controller.roulette;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.websocket.*;
 import com.roulette.resto.data.social.dto.out.SessionIdResponse;
+import com.roulette.resto.data.social.entity.Resto;
 import com.roulette.resto.service.roulette.RouletteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -38,6 +39,7 @@ public class RouletteController {
 	@Operation(summary = "create a new session")
 	public ResponseEntity<RouletteSession> createNewSession() {
 		RouletteSession rouletteSession = rouletteService.createNewSession();
+		log.info(rouletteSession.toString());
 		return new ResponseEntity<>(rouletteSession, HttpStatus.CREATED);
 	}
 	@Tag(name = "App | Roulette")
@@ -50,41 +52,79 @@ public class RouletteController {
 
 	@MessageMapping("/start/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public SessionStatus createNewSession(@DestinationVariable String sessionId) {
-		return new SessionStatus(true, false, false);
+	public BroadcastSessionResponse createNewSession(@DestinationVariable String sessionId) {
+		log.info(sessionId);
+		BroadcastSessionResponse response = new BroadcastSessionResponse();
+		response.setStatus(SessionStatus.SWIPE);
+		log.info("send : {}",response);
+		return response;
 	}
 
 	@MessageMapping("/join/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public AccountsInSession joinSession(@DestinationVariable String sessionId, JoinSession account)  {
-		return rouletteService.addAccountToCurrentSession(sessionId, account);
+	public BroadcastSessionResponse joinSession(@DestinationVariable String sessionId, JoinSession account)  {
+		log.info(sessionId + "Account : " + account.getLogin());
+		AccountsInSession accountsInSession = rouletteService.addAccountToCurrentSession(sessionId, account);
+		BroadcastSessionResponse response = new BroadcastSessionResponse();
+		response.setStatus(SessionStatus.LOBBY);
+		response.setAccountsInSession(accountsInSession.getAccountsJoined());
+		log.info("send : {}",response);
+		return response;
 	}
 	@MessageMapping("/swipe/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public AccountsInSession swipe(@DestinationVariable String sessionId, AccountChoices choices) {
+	public BroadcastSessionResponse swipe(@DestinationVariable String sessionId, AccountChoices choices) {
 		rouletteService.addFoodChoices(sessionId, choices);
-		return rouletteService.getAccountsStatus(sessionId);
+		log.info(sessionId + "choices : " + choices.toString());
+		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
+		BroadcastSessionResponse response = new BroadcastSessionResponse();
+		response.setStatus(SessionStatus.SWIPE);
+		List<String> accountInSession = accountsInSession.getAccountsJoined();
+		response.setAccountsInSession(accountInSession);
+		accountInSession.removeAll(accountsInSession.getAccountsSwiped());
+		response.setAccountsRemaining(accountInSession);
+		log.info("send : {}",response);
+		return response;
 	}
 	@MessageMapping("/swipe-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public List<RestoDto> sendResto(@DestinationVariable String sessionId) {
+	public BroadcastSessionResponse sendResto(@DestinationVariable String sessionId) {
 		List<RestoDto> restos = rouletteService.getMatchedRestosBySessionId(sessionId);
 		rouletteService.saveMatchingRestos(restos,sessionId);
-		messagingTemplate.convertAndSend("/session/" + sessionId, new SessionStatus(true, true, false));
-		return restos;
+		log.info("{} restos : {}", sessionId, restos);
+		BroadcastSessionResponse response = new BroadcastSessionResponse();
+		response.setStatus(SessionStatus.VETO);
+		response.setRestoCandidates(restos);
+		log.info("send : {}",response);
+		return response;
 	}
 	@MessageMapping("/veto/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public AccountsInSession addVeto(@DestinationVariable String sessionId, VetoResto veto) {
+	public BroadcastSessionResponse addVeto(@DestinationVariable String sessionId, VetoResto veto) {
 		rouletteService.removeResto(sessionId, veto);
-		return rouletteService.getAccountsStatus(sessionId);
+		log.info(sessionId + "veto : " + veto.toString());
+		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
+		BroadcastSessionResponse response = new BroadcastSessionResponse();
+		response.setStatus(SessionStatus.VETO);
+		List<String> accountInSession = accountsInSession.getAccountsJoined();
+		response.setAccountsInSession(accountInSession);
+		accountInSession.removeAll(accountsInSession.getAccountsVeto());
+		response.setAccountsRemaining(accountInSession);
+		List<RestoDto> remainingRestos = rouletteService.getRestoBySession(sessionId);
+		response.setRestoCandidates(remainingRestos);
+		log.info("send : {}",response);
+		return response;
 	}
 	@MessageMapping("/veto-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public RestoDto onVetoDone(@DestinationVariable String sessionId) {
+	public BroadcastSessionResponse onVetoDone(@DestinationVariable String sessionId) {
 		List<RestoDto> remainingRestos = rouletteService.getRestoBySession(sessionId);
-		messagingTemplate.convertAndSend("/session/" + sessionId, new SessionStatus(true, true, true));
-		return rouletteService.randomWinnerResto(remainingRestos);
+		BroadcastSessionResponse response = new BroadcastSessionResponse();
+		RestoDto winner = rouletteService.randomWinnerResto(remainingRestos);
+		response.setWinner(winner);
+		response.setStatus(SessionStatus.RESULT);
+		log.info("send : {}",response);
+		return response;
 	}
 
 }

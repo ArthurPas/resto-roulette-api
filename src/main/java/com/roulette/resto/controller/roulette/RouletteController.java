@@ -56,6 +56,9 @@ public class RouletteController {
 		log.info(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.SWIPE);
+		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
+		response.setAccountsInSession(accountsInSession.getAccountsJoined());
+		response.setAccountsRemaining(accountsInSession.getAccountsJoined());
 		log.info("send : {}",response);
 		return response;
 	}
@@ -95,6 +98,9 @@ public class RouletteController {
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.VETO);
 		response.setRestoCandidates(restos);
+		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
+		response.setAccountsInSession(accountsInSession.getAccountsJoined());
+		response.setAccountsRemaining(accountsInSession.getAccountsJoined());
 		log.info("send : {}",response);
 		return response;
 	}

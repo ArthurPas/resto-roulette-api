@@ -139,10 +139,10 @@ public class SocialController {
 	}
 
 	@Tag(name = "Account | profile")
-	@GetMapping("/profile/{accountId}")
+	@GetMapping("/profile/{login}")
 	@Operation(summary = "Get profile")
-	public ResponseEntity<MinimalAccountInfo> getProfile(@PathVariable String accountId){
-		Account account = accountService.getAccountById(Integer.parseInt(accountId));
+	public ResponseEntity<MinimalAccountInfo> getProfile(@PathVariable String login){
+		Account account = accountService.getAccountByLogin(login);
 		return new ResponseEntity<>(new MinimalAccountInfo(account),HttpStatus.OK);
 	}
 

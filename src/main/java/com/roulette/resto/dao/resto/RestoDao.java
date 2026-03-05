@@ -736,7 +736,7 @@ public class RestoDao {
 				.map(id -> "?")
 				.collect(Collectors.joining(", "));
 		String query = """
-				SELECT resto.resto_id, display_name,lat,lon FROM resto
+				SELECT DISTINCT resto.resto_id, display_name,lat,lon FROM resto
 				JOIN resto_roulette.resto_resto_types rrt on resto.resto_id = rrt.resto_id
 				JOIN resto_type on rrt.type_id = resto_type.id
 				JOIN resto_info on resto.resto_id = resto_info.resto_id	

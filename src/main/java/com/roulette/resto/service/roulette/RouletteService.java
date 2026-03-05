@@ -81,7 +81,7 @@ public class RouletteService {
 		if (choices.isEmpty()) {
 			return Collections.emptyList();
 		}
-		Set<String> foodTypesCommon = new HashSet<>(choices.get(0).getFoodLiked());
+		Set<String> foodTypesCommon = new HashSet<>(choices.getFirst().getFoodLiked());
 		for (AccountChoices choice : choices) {
 			foodTypesCommon.retainAll(choice.getFoodLiked());
 		}

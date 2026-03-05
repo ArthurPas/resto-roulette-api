@@ -47,8 +47,13 @@ public class AccountService implements UserDetailsService {
 		this.accountDao = accountDao;
 	}
 
-	public Account getAccountByLogin(String login) throws AccountNotFoundException {
-		return accountRepository.getAccountByLogin(login);
+	public Account getAccountByLogin(String login) {
+		try {
+
+			return accountRepository.getAccountByLogin(login);
+		}catch (AccountNotFoundException e){
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
 
 	public Account getAccountById(int id) {

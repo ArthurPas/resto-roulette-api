@@ -18,6 +18,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -108,17 +109,17 @@ public class RouletteController {
 	@SendTo("/session/{sessionId}")
 	public BroadcastSessionResponse addVeto(@DestinationVariable String sessionId, VetoResto veto) {
 		rouletteService.removeResto(sessionId, veto);
-		log.info(sessionId + "veto : " + veto.toString());
-		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
+		log.info("{} veto : {}", sessionId, veto);
+		AccountsInSession status = rouletteService.getAccountsStatus(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.VETO);
-		List<String> accountInSession = accountsInSession.getAccountsJoined();
-		response.setAccountsInSession(accountInSession);
-		accountInSession.removeAll(accountsInSession.getAccountsVeto());
-		response.setAccountsRemaining(accountInSession);
-		List<RestoDto> remainingRestos = rouletteService.getRestoBySession(sessionId);
-		response.setRestoCandidates(remainingRestos);
-		log.info("send : {}",response);
+		List<String> totalJoined = new ArrayList<>(status.getAccountsJoined());
+		response.setAccountsInSession(totalJoined);
+		List<String> remaining = new ArrayList<>(totalJoined);
+		remaining.removeAll(status.getAccountsVeto());
+		response.setAccountsRemaining(remaining);
+		response.setRestoCandidates(rouletteService.getRestoBySession(sessionId));
+		log.info("Broadcast response: {}", response);
 		return response;
 	}
 	@MessageMapping("/veto-done/{sessionId}")

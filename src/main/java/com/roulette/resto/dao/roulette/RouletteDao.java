@@ -61,12 +61,7 @@ public class RouletteDao {
 
 	public String getSessionIdByShortId(String shortId) {
 		String key = KEY_SHORT_PREFIX + shortId;
-		String sessionId = redisTemplate.opsForValue().get(key);
-
-		if (sessionId == null) {
-			throw new RuntimeException("Short ID not found: " + shortId);
-		}
-		return sessionId;
+		return redisTemplate.opsForValue().get(key);
 	}
 
 	public void addAccountIdToSession(String sessionId, String login) {

@@ -43,7 +43,11 @@ public class RouletteService {
 	}
 
 	public String getSessionIdByShortId(String shortId) {
-		return rouletteRepository.getSessionIdByShortId(shortId);
+		String sessionId = rouletteRepository.getSessionIdByShortId(shortId);
+		if(sessionId == null) {
+			throw new APIError(34, HttpStatus.NOT_FOUND);
+		}
+		return sessionId;
 	}
 
 	public void addFoodChoices(String sessionId, AccountChoices choices) {

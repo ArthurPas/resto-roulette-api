@@ -15,12 +15,14 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ActivityResponse {
 	String description;
+	boolean isUploaded;
 	public MinimalRestoInfo restoInfo;
 	public List<MinimalAccountInfo> participantInfos;
 
 	public ActivityResponse(ActivityDto activityDto){
 		this.description = activityDto.getDescription();
 		this.participantInfos = activityDto.getDetails().getParticipantInfos();
+		this.isUploaded = activityDto.isUploaded();
 	}
 
 }

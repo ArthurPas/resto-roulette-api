@@ -1,9 +1,10 @@
 package com.roulette.resto.controller.roulette;
 
+import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.websocket.*;
 import com.roulette.resto.data.social.dto.out.SessionIdResponse;
-import com.roulette.resto.data.social.entity.Resto;
+import com.roulette.resto.service.roulette.ActivityService;
 import com.roulette.resto.service.roulette.RouletteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -15,6 +16,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,9 +32,14 @@ public class RouletteController {
 
 	final RouletteService rouletteService;
 	private final SimpMessagingTemplate messagingTemplate;
-	public RouletteController(RouletteService rouletteService, SimpMessagingTemplate messagingTemplate) {
+	private final JwtService jwtService;
+	private final ActivityService activityService;
+
+	public RouletteController(RouletteService rouletteService, SimpMessagingTemplate messagingTemplate, JwtService jwtService, ActivityService activityService) {
 		this.rouletteService = rouletteService;
 		this.messagingTemplate = messagingTemplate;
+		this.jwtService = jwtService;
+		this.activityService = activityService;
 	}
 
 	@Tag(name = "App | Roulette")
@@ -124,11 +131,12 @@ public class RouletteController {
 	}
 	@MessageMapping("/veto-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
-	public BroadcastSessionResponse onVetoDone(@DestinationVariable String sessionId) {
+	public BroadcastSessionResponse onVetoDone(@DestinationVariable String sessionId, Authentication authentication) {
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		RestoDto winner = rouletteService.randomWinnerResto(sessionId);
 		response.setWinner(winner);
 		response.setStatus(SessionStatus.RESULT);
+		activityService.saveSession(sessionId,winner);
 		log.info("send : {}",response);
 		return response;
 	}

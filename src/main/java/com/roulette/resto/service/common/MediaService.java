@@ -7,7 +7,6 @@ import com.roulette.resto.data.common.entity.MediaType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -19,6 +18,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MediaService {
 
+	private static String baseUrl;
 
 	@Value("${app.storage.images.maxResolution.avatar}")
 	private int maxResolutionAvatar;
@@ -35,55 +35,39 @@ public class MediaService {
 		this.mediaDao = mediaDao;
 	}
 
+	@Value("${app.base-url}")
+	public void setBaseUrl(String url) {
+		MediaService.baseUrl = url;
+	}
 
 	public String saveImage(BufferedImage bufferedImage, MediaType mediaType) throws IOException {
-		try{
-			return switch (mediaType) {
-				case MENU, RESTO -> mediaDao.saveMedia(bufferedImage, maxResolutionMenu);
-				case AVATAR -> mediaDao.saveSquaredMedia(bufferedImage, maxResolutionAvatar);
-				case LOGO -> mediaDao.saveSquaredMedia(bufferedImage, maxResolutionLogo);
-			};
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			throw e;
-		}
+		return switch (mediaType) {
+			case MENU, RESTO -> mediaDao.saveMedia(bufferedImage, maxResolutionMenu);
+			case AVATAR -> mediaDao.saveSquaredMedia(bufferedImage, maxResolutionAvatar);
+			case LOGO -> mediaDao.saveSquaredMedia(bufferedImage, maxResolutionLogo);
+		};
 	}
 
 	public void removeFile(String uuid) throws IOException {
-		try {
-			mediaDao.removeMedia(uuid);
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			throw e;
-		}
+		mediaDao.removeMedia(uuid);
 	}
-	public static List<MediaResponse> buildMediaUrl(List<MediaResource> pictures) {
-		try {
-			if(pictures != null && !pictures.isEmpty()) {
-				return pictures.stream()
-						.map(pic -> {
-							String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-									.path("/medias/")
-									.path(pic.getResourceId())
-									.toUriString();
 
-							return new MediaResponse(pic.getMediaType().toString(), downloadUrl);
-						})
-						.collect(Collectors.toList());
-			}
-		}catch (Exception e) {
-			log.error(e.getMessage());
+	public static List<MediaResponse> buildMediaUrl(List<MediaResource> pictures) {
+		if (pictures != null && !pictures.isEmpty()) {
+			return pictures.stream()
+					.map(pic -> {
+						String downloadUrl = buildMediaUrl(pic.getResourceId());
+						return new MediaResponse(pic.getMediaType().toString(), downloadUrl);
+					})
+					.collect(Collectors.toList());
 		}
 		return Collections.emptyList();
 	}
+
 	public static String buildMediaUrl(String resourceId) {
-		if(resourceId == null || resourceId.isEmpty()) {
+		if (resourceId == null || resourceId.isEmpty()) {
 			return null;
 		}
-		return ServletUriComponentsBuilder.fromCurrentContextPath()
-				.path("/medias/")
-				.path(resourceId)
-				.toUriString();
+		return baseUrl + "/medias/" + resourceId;
 	}
-
 }

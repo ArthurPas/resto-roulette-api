@@ -16,10 +16,5 @@ public class ActivityDto {
 	public int accountId;
 	public String description;
 	public RouletteSessionDto details;
-
-	public ActivityDto(Activity activity) {
-		this.activityId = activity.getActivityId();
-		this.accountId = activity.getAccount().getAccountId();
-		this.description = activity.getDescription();
-	}
+	public boolean isUploaded;
 }

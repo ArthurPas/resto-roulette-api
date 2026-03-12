@@ -7,14 +7,15 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
 @Log4j2
@@ -113,30 +114,24 @@ public class ActivityDao {
 
 	}
 
-	public String createActivity(int accountId, String description, int restoId) {
-		String uuid = UUID.randomUUID().toString().replace("-", "");
-		return this.createActivity(accountId, description, restoId, uuid);
-	}
-
-	public String createActivity(int accountId, String description, int restoId, String sessionId) {
+	public void createActivities(List<Integer> participantsId, String description, String sessionId, int restoId) {
 		String query = """
-             INSERT INTO activity (resto_id, account_id, description, session_id)
-             VALUES (?, ?,?, ?)
-             """;
-		try {
-			jdbcTemplate.update(conn -> {
-				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-				preparedStatement.setInt(1, restoId);
-				preparedStatement.setInt(2, accountId);
-				preparedStatement.setString(3, description);
-				preparedStatement.setString(4,sessionId);
-				log.debug("Executing query {}",preparedStatement);
-				return preparedStatement;
-			});
-			return sessionId;
-		} catch (DuplicateKeyException e) {
-			log.error(e.getMessage());
-			throw e;
-		}
+          INSERT INTO activity (resto_id, account_id, description, session_id)
+          VALUES (?, ?, ?, ?)""";
+
+		jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {
+			@Override
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				ps.setInt(1, restoId);
+				ps.setInt(2, participantsId.get(i));
+				ps.setString(3, description);
+				ps.setString(4, sessionId);
+			}
+
+			@Override
+			public int getBatchSize() {
+				return participantsId.size();
+			}
+		});
 	}
 }

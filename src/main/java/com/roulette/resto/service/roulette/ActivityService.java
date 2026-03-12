@@ -1,12 +1,11 @@
 package com.roulette.resto.service.roulette;
 
 import com.roulette.resto.dao.roulette.ActivityDao;
-import com.roulette.resto.data.common.dto.MediaResponse;
 import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
-import com.roulette.resto.data.roulette.in.NewSessionDto;
+import com.roulette.resto.data.roulette.websocket.AccountsInSession;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.exception.APIError;
@@ -19,9 +18,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.text.DateFormatSymbols;
+import java.time.*;
+import java.time.chrono.ChronoLocalDate;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 
 @Slf4j
 @Service
@@ -29,13 +32,15 @@ public class ActivityService {
 	final ActivityRepository activityRepository;
 	final AccountService accountService;
 	final UserService userService;
+	private final RouletteService rouletteService;
 	private final ActivityDao activityDao;
 	private final RestoService restoService;
 
-	public ActivityService(ActivityRepository activityRepository, AccountService accountService, UserService userService, ActivityDao activityDao, RestoService restoService) {
+	public ActivityService(ActivityRepository activityRepository, AccountService accountService, UserService userService, RouletteService rouletteService, ActivityDao activityDao, RestoService restoService) {
 		this.activityRepository = activityRepository;
 		this.accountService = accountService;
 		this.userService = userService;
+		this.rouletteService = rouletteService;
 		this.activityDao = activityDao;
 		this.restoService = restoService;
 	}
@@ -104,24 +109,46 @@ public class ActivityService {
 		return activities;
 	}
 
-	public List<ActivityResponse> createNewSession(int accountSessionHost, NewSessionDto session) throws AccountNotFoundException {
-		String sessionId = activityDao.createActivity(accountSessionHost,session.getDescription(),
-				session.getRestoId());
-		for (int accountId : session.getParticipantsIds()){
-			if(accountId!=accountSessionHost){
-				activityDao.createActivity(accountId,session.getDescription(),session.getRestoId(), sessionId);
-			}
+	public void saveSession(String sessionId, RestoDto resto) {
+		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
+		List<Integer> accountsIds = new ArrayList<>();
+		for (String login : accountsInSession.getAccountsJoined()) {
+			accountsIds.add(accountService.getAccountByLogin(login).getAccountId());
 		}
-		List<ActivityDto> activities = getActivitiesBySessionId(sessionId);
-		List<ActivityResponse> activitiesResponse = new ArrayList<>();
-		for (ActivityDto activity : activities) {
-			activitiesResponse.add(buildActivityResponse(activity));
-		}
-		return activitiesResponse;
+
+		ZonedDateTime nowInFrance = ZonedDateTime.now(ZoneId.of("Europe/Paris"));
+
+		activityDao.createActivities(
+				accountsIds,
+				defaultActivityDescription(resto.getName(), nowInFrance),
+				sessionId,
+				resto.getId()
+		);
 	}
 
 	public List<ActivityDto> getActivitiesBySessionId(String sessionId) {
 		return activityDao.getActivitiesBySessionId(sessionId);
+	}
+	public static String defaultActivityDescription(String restoName, ZonedDateTime dateTime) {
+		String day = dateTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.FRANCE).toLowerCase();
+
+		String formattedRestoName = "";
+		if (restoName != null && !restoName.isEmpty()) {
+			formattedRestoName = restoName.substring(0, 1).toUpperCase() + restoName.substring(1).toLowerCase();
+		}
+
+		String description = formattedRestoName + " le " + day;
+
+		int hour = dateTime.getHour();
+		int minute = dateTime.getMinute();
+
+		if (hour < 15 || (hour == 15 && minute < 30)) {
+			return description + " midi";
+		} else if (hour < 18) {
+			return description + " au gouter ";
+		} else {
+			return description + " soir";
+		}
 	}
 }
 

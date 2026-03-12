@@ -125,9 +125,8 @@ public class RouletteController {
 	@MessageMapping("/veto-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
 	public BroadcastSessionResponse onVetoDone(@DestinationVariable String sessionId) {
-		List<RestoDto> remainingRestos = rouletteService.getRestoBySession(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
-		RestoDto winner = rouletteService.randomWinnerResto(remainingRestos);
+		RestoDto winner = rouletteService.randomWinnerResto(sessionId);
 		response.setWinner(winner);
 		response.setStatus(SessionStatus.RESULT);
 		log.info("send : {}",response);

@@ -115,10 +115,12 @@ public class RouletteService {
 		return getRestosDtosByIds(ids);
 	}
 
-	public RestoDto randomWinnerResto(List<RestoDto> remainingRestos) {
+	public RestoDto randomWinnerResto(String sessionId) {
+		List<RestoDto> remainingRestos = this.getRestoBySession(sessionId);
 		if (remainingRestos == null || remainingRestos.isEmpty()) {
 			return null;
 		}
+		log.info(remainingRestos.toString());
 		Random random = new Random();
 		int randomIndex = random.nextInt(remainingRestos.size());
 
@@ -138,7 +140,7 @@ public class RouletteService {
 
 		List<RestoDto> restoDtos = new ArrayList<>();
 		List<Restaurant> restos = restoService.getRestosBasicInfoByIds(ids);
-
+		log.info("Found {} restos for this session", restoDtos);
 		for (Restaurant resto : restos) {
 			restoDtos.add(new RestoDto(resto));
 		}

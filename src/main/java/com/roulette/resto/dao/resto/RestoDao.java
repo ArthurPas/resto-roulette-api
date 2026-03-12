@@ -691,11 +691,15 @@ public class RestoDao {
 				.map(id -> "?")
 				.collect(Collectors.joining(", "));
 		String query = """
-             SELECT resto_id, display_name FROM resto WHERE resto_id IN (""" + placeholders + ")";
+             	SELECT resto.resto_id, display_name, lon, lat FROM resto
+		   		INNER JOIN resto_info on resto.resto_id = resto_info.resto_id
+			  	WHERE resto.resto_id IN (""" + placeholders + ")";
 		return jdbcTemplate.query(query, ids.toArray(), (rs, rowNum) -> {
 			Restaurant restaurant = new Restaurant();
 			restaurant.setId(rs.getInt("resto_id"));
 			restaurant.setName(rs.getString("display_name"));
+			restaurant.setLatitude(rs.getDouble("lat"));
+			restaurant.setLongitude(rs.getDouble("lon"));
 			return restaurant;
 		});
 	}
@@ -739,7 +743,7 @@ public class RestoDao {
 				SELECT DISTINCT resto.resto_id, display_name,lat,lon FROM resto
 				JOIN resto_roulette.resto_resto_types rrt on resto.resto_id = rrt.resto_id
 				JOIN resto_type on rrt.type_id = resto_type.id
-				JOIN resto_info on resto.resto_id = resto_info.resto_id	
+				JOIN resto_info on resto.resto_id = resto_info.resto_id
 				WHERE resto_type.food_type IN (""" + placeholders + ")";
 		log.info(query);
 		return jdbcTemplate.query(query, existingFoodTypesList.toArray(), (rs, rowNum) -> {

@@ -7,6 +7,7 @@ import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -18,11 +19,13 @@ public class ActivityResponse {
 	boolean isUploaded;
 	public MinimalRestoInfo restoInfo;
 	public List<MinimalAccountInfo> participantInfos;
+	public Date activityDate;
 
 	public ActivityResponse(ActivityDto activityDto){
 		this.description = activityDto.getDescription();
 		this.participantInfos = activityDto.getDetails().getParticipantInfos();
 		this.isUploaded = activityDto.isUploaded();
+		this.activityDate = activityDto.getActivityDate();
 	}
 
 }

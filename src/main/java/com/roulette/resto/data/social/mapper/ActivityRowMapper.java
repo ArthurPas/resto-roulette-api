@@ -41,6 +41,7 @@ public class ActivityRowMapper implements RowMapper<ActivityDto> {
 
 		activityDto.setDetails(rouletteSessionDto);
 		activityDto.setUploaded(rs.getBoolean("is_uploaded"));
+		activityDto.setActivityDate(rs.getDate("activity_date"));
 		return activityDto;
 	}
 }

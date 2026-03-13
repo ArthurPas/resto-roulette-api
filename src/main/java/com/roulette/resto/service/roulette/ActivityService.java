@@ -23,9 +23,7 @@ import java.text.DateFormatSymbols;
 import java.time.*;
 import java.time.chrono.ChronoLocalDate;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -60,6 +58,7 @@ public class ActivityService {
 			ActivityResponse activityResponse = buildActivityResponse(activity);
 			activityResponses.add(activityResponse);
 		}
+		activityResponses.sort(Comparator.comparing(ActivityResponse::getActivityDate).reversed());
 		return activityResponses;
 	}
 

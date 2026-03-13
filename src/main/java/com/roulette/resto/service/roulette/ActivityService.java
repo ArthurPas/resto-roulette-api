@@ -6,6 +6,7 @@ import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
+import com.roulette.resto.data.roulette.websocket.AccountChoices;
 import com.roulette.resto.data.roulette.websocket.AccountsInSession;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.MinimalAccountInfo;
@@ -24,6 +25,7 @@ import java.time.*;
 import java.time.chrono.ChronoLocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -99,12 +101,8 @@ public class ActivityService {
 
 	public List<ActivityResponse> getMyFollowersActivities(int accountId) {
 		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
-		List<ActivityResponse> activities = new ArrayList<>();
-		for (MinimalAccountInfo follower: followers) {
-			List<ActivityResponse> followerActivities = getActivitiesByAccountId(follower.getAccountId());
-			activities.addAll(followerActivities);
-		}
-		return activities;
+		List<Integer> followersIds = followers.stream().map(MinimalAccountInfo::getAccountId).toList();
+		return activityRepository.getActivitiesByAccountIds(followersIds).stream().filter(a -> a.isUploaded).map(ActivityResponse::new).toList();
 	}
 
 	public void saveSession(String sessionId, RestoDto resto) {

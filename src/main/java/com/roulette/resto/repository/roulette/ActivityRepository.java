@@ -2,6 +2,7 @@ package com.roulette.resto.repository.roulette;
 
 import com.roulette.resto.dao.roulette.ActivityDao;
 import com.roulette.resto.data.roulette.ActivityDto;
+import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -42,5 +43,9 @@ public class ActivityRepository {
 
 	public int getNbActivityPendingByAccountId(int accountId) {
 		return activityDao.getNbActivityPendingByAccountId(accountId);
+	}
+
+	public List<ActivityDto> getActivitiesByAccountIds(List<Integer> followersIds) {
+		return activityDao.getActivitiesByAccountIds(followersIds);
 	}
 }

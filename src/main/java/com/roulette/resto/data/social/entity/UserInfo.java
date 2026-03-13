@@ -28,6 +28,7 @@ public class UserInfo {
 	UserRole role;
 	private boolean emailVerified;
 	private String avatar = "";
+	private int nbActivityPending;
 	public void setAvatar(String avatar){
 		this.avatar = buildMediaUrl(avatar);
 	}

@@ -4,6 +4,7 @@ import com.roulette.resto.data.social.dto.out.AuthResponse;
 import com.roulette.resto.data.social.dto.out.BasicAuthDto;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
+import com.roulette.resto.service.roulette.ActivityService;
 import com.roulette.resto.service.social.AccountService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -105,7 +106,6 @@ public class JwtService {
 		AuthResponse authResponse = new AuthResponse();
 		authResponse.setExpiresIn(basicAuthDto.getExpiresIn());
 		authResponse.setToken(basicAuthDto.getToken());
-		log.warn(userInfo.toString());
 		authResponse.setUserInfo(userInfo);
 		return authResponse;
 	}

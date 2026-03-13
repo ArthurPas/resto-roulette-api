@@ -23,13 +23,9 @@ import java.util.Objects;
 @Slf4j
 public class InteractionDao {
 	final JdbcTemplate jdbcTemplate;
-	final JwtService jwtService;
-	private final ActivityDao activityDao;
 
-	public InteractionDao(JdbcTemplate jdbcTemplate, JwtService jwtService, ActivityDao activityDao) {
+	public InteractionDao(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
-		this.jwtService = jwtService;
-		this.activityDao = activityDao;
 	}
 
 

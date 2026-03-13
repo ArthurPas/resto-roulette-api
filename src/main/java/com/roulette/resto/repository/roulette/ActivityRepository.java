@@ -27,4 +27,20 @@ public class ActivityRepository {
 	public ActivityDto getActivity(String activityId) {
 		return activityDao.getActivityById(Integer.parseInt(activityId));
 	}
+
+	public ActivityDto getActivityById(int i) {
+		return activityDao.getActivityById(i);
+	}
+
+	public void createActivities(List<Integer> accountsIds, String desc, String sessionId, int id) {
+		activityDao.createActivities(accountsIds, desc, sessionId, id);
+	}
+
+	public List<ActivityDto> getActivitiesBySessionId(String sessionId) {
+		return activityDao.getActivitiesBySessionId(sessionId);
+	}
+
+	public int getNbActivityPendingByAccountId(int accountId) {
+		return activityDao.getNbActivityPendingByAccountId(accountId);
+	}
 }

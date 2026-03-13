@@ -19,4 +19,5 @@ public class RouletteSessionDto {
 	public int restoId;
 	public Set<Integer> participantIds;
 	public List<MinimalAccountInfo> participantInfos;
+
 }

@@ -7,6 +7,7 @@ import com.roulette.resto.data.social.dto.out.BasicAuthDto;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
+import com.roulette.resto.service.roulette.ActivityService;
 import com.roulette.resto.service.social.AccountService;
 import com.roulette.resto.service.social.AuthService;
 import com.roulette.resto.service.social.UserService;
@@ -36,12 +37,14 @@ public class AuthController {
 	private final AccountService accountService;
 	private final UserService userService;
 	private final AuthService authService;
+	private final ActivityService activityService;
 
-	public AuthController(JwtService jwtService, AccountService accountService, UserService userService, AuthService authService) {
+	public AuthController(JwtService jwtService, AccountService accountService, UserService userService, AuthService authService, ActivityService activityService) {
 		this.jwtService = jwtService;
 		this.accountService = accountService;
 		this.userService = userService;
 		this.authService = authService;
+		this.activityService = activityService;
 	}
 
 	@PostMapping("/login")
@@ -78,7 +81,12 @@ public class AuthController {
 	public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletRequest request) throws APIError {
 			Account account = authService.getAccountFromLoginRequest(loginDto);
 			authService.authenticate(loginDto, request, account);
-			BasicAuthDto authResponse = jwtService.buildAuthResponse(account);
+			int nbActivityPending = activityService.getNbActivityPendingByAccountId(account.getAccountId());
+			AuthResponse authResponse = jwtService.buildAuthResponse(account);
+
+			if(authResponse instanceof AuthResponse){
+				authResponse.getUserInfo().setNbActivityPending(nbActivityPending);
+			}
 			authResponse.setLogin(loginDto.getLogin());
 			return new ResponseEntity<>(authResponse,HttpStatus.OK);
 	}

@@ -31,14 +31,10 @@ import java.util.List;
 public class RouletteController {
 
 	final RouletteService rouletteService;
-	private final SimpMessagingTemplate messagingTemplate;
-	private final JwtService jwtService;
 	private final ActivityService activityService;
 
-	public RouletteController(RouletteService rouletteService, SimpMessagingTemplate messagingTemplate, JwtService jwtService, ActivityService activityService) {
+	public RouletteController(RouletteService rouletteService,ActivityService activityService) {
 		this.rouletteService = rouletteService;
-		this.messagingTemplate = messagingTemplate;
-		this.jwtService = jwtService;
 		this.activityService = activityService;
 	}
 

@@ -1,6 +1,7 @@
 package com.roulette.resto.service.roulette;
 
 import com.roulette.resto.dao.roulette.ActivityDao;
+import com.roulette.resto.dao.social.AccountDao;
 import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.ActivityDto;
@@ -33,7 +34,6 @@ public class ActivityService {
 	final AccountService accountService;
 	final UserService userService;
 	private final RouletteService rouletteService;
-	private final ActivityDao activityDao;
 	private final RestoService restoService;
 
 	public ActivityService(ActivityRepository activityRepository, AccountService accountService, UserService userService, RouletteService rouletteService, ActivityDao activityDao, RestoService restoService) {
@@ -41,7 +41,6 @@ public class ActivityService {
 		this.accountService = accountService;
 		this.userService = userService;
 		this.rouletteService = rouletteService;
-		this.activityDao = activityDao;
 		this.restoService = restoService;
 	}
 
@@ -91,7 +90,7 @@ public class ActivityService {
 
 
 	public ActivityResponse getActivity(String activityId) {
-		ActivityDto activity = activityDao.getActivityById(Integer.parseInt(activityId));
+		ActivityDto activity = activityRepository.getActivityById(Integer.parseInt(activityId));
 
 		if(activity == null) {
 			throw new APIError(144, HttpStatus.NOT_FOUND);
@@ -118,7 +117,7 @@ public class ActivityService {
 
 		ZonedDateTime nowInFrance = ZonedDateTime.now(ZoneId.of("Europe/Paris"));
 
-		activityDao.createActivities(
+		activityRepository.createActivities(
 				accountsIds,
 				defaultActivityDescription(resto.getName(), nowInFrance),
 				sessionId,
@@ -127,7 +126,7 @@ public class ActivityService {
 	}
 
 	public List<ActivityDto> getActivitiesBySessionId(String sessionId) {
-		return activityDao.getActivitiesBySessionId(sessionId);
+		return activityRepository.getActivitiesBySessionId(sessionId);
 	}
 	public static String defaultActivityDescription(String restoName, ZonedDateTime dateTime) {
 		String day = dateTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.FRANCE).toLowerCase();
@@ -149,6 +148,10 @@ public class ActivityService {
 		} else {
 			return description + " soir";
 		}
+	}
+
+	public int getNbActivityPendingByAccountId(int accountId) {
+		return activityRepository.getNbActivityPendingByAccountId(accountId);
 	}
 }
 

@@ -134,4 +134,19 @@ public class ActivityDao {
 			}
 		});
 	}
+
+	public int getNbActivityPendingByAccountId(int accountId) {
+		String query = """
+            SELECT COUNT(*)
+            FROM activity 
+            WHERE is_uploaded = false AND account_id = ?
+            """;
+		Integer count = jdbcTemplate.queryForObject(
+				query,
+				Integer.class,
+				accountId
+		);
+
+		return (count != null) ? count : 0;
+	}
 }

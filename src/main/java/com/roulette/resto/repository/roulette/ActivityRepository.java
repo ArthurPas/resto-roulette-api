@@ -48,4 +48,12 @@ public class ActivityRepository {
 	public List<ActivityDto> getActivitiesByAccountIds(List<Integer> followersIds) {
 		return activityDao.getActivitiesByAccountIds(followersIds);
 	}
+
+	public int updateActivityDescription(int id, String description) {
+		return activityDao.updateActivityDescription(id, description);
+	}
+
+	public int updateActivityUploadStatus(int id, boolean upload) {
+		return activityDao.updateUploadStatus(id, upload);
+	}
 }

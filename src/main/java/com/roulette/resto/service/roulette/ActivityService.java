@@ -1,12 +1,10 @@
 package com.roulette.resto.service.roulette;
 
 import com.roulette.resto.dao.roulette.ActivityDao;
-import com.roulette.resto.dao.social.AccountDao;
 import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
-import com.roulette.resto.data.roulette.websocket.AccountChoices;
 import com.roulette.resto.data.roulette.websocket.AccountsInSession;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.MinimalAccountInfo;
@@ -20,12 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.text.DateFormatSymbols;
 import java.time.*;
-import java.time.chrono.ChronoLocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -149,6 +144,20 @@ public class ActivityService {
 
 	public int getNbActivityPendingByAccountId(int accountId) {
 		return activityRepository.getNbActivityPendingByAccountId(accountId);
+	}
+
+	public ActivityResponse updateActivityDescription(String id, String description) {
+		if(activityRepository.updateActivityDescription(Integer.parseInt(id), description) ==1){
+			return buildActivityResponse(activityRepository.getActivityById(Integer.parseInt(id)));
+		};
+		throw new APIError(64, HttpStatus.NOT_FOUND);
+	}
+
+	public ActivityResponse updateActivityUploadStatus(String id, boolean upload) {
+		if(activityRepository.updateActivityUploadStatus(Integer.parseInt(id), upload) == 1){
+			return buildActivityResponse(activityRepository.getActivityById(Integer.parseInt(id)));
+		}
+		throw new APIError(64, HttpStatus.NOT_FOUND);
 	}
 }
 

@@ -2,9 +2,7 @@ package com.roulette.resto.controller.social.socialInteraction;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.configuration.TrackCampaign;
-import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
-import com.roulette.resto.data.roulette.in.NewSessionDto;
 import com.roulette.resto.service.roulette.ActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,6 +26,8 @@ public class ActivityController {
 	final ActivityService activityService;
 
 	public record ActivitiesResponse(List<ActivityResponse> activities) {}
+	public record ActivityDescription(String description) {}
+	public record UploadPayload(boolean upload) {}
 	public ActivityController(JwtService jwtService, ActivityService activityService) {
 		this.jwtService = jwtService;
 		this.activityService = activityService;
@@ -52,6 +52,21 @@ public class ActivityController {
 	@Operation(summary = "Get an activity")
 	public ResponseEntity<ActivityResponse> getActivity(@PathVariable String id) {
 		ActivityResponse activity = activityService.getActivity(id);
+		return new ResponseEntity<>(activity, HttpStatus.OK);
+	}
+	@Tag(name = "App | Activity")
+	@PatchMapping("/update-description/{id}")
+	@Operation(summary = "Update activity description")
+	public ResponseEntity<ActivityResponse> updateActivityDescription(@PathVariable String id, @RequestBody ActivityDescription description) {
+		ActivityResponse activity = activityService.updateActivityDescription(id, description.description);
+		return new ResponseEntity<>(activity, HttpStatus.OK);
+	}
+	@Tag(name = "App | Activity")
+	@PatchMapping("/update-status/{id}")
+	@Operation(summary = "Update activity upload status")
+	public ResponseEntity<ActivityResponse> changeUploadStatus(@PathVariable String id,
+															   @RequestBody UploadPayload uploadPayload) {
+		ActivityResponse activity = activityService.updateActivityUploadStatus(id, uploadPayload.upload);
 		return new ResponseEntity<>(activity, HttpStatus.OK);
 	}
 //	@Tag(name = "App | Activity")

@@ -1,6 +1,7 @@
 package com.roulette.resto.dao.roulette;
 
 import com.roulette.resto.data.roulette.ActivityDto;
+import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
 import com.roulette.resto.data.social.mapper.ActivityRowMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 
@@ -174,5 +176,31 @@ public class ActivityDao {
 		MapSqlParameterSource parameters = new MapSqlParameterSource("ids", followersIds);
 
 		return namedParameterJdbcTemplate.query(sql, parameters, new ActivityRowMapper());
+	}
+
+	public int updateActivityDescription(int id, String description) {
+		String query = """
+					  UPDATE activity SET description =  ? WHERE activity_id = ?;
+					""";
+			return jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setString(1, description);
+				preparedStatement.setInt(2, id);
+				log.debug(preparedStatement.toString());
+				return preparedStatement;
+			});
+	}
+
+	public int updateUploadStatus(int id, boolean upload) {
+		String query = """
+					  UPDATE activity SET is_uploaded =  ? WHERE activity_id = ?;
+					""";
+		return jdbcTemplate.update(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			preparedStatement.setBoolean(1, upload);
+			preparedStatement.setInt(2, id);
+			log.debug(preparedStatement.toString());
+			return preparedStatement;
+		});
 	}
 }

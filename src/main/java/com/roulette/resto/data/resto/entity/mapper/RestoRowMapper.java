@@ -29,7 +29,12 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		String aggregatedLabels = rs.getString("aggregated_labels");
 		restaurant.setLabels(aggregatedToSet(aggregatedLabels));
 		restaurant.setCreationDate(rs.getDate("created_at"));
-		restaurant.setVerificationStatus(VerificationStatus.valueOf(rs.getString("verification_status")));
+		String statusStr = rs.getString("verification_status");
+		if (statusStr != null) {
+			restaurant.setVerificationStatus(VerificationStatus.valueOf(statusStr));
+		} else {
+			restaurant.setVerificationStatus(VerificationStatus.UNVERIFIED);
+		}
 		Account account = new Account();
 		account.setAccountId(rs.getInt("owner_id"));
 		restaurant.setOwner(account);

@@ -3,7 +3,7 @@
   become: no
   vars:
     app_dir: "/opt/resto-roulette"
-    local_repo: "/home/arthur-pascal/Documents/epitech/resto-roulette/resto-roulette-api"
+    local_repo: "/home/arthur-pascal/Documents/Epitech/Resto-roulette/resto-roulette-api"
   vars_files:
     - ../group_vars/app/vault.yml
 

@@ -582,12 +582,15 @@ public class AccountDao {
 	public void unfollow(int accountToUnfollow, int accountId) throws AccountNotFoundException {
 		try {
 			String query = """
-              DELETE FROM follower WHERE asked_account_id = ? AND ask_account_id = ?
+              DELETE FROM follower WHERE (asked_account_id = ? AND ask_account_id = ?)
+                                      OR (asked_account_id = ? AND  ask_account_id = ?)
               """;
 			jdbcTemplate.update(connection -> {
 				PreparedStatement preparedStatement = connection.prepareStatement(query);
 				preparedStatement.setInt(1, accountToUnfollow);
 				preparedStatement.setInt(2, accountId);
+				preparedStatement.setInt(3, accountId);
+				preparedStatement.setInt(4, accountToUnfollow);
 				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			});

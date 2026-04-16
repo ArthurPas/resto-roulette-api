@@ -37,6 +37,7 @@ public class SocialController {
 	public record SocialInteractions(List<SocialInteractionResponse> socialInteractionResponses) {}
 	public record FollowRequests(List<MinimalAccountInfo> requests){}
 	public record Followers(List<MinimalAccountInfo> followers){}
+	public record FollowersStatus(boolean isFollower, boolean isFollowed) {}
 	public SocialController(InteractionsService interactionsService, JwtService jwtService, UserService userService, AccountService accountService) {
 		this.interactionsService = interactionsService;
 		this.jwtService = jwtService;
@@ -141,9 +142,14 @@ public class SocialController {
 	@Tag(name = "Account | profile")
 	@GetMapping("/profile/{login}")
 	@Operation(summary = "Get profile")
-	public ResponseEntity<MinimalAccountInfo> getProfile(@PathVariable String login){
-		Account account = accountService.getAccountByLogin(login);
-		return new ResponseEntity<>(new MinimalAccountInfo(account),HttpStatus.OK);
+	public ResponseEntity<MinimalAccountInfo> getProfile(@PathVariable String login, Authentication authentication){
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		Account connectedAccount = accountService.getAccountById(accountId);
+		Account accountByLogin = accountService.getAccountByLogin(login);
+		boolean isFollowed = userService.getFollowersByAccountId(connectedAccount.getAccountId()).contains(new MinimalAccountInfo(accountByLogin));
+		boolean isFollower = userService.getFollowersByAccountId(accountByLogin.getAccountId()).contains(new MinimalAccountInfo(connectedAccount));
+		FollowersStatus followersStatus = new FollowersStatus(isFollower, isFollowed);
+		return new ResponseEntity<>(new MinimalAccountInfo(accountByLogin, followersStatus),HttpStatus.OK);
 	}
 
 }

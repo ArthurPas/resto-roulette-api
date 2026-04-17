@@ -1,8 +1,6 @@
 package com.roulette.resto.data.social.entity;
 
 import com.roulette.resto.controller.social.socialInteraction.SocialController;
-import com.roulette.resto.data.social.dto.out.UserInfoDto;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +14,8 @@ public class MinimalAccountInfo {
 	private int accountId;
 	private String login;
 	private String avatar = "";
-	private boolean following;
-	private boolean followed;
+	private boolean isFollowingMe;
+	private boolean isFollowed;
 	private String firstname;
 	private String lastname;
 
@@ -33,7 +31,7 @@ public class MinimalAccountInfo {
 		this.setAccountId(account.getAccountId());
 		this.setLogin(account.getLogin());
 		this.setAvatar(account.getUserInfo().getAvatar());
-		this.setFollowing(followersStatus.isFollower());
+		this.setFollowingMe(followersStatus.isFollower());
 		this.setFollowed(followersStatus.isFollowed());
 		this.setFirstname(account.getUserInfo().getFirstName());
 		this.setLastname(account.getUserInfo().getLastName());

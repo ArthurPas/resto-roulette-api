@@ -100,7 +100,7 @@ public class SocialController {
 	@Operation(summary = "Get my following request that was not accepted yet")
 	public ResponseEntity<FollowRequests> GetFollowingRequest(Authentication authentication){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		return new ResponseEntity<>( new FollowRequests(userService.getFollowingRequest(accountId)),HttpStatus.OK);
+		return new ResponseEntity<>(new FollowRequests(userService.getFollowingRequest(accountId)),HttpStatus.OK);
 	}
 
 

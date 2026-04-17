@@ -32,6 +32,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<?> handleAPIError(Exception ex){
 		log.error("Exception caught in GlobalExceptionHandler{}", ex.getClass());
 		log.error(ex.getMessage());
+
 		ErrorResponse errorResponse = new ErrorResponse((APIError) ex);
 		return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 	}
@@ -61,6 +62,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<?> handleGeneralException(Exception ex) {
 		log.error("Exception caught in GlobalExceptionHandler {}", ex.getClass());
 		log.error(ex.getMessage());
+		ex.printStackTrace();
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 

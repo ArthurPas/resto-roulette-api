@@ -2,8 +2,14 @@ package com.roulette.resto.controller.social.socialInteraction;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.configuration.TrackCampaign;
+import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
+import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.service.resto.RestoService;
 import com.roulette.resto.service.roulette.ActivityService;
+import com.roulette.resto.service.social.AccountService;
+import com.roulette.resto.service.social.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.auth.login.AccountNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -69,6 +77,8 @@ public class ActivityController {
 		ActivityResponse activity = activityService.updateActivityUploadStatus(id, uploadPayload.upload);
 		return new ResponseEntity<>(activity, HttpStatus.OK);
 	}
+
+
 //	@Tag(name = "App | Activity")
 //	@PostMapping("/new-session")
 //	@Operation(summary = "Upload a new session")
@@ -78,15 +88,15 @@ public class ActivityController {
 //		return new ResponseEntity<>(activity, HttpStatus.OK);
 //	}
 
-//	@Tag(name = "App | Feed ")
-//	@GetMapping("/followers/feed")
-//	@TrackCampaign(type = "Feed")
-//	@Operation(summary = "Get my followers recents activities")
-//	public ResponseEntity<ActivitiesResponse> getFollowersFeed(Authentication authentication){
-//		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-//		List<ActivityResponse> activities = activityService.getMyFollowersActivities(accountId);
-//		log.warn(activities.toString());
-//		return new ResponseEntity<>(new ActivitiesResponse(activities),HttpStatus.OK);
-//	}
+	@Tag(name = "App | Feed ")
+	@GetMapping("/followers/feed")
+	@TrackCampaign(type = "Feed")
+	@Operation(summary = "Get my followers recents activities")
+	public ResponseEntity<ActivitiesResponse> getFollowersFeed(Authentication authentication) throws AccountNotFoundException {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		List<ActivityResponse> activities = activityService.getMyFollowersActivities(accountId);
+		log.warn(activities.toString());
+		return new ResponseEntity<>(new ActivitiesResponse(activities),HttpStatus.OK);
+	}
 
 }

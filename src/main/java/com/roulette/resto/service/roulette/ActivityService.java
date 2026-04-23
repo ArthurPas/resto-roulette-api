@@ -154,6 +154,40 @@ public class ActivityService {
 		}
 		throw new APIError(64, HttpStatus.NOT_FOUND);
 	}
+
+	public List<ActivityResponse> getMyFollowersActivities(int accountId) throws AccountNotFoundException {
+		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
+		List<Integer> followersIds = new ArrayList<>();
+		for (MinimalAccountInfo follower : followers) {
+			followersIds.add(follower.getAccountId());
+		}
+
+		List<ActivityDto> activities = activityRepository.getActivitiesByAccountIds(followersIds);
+		List<ActivityResponse> responseList = new ArrayList<>();
+
+		for (ActivityDto dto : activities) {
+			if (!dto.isUploaded()) {
+				continue;
+			}
+			ActivityResponse response = new ActivityResponse(dto);
+			if (dto.getDetails() != null) {
+				if (dto.getDetails().getParticipantIds() != null) {
+					List<Account> accounts = accountService.getAccountsByIds(dto.getDetails().getParticipantIds());
+
+					List<MinimalAccountInfo> infos = new ArrayList<>();
+					for (Account acc : accounts) {
+						infos.add(new MinimalAccountInfo(acc));
+					}
+					response.setParticipantInfos(infos);
+				}
+				if (dto.getDetails().getRestoId() != 0) {
+					response.restoInfo = restoService.getMinimalRestoInfo(String.valueOf(dto.getDetails().getRestoId()));
+				}
+			}
+			responseList.add(response);
+		}
+		return responseList;
+	}
 }
 
 

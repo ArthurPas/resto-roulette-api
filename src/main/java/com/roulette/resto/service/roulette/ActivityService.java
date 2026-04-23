@@ -94,11 +94,6 @@ public class ActivityService {
 		return buildActivityResponse(activity);
 	}
 
-	public List<ActivityResponse> getMyFollowersActivities(int accountId) {
-		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
-		List<Integer> followersIds = followers.stream().map(MinimalAccountInfo::getAccountId).toList();
-		return activityRepository.getActivitiesByAccountIds(followersIds).stream().filter(a -> a.isUploaded).map(ActivityResponse::new).toList();
-	}
 
 	public void saveSession(String sessionId, RestoDto resto) {
 		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);

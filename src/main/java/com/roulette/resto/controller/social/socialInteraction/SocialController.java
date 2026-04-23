@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 
 @Slf4j
@@ -133,7 +134,7 @@ public class SocialController {
 	@Tag(name = "Account | Followers")
 	@GetMapping("/followers")
 	@Operation(summary = "Get my followers")
-	public ResponseEntity<Followers> getFollowersList(Authentication authentication){
+	public ResponseEntity<Followers> getFollowersList(Authentication authentication) throws AccountNotFoundException {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		List<MinimalAccountInfo> followers = userService.getFollowersByAccountId(accountId);
 		return new ResponseEntity<>(new Followers(followers),HttpStatus.OK);
@@ -142,7 +143,7 @@ public class SocialController {
 	@Tag(name = "Account | profile")
 	@GetMapping("/profile/{login}")
 	@Operation(summary = "Get profile")
-	public ResponseEntity<MinimalAccountInfo> getProfile(@PathVariable String login, Authentication authentication){
+	public ResponseEntity<MinimalAccountInfo> getProfile(@PathVariable String login, Authentication authentication) throws AccountNotFoundException {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		Account connectedAccount = accountService.getAccountById(accountId);
 		Account accountByLogin = accountService.getAccountByLogin(login);

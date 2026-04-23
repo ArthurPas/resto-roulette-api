@@ -602,7 +602,7 @@ public class AccountDao {
 
 	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
 		String query = """
-                      SELECT  account.login, account.account_id, uum.resource_id AS avatar
+                      SELECT  account.login, account.account_id, uum.resource_id, user_info.last_name, user_info.first_name AS avatar
                       FROM account
                       JOIN user_info ON account.user_info_id = user_info.user_info_id
                       LEFT JOIN resto_roulette.user_user_medias uum
@@ -629,11 +629,14 @@ public class AccountDao {
 	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {
 		String query = """
                       SELECT
-                         a.login,
-                         a.account_id,
-                         uum.resource_id AS avatar
+						a.login,
+						a.account_id,
+						uum.resource_id AS avatar,
+						ui.last_name,
+						ui.first_name
                       FROM follower f
                       JOIN account a ON f.ask_account_id = a.account_id
+					  JOIN resto_roulette.user_info ui on a.user_info_id = ui.user_info_id
                       LEFT JOIN resto_roulette.user_user_medias uum ON a.account_id = uum.account_id
                          AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
                       WHERE

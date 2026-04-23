@@ -78,14 +78,15 @@ public class ActivityController {
 //		return new ResponseEntity<>(activity, HttpStatus.OK);
 //	}
 
-	@Tag(name = "App | Feed ")
-	@GetMapping("/followers/feed")
-	@TrackCampaign(type = "Feed")
-	@Operation(summary = "Get my followers recents activities")
-	public ResponseEntity<ActivitiesResponse> getFollowersFeed(Authentication authentication){
-		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<ActivityResponse> activities = activityService.getMyFollowersActivities(accountId);
-		return new ResponseEntity<>(new ActivitiesResponse(activities),HttpStatus.OK);
-	}
+//	@Tag(name = "App | Feed ")
+//	@GetMapping("/followers/feed")
+//	@TrackCampaign(type = "Feed")
+//	@Operation(summary = "Get my followers recents activities")
+//	public ResponseEntity<ActivitiesResponse> getFollowersFeed(Authentication authentication){
+//		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+//		List<ActivityResponse> activities = activityService.getMyFollowersActivities(accountId);
+//		log.warn(activities.toString());
+//		return new ResponseEntity<>(new ActivitiesResponse(activities),HttpStatus.OK);
+//	}
 
 }

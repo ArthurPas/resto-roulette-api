@@ -1,5 +1,6 @@
 package com.roulette.resto.service.social;
 
+import com.roulette.resto.controller.social.socialInteraction.SocialController;
 import com.roulette.resto.data.administration.dto.out.AccountsInfos;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.security.auth.login.AccountNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -234,8 +236,17 @@ public class UserService {
 		}
 	}
 
-	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
-		return accountRepository.getFollowersByAccountId(accountId);
+	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) throws AccountNotFoundException {
+		List<MinimalAccountInfo> followers = accountRepository.getFollowersByAccountId(accountId);
+		List<MinimalAccountInfo> result = new ArrayList<>();
+		for (MinimalAccountInfo follower : followers) {
+			boolean isFollowed = accountRepository.getFollowersByAccountId(accountId).contains(follower);
+			boolean isFollower =
+					accountRepository.getFollowersByAccountId(follower.getAccountId()).contains(new MinimalAccountInfo(accountRepository.getAccountById(accountId)));
+			SocialController.FollowersStatus followersStatus = new SocialController.FollowersStatus(isFollower, isFollowed);
+			result.add(new MinimalAccountInfo(accountRepository.getAccountById(follower.getAccountId()), followersStatus));
+		}
+		return result;
 	}
 
 	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {

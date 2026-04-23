@@ -16,6 +16,8 @@ public class MinimalAccountRowMapper implements RowMapper<MinimalAccountInfo> {
 		account.setLogin(rs.getString("login"));
 		account.setAvatar(rs.getString("avatar"));
 		account.setAccountId(rs.getInt("account_id"));
+//		account.setFirstname(rs.getString("first_name"));
+		account.setLastname(rs.getString("last_name"));
 		return account;
 	}
 }

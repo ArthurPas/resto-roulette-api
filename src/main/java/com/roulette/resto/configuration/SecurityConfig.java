@@ -14,7 +14,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-// import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity; // REMOVE THIS
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +25,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Slf4j
 @Configuration
 @EnableWebSecurity
-// @EnableWebSocketSecurity  <-- REMOVED to disable STOMP message security checks
 public class SecurityConfig {
 
 	static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

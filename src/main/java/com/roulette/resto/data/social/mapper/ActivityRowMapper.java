@@ -19,7 +19,6 @@ public class ActivityRowMapper implements RowMapper<ActivityDto> {
 		activityDto.setActivityId(rs.getInt("activity_id"));
 		activityDto.setAccountId(rs.getInt("account_id"));
 		activityDto.setDescription(rs.getString("description"));
-
 		RouletteSessionDto rouletteSessionDto = new RouletteSessionDto();
 		rouletteSessionDto.setSessionId(rs.getString("session_id"));
 		rouletteSessionDto.setRestoId(rs.getInt("resto_id"));
@@ -38,7 +37,6 @@ public class ActivityRowMapper implements RowMapper<ActivityDto> {
 		}catch (SQLException e){
 			log.info("no participantsId");
 		}
-
 		activityDto.setDetails(rouletteSessionDto);
 		activityDto.setUploaded(rs.getBoolean("is_uploaded"));
 		activityDto.setActivityDate(rs.getDate("activity_date"));

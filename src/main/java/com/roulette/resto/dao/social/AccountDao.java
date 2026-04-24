@@ -602,7 +602,7 @@ public class AccountDao {
 
 	public List<MinimalAccountInfo> getFollowersByAccountId(int accountId) {
 		String query = """
-                      SELECT  account.login, account.account_id, uum.resource_id, user_info.last_name, user_info.first_name AS avatar
+                      SELECT  account.login, account.account_id, uum.resource_id AS avatar, user_info.last_name, user_info.first_name 
                       FROM account
                       JOIN user_info ON account.user_info_id = user_info.user_info_id
                       LEFT JOIN resto_roulette.user_user_medias uum

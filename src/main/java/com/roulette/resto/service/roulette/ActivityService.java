@@ -6,6 +6,8 @@ import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
 import com.roulette.resto.data.roulette.websocket.AccountsInSession;
+import com.roulette.resto.data.social.dto.out.CommentInfo;
+import com.roulette.resto.data.social.dto.out.CommentInfoWithAccount;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.exception.APIError;
@@ -61,9 +63,7 @@ public class ActivityService {
 
 	private ActivityResponse buildActivityResponse(ActivityDto activity) {
 		try {
-
 			ActivityResponse activityResponse = new ActivityResponse(activity);
-
 			List<MinimalAccountInfo> participantsInfo = getMinimalAccountInfos(activity);
 			activityResponse.setParticipantInfos(participantsInfo);
 
@@ -87,11 +87,19 @@ public class ActivityService {
 
 	public ActivityResponse getActivity(String activityId) {
 		ActivityDto activity = activityRepository.getActivityById(Integer.parseInt(activityId));
-
+		List<CommentInfo> commentInfos = activityRepository.getCommentsByActivityId(Integer.parseInt(activityId));
 		if(activity == null) {
 			throw new APIError(144, HttpStatus.NOT_FOUND);
 		}
-		return buildActivityResponse(activity);
+		ActivityResponse activityResponse = buildActivityResponse(activity);
+		List<CommentInfoWithAccount> commentInfosWithAccounts = new ArrayList<>();
+		for (CommentInfo comment : commentInfos) {
+			CommentInfoWithAccount commentWithInfo = new CommentInfoWithAccount(comment);
+			commentWithInfo.setAuthor(new MinimalAccountInfo(accountService.getAccountById(comment.getAuthorId())));
+			commentInfosWithAccounts.add(commentWithInfo);
+		}
+		activityResponse.setComments(commentInfosWithAccounts);
+		return activityResponse;
 	}
 
 

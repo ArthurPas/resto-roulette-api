@@ -1,8 +1,9 @@
 package com.roulette.resto.dao.roulette;
 
 import com.roulette.resto.data.roulette.ActivityDto;
-import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
+import com.roulette.resto.data.social.dto.out.CommentInfo;
 import com.roulette.resto.data.social.mapper.ActivityRowMapper;
+import com.roulette.resto.data.social.mapper.CommentInfoRowMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -116,6 +117,21 @@ public class ActivityDao {
 			return null;
 		}
 
+	}
+
+	public List<CommentInfo> getCommentsByActivityId(int activityId) {
+		String query = """
+				SELECT comment.comment_id, activity_id, account_id as author_id, content as comment_text FROM comment WHERE activity_id = ?
+				""";
+		return jdbcTemplate.query(
+				connection -> {
+					PreparedStatement preparedStatement = connection.prepareStatement(query);
+					preparedStatement.setInt(1, activityId);
+					log.debug(preparedStatement.toString());
+					return preparedStatement;
+				},
+				new CommentInfoRowMapper()
+		);
 	}
 
 	public void createActivities(List<Integer> participantsId, String description, String sessionId, int restoId) {

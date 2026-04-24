@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.roulette.ActivityDto;
+import com.roulette.resto.data.social.dto.out.CommentInfo;
+import com.roulette.resto.data.social.dto.out.CommentInfoWithAccount;
 import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -22,6 +23,7 @@ public class ActivityResponse {
 	public MinimalRestoInfo restoInfo;
 	public List<MinimalAccountInfo> participantInfos;
 	public Date activityDate;
+	public List<CommentInfoWithAccount> comments;
 
 	public ActivityResponse(ActivityDto activityDto){
 		this.description = activityDto.getDescription();

@@ -250,8 +250,10 @@ public class UserService {
 	}
 
 	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {
-		return accountRepository.getFollowingRequestByAccount(accountId);
-
-
+		List<MinimalAccountInfo>  accountInfos = accountRepository.getFollowingRequestByAccount(accountId);
+		for (MinimalAccountInfo accountInfo : accountInfos) {
+			accountInfo.setAvatar(buildMediaUrl(accountInfo.getAvatar()));
+		}
+		return accountInfos;
 	}
 }

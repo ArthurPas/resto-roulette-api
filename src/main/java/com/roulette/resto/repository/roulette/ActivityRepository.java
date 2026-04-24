@@ -3,6 +3,7 @@ package com.roulette.resto.repository.roulette;
 import com.roulette.resto.dao.roulette.ActivityDao;
 import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
+import com.roulette.resto.data.social.dto.out.CommentInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -55,5 +56,9 @@ public class ActivityRepository {
 
 	public int updateActivityUploadStatus(int id, boolean upload) {
 		return activityDao.updateUploadStatus(id, upload);
+	}
+
+	public List<CommentInfo> getCommentsByActivityId(int activityId) {
+		return activityDao.getCommentsByActivityId(activityId);
 	}
 }

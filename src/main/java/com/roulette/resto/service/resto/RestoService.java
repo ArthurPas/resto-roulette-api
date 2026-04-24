@@ -271,6 +271,8 @@ public class RestoService {
 		MinimalRestoInfo minimalRestoInfo = new MinimalRestoInfo();
 		minimalRestoInfo.setRestoName(restaurant.getDisplayName());
 		minimalRestoInfo.setRestoId(Integer.parseInt(restoId));
+		minimalRestoInfo.setLongitude(restaurant.getLon());
+		minimalRestoInfo.setLatitude(restaurant.getLat());
 		if(restaurant.getMedias()!=null) {
 			String logoUrl = restaurant.getMedias().stream()
 					.filter(media -> Objects.equals(media.getType(), "LOGO"))

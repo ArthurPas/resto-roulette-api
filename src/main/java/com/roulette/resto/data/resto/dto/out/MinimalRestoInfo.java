@@ -14,4 +14,6 @@ public class MinimalRestoInfo {
 	int restoId;
 	String restoName;
 	String logoUrl;
+	double latitude;
+	double longitude;
 }

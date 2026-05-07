@@ -24,11 +24,13 @@ public class ActivityResponse {
 	public List<MinimalAccountInfo> participantInfos;
 	public Date activityDate;
 	public List<CommentInfoWithAccount> comments;
+	public int activityId;
 
 	public ActivityResponse(ActivityDto activityDto){
 		this.description = activityDto.getDescription();
 		this.participantInfos = activityDto.getDetails().getParticipantInfos();
 		this.isUploaded = activityDto.isUploaded();
+		this.activityId = activityDto.getActivityId();
 		this.activityDate = activityDto.getActivityDate();
 	}
 

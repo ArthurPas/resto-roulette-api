@@ -35,7 +35,7 @@ public class ActivityController {
 
 	public record ActivitiesResponse(List<ActivityResponse> activities) {}
 	public record ActivityDescription(String description) {}
-	public record UploadPayload(boolean upload) {}
+	public record UploadPayload(boolean uploaded) {}
 	public ActivityController(JwtService jwtService, ActivityService activityService) {
 		this.jwtService = jwtService;
 		this.activityService = activityService;
@@ -74,7 +74,8 @@ public class ActivityController {
 	@Operation(summary = "Update activity upload status")
 	public ResponseEntity<ActivityResponse> changeUploadStatus(@PathVariable String id,
 															   @RequestBody UploadPayload uploadPayload) {
-		ActivityResponse activity = activityService.updateActivityUploadStatus(id, uploadPayload.upload);
+		log.warn("###############################"+uploadPayload.toString());
+		ActivityResponse activity = activityService.updateActivityUploadStatus(id, uploadPayload.uploaded);
 		return new ResponseEntity<>(activity, HttpStatus.OK);
 	}
 

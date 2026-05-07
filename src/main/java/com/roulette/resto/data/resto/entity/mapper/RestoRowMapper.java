@@ -21,8 +21,8 @@ public class RestoRowMapper implements RowMapper<Restaurant> {
 		restaurant.setId(rs.getInt("resto_id"));
 		restaurant.setName(rs.getString("name"));
 		restaurant.setDisplayName(rs.getString("display_name"));
-		restaurant.setLongitude(rs.getDouble("lon"));
-		restaurant.setLatitude(rs.getDouble("lat"));
+		restaurant.setLon(rs.getDouble("lon"));
+		restaurant.setLat(rs.getDouble("lat"));
 		restaurant.setAddress(rs.getString("address"));
 		String aggregatedTypes = rs.getString("aggregated_food_types");
 		restaurant.setFoodTypes(aggregatedToSet(aggregatedTypes));

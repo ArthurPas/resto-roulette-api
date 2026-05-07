@@ -7,7 +7,6 @@ import com.roulette.resto.data.common.entity.mappers.MediaMapper;
 import com.roulette.resto.data.resto.dto.in.NewBusinessHours;
 import com.roulette.resto.data.resto.dto.in.NewRestaurant;
 import com.roulette.resto.data.resto.dto.in.UpdateBusinessHours;
-import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.resto.entity.BusinessHour;
 import com.roulette.resto.data.resto.entity.Restaurant;
 import com.roulette.resto.data.resto.entity.VerificationStatus;
@@ -21,7 +20,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -698,8 +696,8 @@ public class RestoDao {
 			Restaurant restaurant = new Restaurant();
 			restaurant.setId(rs.getInt("resto_id"));
 			restaurant.setName(rs.getString("display_name"));
-			restaurant.setLatitude(rs.getDouble("lat"));
-			restaurant.setLongitude(rs.getDouble("lon"));
+			restaurant.setLat(rs.getDouble("lat"));
+			restaurant.setLon(rs.getDouble("lon"));
 			return restaurant;
 		});
 	}
@@ -750,8 +748,8 @@ public class RestoDao {
 			Restaurant restaurant = new Restaurant();
 			restaurant.setId(rs.getInt("resto_id"));
 			restaurant.setName(rs.getString("display_name"));
-			restaurant.setLatitude(rs.getDouble("lat"));
-			restaurant.setLongitude(rs.getDouble("lon"));
+			restaurant.setLat(rs.getDouble("lat"));
+			restaurant.setLon(rs.getDouble("lon"));
 			return restaurant;
 		});
 

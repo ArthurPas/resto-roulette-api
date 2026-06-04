@@ -58,8 +58,9 @@ public class ActivityController {
 	@Tag(name = "App | Activity")
 	@GetMapping("/{id}")
 	@Operation(summary = "Get an activity")
-	public ResponseEntity<ActivityResponse> getActivity(@PathVariable String id) {
-		ActivityResponse activity = activityService.getActivity(id);
+	public ResponseEntity<ActivityResponse> getActivity(Authentication authentication,@PathVariable String id) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		ActivityResponse activity = activityService.getActivity(id,accountId);
 		return new ResponseEntity<>(activity, HttpStatus.OK);
 	}
 	@Tag(name = "App | Activity")
@@ -99,5 +100,13 @@ public class ActivityController {
 
 		return new ResponseEntity<>(new ActivitiesResponse(activities),HttpStatus.OK);
 	}
-
+	@Tag(name = "App | Feed ")
+	@PostMapping("/like/{id}")
+	@TrackCampaign(type = "Feed")
+	@Operation(summary = "Get my followers recents activities")
+	public ResponseEntity<ActivitiesResponse> likeActivity(Authentication authentication,@PathVariable String id) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		activityService.likeActivity(accountId, id);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }

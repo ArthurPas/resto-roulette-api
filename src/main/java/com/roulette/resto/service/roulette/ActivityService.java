@@ -1,6 +1,5 @@
 package com.roulette.resto.service.roulette;
 
-import com.roulette.resto.dao.roulette.ActivityDao;
 import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.resto.dto.out.RestoDto;
 import com.roulette.resto.data.roulette.ActivityDto;
@@ -32,8 +31,8 @@ public class ActivityService {
 	final UserService userService;
 	private final RouletteService rouletteService;
 	private final RestoService restoService;
-
-	public ActivityService(ActivityRepository activityRepository, AccountService accountService, UserService userService, RouletteService rouletteService, ActivityDao activityDao, RestoService restoService) {
+	public ActivityService(ActivityRepository activityRepository, AccountService accountService,
+						   UserService userService, RouletteService rouletteService, RestoService restoService) {
 		this.activityRepository = activityRepository;
 		this.accountService = accountService;
 		this.userService = userService;
@@ -54,14 +53,14 @@ public class ActivityService {
 
 		List<ActivityDto> activities =  activityRepository.getActivityByAccountId(accountId);
 		for (ActivityDto activity : activities) {
-			ActivityResponse activityResponse = buildActivityResponse(activity);
+			ActivityResponse activityResponse = buildActivityResponse(activity, accountId);
 			activityResponses.add(activityResponse);
 		}
 		activityResponses.sort(Comparator.comparing(ActivityResponse::getActivityDate).reversed());
 		return activityResponses;
 	}
 
-	private ActivityResponse buildActivityResponse(ActivityDto activity) {
+	private ActivityResponse buildActivityResponse(ActivityDto activity, Integer accountId) {
 		try {
 			ActivityResponse activityResponse = new ActivityResponse(activity);
 			List<MinimalAccountInfo> participantsInfo = getMinimalAccountInfos(activity);
@@ -69,6 +68,9 @@ public class ActivityService {
 
 			MinimalRestoInfo restoInfo = restoService.getMinimalRestoInfo(String.valueOf(activity.getDetails().getRestoId()));
 			activityResponse.setRestoInfo(restoInfo);
+			if(accountId != null) {
+				activityResponse.setHasCurrentUserLiked(hasUserLikedActivity(activity.getActivityId(),accountId));
+			}
 			return activityResponse;
 		}catch (AccountNotFoundException e) {
 			log.error("account not found " + activity.getAccountId());
@@ -85,13 +87,13 @@ public class ActivityService {
 
 
 
-	public ActivityResponse getActivity(String activityId) {
+	public ActivityResponse getActivity(String activityId, int accountId) {
 		ActivityDto activity = activityRepository.getActivityById(Integer.parseInt(activityId));
 		List<CommentInfo> commentInfos = activityRepository.getCommentsByActivityId(Integer.parseInt(activityId));
 		if(activity == null) {
 			throw new APIError(144, HttpStatus.NOT_FOUND);
 		}
-		ActivityResponse activityResponse = buildActivityResponse(activity);
+		ActivityResponse activityResponse = buildActivityResponse(activity, accountId);
 		List<CommentInfoWithAccount> commentInfosWithAccounts = new ArrayList<>();
 		for (CommentInfo comment : commentInfos) {
 			CommentInfoWithAccount commentWithInfo = new CommentInfoWithAccount(comment);
@@ -152,14 +154,14 @@ public class ActivityService {
 
 	public ActivityResponse updateActivityDescription(String id, String description) {
 		if(activityRepository.updateActivityDescription(Integer.parseInt(id), description) ==1){
-			return buildActivityResponse(activityRepository.getActivityById(Integer.parseInt(id)));
+			return buildActivityResponse(activityRepository.getActivityById(Integer.parseInt(id)), null);
 		};
 		throw new APIError(64, HttpStatus.NOT_FOUND);
 	}
 
 	public ActivityResponse updateActivityUploadStatus(String id, boolean upload) {
 		if(activityRepository.updateActivityUploadStatus(Integer.parseInt(id), upload) == 1){
-			return buildActivityResponse(activityRepository.getActivityById(Integer.parseInt(id)));
+			return buildActivityResponse(activityRepository.getActivityById(Integer.parseInt(id)), null);
 		}
 		throw new APIError(64, HttpStatus.NOT_FOUND);
 	}
@@ -178,9 +180,17 @@ public class ActivityService {
 			if (!activity.isUploaded()) {
 				continue;
 			}
-			responseList.add(this.getActivity(String.valueOf(activity.getActivityId())));
+			responseList.add(this.getActivity(String.valueOf(activity.getActivityId()),accountId));
 		}
 		return responseList;
+	}
+
+	public boolean hasUserLikedActivity(int activityId, int accountId){
+		return activityRepository.hasUserLiked(activityId, accountId);
+	}
+
+	public void likeActivity(int accountId, String activityId) {
+		activityRepository.likeActivity(accountId, activityId);
 	}
 }
 

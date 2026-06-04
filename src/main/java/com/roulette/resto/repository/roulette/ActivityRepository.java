@@ -61,4 +61,12 @@ public class ActivityRepository {
 	public List<CommentInfo> getCommentsByActivityId(int activityId) {
 		return activityDao.getCommentsByActivityId(activityId);
 	}
+
+	public boolean hasUserLiked(int activityId, int accountId) {
+		return activityDao.hasUserLiked(activityId, accountId);
+	}
+
+	public void likeActivity(int accountId, String activityId) {
+		activityDao.likeActivity(accountId, Integer.parseInt(activityId));
+	}
 }

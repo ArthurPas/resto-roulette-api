@@ -26,6 +26,7 @@ public class ActivityResponse {
 	public List<CommentInfoWithAccount> comments;
 	public int nbComments;
 	public int activityId;
+	public boolean hasCurrentUserLiked = false;
 
 	public ActivityResponse(ActivityDto activityDto){
 		this.description = activityDto.getDescription();

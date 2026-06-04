@@ -219,4 +219,32 @@ public class ActivityDao {
 			return preparedStatement;
 		});
 	}
+
+	public boolean hasUserLiked(int activityId, int accountId) {
+		String query = """
+          SELECT account_id FROM activity_user_likes WHERE account_id = ? AND activity_id = ?""";
+		try {
+			Integer id = jdbcTemplate.queryForObject(
+					query,
+					Integer.class,
+					accountId,
+					activityId
+			);
+			return id != null;
+		} catch (EmptyResultDataAccessException e) {
+			return false;
+		}
+	}
+
+	public void likeActivity(int accountId, int activityId) {
+		String query = """
+			      INSERT INTO activity_user_likes (account_id, activity_id) VALUES (?,?);
+		""";
+		jdbcTemplate.update(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			preparedStatement.setInt(1, accountId);
+			preparedStatement.setInt(2, activityId);
+			return preparedStatement;
+		});
+	}
 }

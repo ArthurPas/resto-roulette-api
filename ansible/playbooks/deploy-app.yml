@@ -1,25 +1,13 @@
-- name: Deploy Spring Boot backend JAR
+- name: Deploy Spring Boot backend via Docker
   hosts: app
   become: no
   vars:
-    app_dir: "/opt/resto-roulette"
+    app_dir: "/home/arthur/npm/spring_app"
     local_repo: "/home/arthur-pascal/Documents/Epitech/Resto-roulette/resto-roulette-api"
   vars_files:
     - ../group_vars/app/vault.yml
 
   tasks:
-    - name: Configure Doppler globally for user
-      become: yes
-      become_user: root
-      shell: |
-        mkdir -p /home/root/.doppler
-        export DOPPLER_TOKEN="{{ doppler_service_token }}"
-        export DOPPLER_PROJECT="{{ doppler_project }}"
-        export DOPPLER_CONFIG="{{ doppler_config }}"
-        doppler configure set token "$DOPPLER_TOKEN" --scope /home/root
-        doppler configure set project "$DOPPLER_PROJECT" --scope /home/root
-        doppler configure set config "$DOPPLER_CONFIG" --scope /home/root
-
     - name: Build Spring Boot JAR locally
       delegate_to: localhost
       shell: |
@@ -28,41 +16,32 @@
       args:
         executable: /bin/bash
 
-    - name: Package artifact
+    - name: Extract Doppler secrets to local .env file
       delegate_to: localhost
       shell: |
-        cd "{{ local_repo }}/build/libs"
-        tar -czf resto-backend.tar.gz *.jar
+          doppler secrets download --format docker --no-file --project "{{ doppler_project }}" --config "{{ doppler_config }}" --token "{{ doppler_service_token }}" > /tmp/.env
       args:
         executable: /bin/bash
 
-    - name: Upload artifact
+    - name: Ensure destination directory exists on VPS
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Upload Spring Boot JAR to VPS
       copy:
-        src: "{{ local_repo }}/build/libs/resto-backend.tar.gz"
-        dest: "{{ app_dir }}/app.tar.gz"
+        src: "{{ local_repo }}/build/libs/resto-0.0.1-SNAPSHOT.jar"
+        dest: "{{ app_dir }}/app.jar"
         mode: "0644"
 
-    - name: Extract new artifact
-      shell: |
-        cd "{{ app_dir }}"
-        tar -xzf app.tar.gz --overwrite
-      args:
-        executable: /bin/bash
+    - name: Upload .env file to VPS
+      copy:
+        src: "/tmp/.env"
+        dest: "{{ app_dir }}/.env"
+        mode: "0600"
 
-    - name: Start Redis container
-      become: yes
+    - name: Restart Spring Boot container
       shell: |
-        docker run -d \
-          --name my-redis \
-          --restart always \
-          -p 127.0.0.1:6379:6379 \
-          -v /opt/redis/data:/data \
-          redis:alpine
-      register: redis_output
-      failed_when:
-        - redis_output.rc != 0
-        - "'already in use' not in redis_output.stderr"
-
-    - name: Restart Spring Boot backend
-      shell: |
-        sudo systemctl restart resto-roulette.service
+        cd /home/arthur/npm
+        docker compose up -d --force-recreate spring-app

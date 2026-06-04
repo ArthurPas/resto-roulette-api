@@ -57,6 +57,7 @@ public class SecurityConfig {
 				.requestMatchers("/oauth2/**").permitAll()
 				.requestMatchers("/login/**").permitAll()
 				.requestMatchers("/ws/**").permitAll()
+				.requestMatchers("/.well-known/acme-challenge/**").permitAll()
 				.requestMatchers(
 						"/v3/api-docs/**",
 						"/swagger-ui/**",

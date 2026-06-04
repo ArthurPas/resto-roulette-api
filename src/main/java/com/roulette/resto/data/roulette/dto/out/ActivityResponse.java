@@ -24,6 +24,7 @@ public class ActivityResponse {
 	public List<MinimalAccountInfo> participantInfos;
 	public Date activityDate;
 	public List<CommentInfoWithAccount> comments;
+	public int nbComments;
 	public int activityId;
 
 	public ActivityResponse(ActivityDto activityDto){

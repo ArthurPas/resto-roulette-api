@@ -96,7 +96,7 @@ public class ActivityController {
 	public ResponseEntity<ActivitiesResponse> getFollowersFeed(Authentication authentication) throws AccountNotFoundException {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		List<ActivityResponse> activities = activityService.getMyFollowersActivities(accountId);
-		log.warn(activities.toString());
+
 		return new ResponseEntity<>(new ActivitiesResponse(activities),HttpStatus.OK);
 	}
 

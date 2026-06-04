@@ -58,6 +58,11 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse(90, HttpStatus.PAYLOAD_TOO_LARGE);
 		return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
 	}
+
+	@ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+	public ResponseEntity<Void> handleNotFoundError() {
+		return ResponseEntity.notFound().build();
+	}
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleGeneralException(Exception ex) {
 		log.error("Exception caught in GlobalExceptionHandler {}", ex.getClass());

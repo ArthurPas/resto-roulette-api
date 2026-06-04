@@ -99,6 +99,7 @@ public class ActivityService {
 			commentInfosWithAccounts.add(commentWithInfo);
 		}
 		activityResponse.setComments(commentInfosWithAccounts);
+		activityResponse.setNbComments(commentInfos.size());
 		return activityResponse;
 	}
 
@@ -173,26 +174,11 @@ public class ActivityService {
 		List<ActivityDto> activities = activityRepository.getActivitiesByAccountIds(followersIds);
 		List<ActivityResponse> responseList = new ArrayList<>();
 
-		for (ActivityDto dto : activities) {
-			if (!dto.isUploaded()) {
+		for (ActivityDto activity : activities) {
+			if (!activity.isUploaded()) {
 				continue;
 			}
-			ActivityResponse response = new ActivityResponse(dto);
-			if (dto.getDetails() != null) {
-				if (dto.getDetails().getParticipantIds() != null) {
-					List<Account> accounts = accountService.getAccountsByIds(dto.getDetails().getParticipantIds());
-
-					List<MinimalAccountInfo> infos = new ArrayList<>();
-					for (Account acc : accounts) {
-						infos.add(new MinimalAccountInfo(acc));
-					}
-					response.setParticipantInfos(infos);
-				}
-				if (dto.getDetails().getRestoId() != 0) {
-					response.restoInfo = restoService.getMinimalRestoInfo(String.valueOf(dto.getDetails().getRestoId()));
-				}
-			}
-			responseList.add(response);
+			responseList.add(this.getActivity(String.valueOf(activity.getActivityId())));
 		}
 		return responseList;
 	}

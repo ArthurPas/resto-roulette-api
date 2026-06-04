@@ -102,11 +102,19 @@ public class ActivityController {
 	}
 	@Tag(name = "App | Feed ")
 	@PostMapping("/like/{id}")
-	@TrackCampaign(type = "Feed")
-	@Operation(summary = "Get my followers recents activities")
+	@Operation(summary = "Like an activity")
 	public ResponseEntity<ActivitiesResponse> likeActivity(Authentication authentication,@PathVariable String id) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		activityService.likeActivity(accountId, id);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@Tag(name = "App | Feed ")
+	@DeleteMapping("/removeLike/{id}")
+	@Operation(summary = "Remove like from an activity")
+	public ResponseEntity<ActivitiesResponse> unlikeActivity(Authentication authentication,@PathVariable String id) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		activityService.unlikeActivity(accountId, id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

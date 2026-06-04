@@ -192,6 +192,10 @@ public class ActivityService {
 	public void likeActivity(int accountId, String activityId) {
 		activityRepository.likeActivity(accountId, activityId);
 	}
+
+	public void unlikeActivity(int accountId, String activityId) {
+		activityRepository.unlikeActivity(accountId, activityId);
+	}
 }
 
 

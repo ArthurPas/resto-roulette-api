@@ -247,4 +247,15 @@ public class ActivityDao {
 			return preparedStatement;
 		});
 	}
+	public void unlikeActivity(int accountId, int activityId) {
+		String query = """
+			      DELETE FROM activity_user_likes WHERE account_id = ? AND activity_id= ?;
+		""";
+		jdbcTemplate.update(conn -> {
+			PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			preparedStatement.setInt(1, accountId);
+			preparedStatement.setInt(2, activityId);
+			return preparedStatement;
+		});
+	}
 }

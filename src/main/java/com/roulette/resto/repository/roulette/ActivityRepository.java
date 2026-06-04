@@ -69,4 +69,8 @@ public class ActivityRepository {
 	public void likeActivity(int accountId, String activityId) {
 		activityDao.likeActivity(accountId, Integer.parseInt(activityId));
 	}
+
+	public void unlikeActivity(int accountId, String activityId) {
+		activityDao.unlikeActivity(accountId, Integer.parseInt(activityId));
+	}
 }

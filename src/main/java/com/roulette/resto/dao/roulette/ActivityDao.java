@@ -6,6 +6,7 @@ import com.roulette.resto.data.social.mapper.ActivityRowMapper;
 import com.roulette.resto.data.social.mapper.CommentInfoRowMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -238,24 +239,21 @@ public class ActivityDao {
 
 	public void likeActivity(int accountId, int activityId) {
 		String query = """
-			      INSERT INTO activity_user_likes (account_id, activity_id) VALUES (?,?);
-		""";
-		jdbcTemplate.update(conn -> {
-			PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-			preparedStatement.setInt(1, accountId);
-			preparedStatement.setInt(2, activityId);
-			return preparedStatement;
-		});
+        	INSERT INTO activity_user_likes (account_id, activity_id) VALUES (?, ?);
+        	""";
+		try {
+			jdbcTemplate.update(query, accountId, activityId);
+		}catch (DuplicateKeyException e) {
+			log.warn(e.getMessage());
+			log.warn("Duplicate key exception, activity (id : {}) already liked (account id {})", activityId,
+					accountId);
+		}
 	}
+
 	public void unlikeActivity(int accountId, int activityId) {
 		String query = """
-			      DELETE FROM activity_user_likes WHERE account_id = ? AND activity_id= ?;
-		""";
-		jdbcTemplate.update(conn -> {
-			PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-			preparedStatement.setInt(1, accountId);
-			preparedStatement.setInt(2, activityId);
-			return preparedStatement;
-		});
+        	DELETE FROM activity_user_likes WHERE account_id = ? AND activity_id = ?;
+        """;
+		jdbcTemplate.update(query, accountId, activityId);
 	}
 }

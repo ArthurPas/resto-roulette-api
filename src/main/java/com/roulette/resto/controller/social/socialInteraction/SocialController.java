@@ -45,22 +45,6 @@ public class SocialController {
 		this.userService = userService;
 		this.accountService = accountService;
 	}
-	@Tag(name = "Social | Resto interactions")
-	@PostMapping("/resto/{restoId}/like")
-	@Operation(summary = "Like a resto", description = "Basic like interaction")
-	public ResponseEntity<LikedResto> likeResto(Authentication authentication,@PathVariable String restoId){
-		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		LikedResto likedResto = interactionsService.likeResto(restoId, accountId);
-		return new ResponseEntity<>(likedResto,HttpStatus.OK);
-	}
-	@Tag(name = "Social | Resto interactions")
-	@DeleteMapping("/resto/{restoId}/unlike")
-	@Operation(summary = "Remove like of a resto previously liked", description = "Basic dislike interaction")
-	public ResponseEntity<LikedResto> dislikeResto(Authentication authentication,@PathVariable String restoId){
-		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		LikedResto likedResto = interactionsService.dislikeResto(restoId, accountId);
-		return new ResponseEntity<>(likedResto,HttpStatus.OK);
-	}
 	@Tag(name = "Social | Comments ")
 	@PostMapping("/resto/{activity_id}/add-comment")
 	@Operation(summary = "Add comment on an activity")
@@ -153,4 +137,20 @@ public class SocialController {
 		return new ResponseEntity<>(new MinimalAccountInfo(accountByLogin, followersStatus),HttpStatus.OK);
 	}
 
+//	@Tag(name = "Social | Resto interactions")
+//	@PostMapping("/resto/{restoId}/like")
+//	@Operation(summary = "Like a resto", description = "Basic like interaction")
+//	public ResponseEntity<LikedResto> likeResto(Authentication authentication,@PathVariable String restoId){
+//		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+//		LikedResto likedResto = interactionsService.likeResto(restoId, accountId);
+//		return new ResponseEntity<>(likedResto,HttpStatus.OK);
+//	}
+//	@Tag(name = "Social | Resto interactions")
+//	@DeleteMapping("/resto/{restoId}/unlike")
+//	@Operation(summary = "Remove like of a resto previously liked", description = "Basic dislike interaction")
+//	public ResponseEntity<LikedResto> dislikeResto(Authentication authentication,@PathVariable String restoId){
+//		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+//		LikedResto likedResto = interactionsService.dislikeResto(restoId, accountId);
+//		return new ResponseEntity<>(likedResto,HttpStatus.OK);
+//	}
 }

@@ -6,15 +6,18 @@ import com.roulette.resto.data.social.entity.Account;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 @Repository
 @Slf4j
 public class EmailRepository {
-	@Autowired
-    final SendEmailDao sendEmailDao;
+	final SendEmailDao sendEmailDao;
+	private final TemplateEngine templateEngine;
 
-	public EmailRepository(SendEmailDao sendEmailDao) {
+	public EmailRepository(SendEmailDao sendEmailDao, TemplateEngine templateEngine) {
 		this.sendEmailDao = sendEmailDao;
+		this.templateEngine = templateEngine;
 	}
 
 	public void sendEmail(EmailContent emailContent) {
@@ -37,16 +40,18 @@ public class EmailRepository {
 	}
 
 	public EmailContent fillSecurityCodeMail(Account account) {
+		Context context = new Context();
+		context.setVariable("username", account.getUsername());
+		context.setVariable("token", account.getVerificationToken());
+		context.setVariable("logoUrl", "https://resto-roulette.app/medias/logo");
+		String htmlBody = templateEngine.process("security-code", context);
+
 		EmailContent emailContent = new EmailContent();
 		emailContent.setRecipientEmail(account.getUserInfo().getEmail());
 		emailContent.setRecipientName(account.getUsername());
-		String sb = "Bonjour et bienvenu " + account.getUsername() + " ! \n" +
-				"Tu as initié une action qui requiert un code de sécurité." +
-				"\n" +
-				"Le code de sécurité est : " + account.getVerificationToken() + ".\n" +
-				"A la prochaine, et d'ici là, bonnes dégustations ;)";
-		emailContent.setBody(sb);
 		emailContent.setSubject("Ton code de sécurité");
+		emailContent.setBody(htmlBody);
+
 		return emailContent;
 	}
 }

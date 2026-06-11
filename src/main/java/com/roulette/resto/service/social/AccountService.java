@@ -112,7 +112,7 @@ public class AccountService implements UserDetailsService {
 		try {
 			int accountId = accountRepository.registerAccount(account);
 			account.setAccountId(accountId);
-			mailService.sendVerificationMail(account);
+//			mailService.sendVerificationMail(account);
 			return account;
 		} catch (DuplicateKeyException e) {
 			throw new APIError(6000,HttpStatus.BAD_REQUEST);

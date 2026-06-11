@@ -16,9 +16,8 @@ import java.util.Map;
 @Repository
 @Slf4j
 public class SendEmailDao {
-	private static final String DOMAIN = "test-eqvygm0mwkzl0p7w.mlsender.net";
-	private static final String ISSUER_NAME = "Resto-roulette Admin";
-	private static final String ISSUER_ADDRESS = "arthur.pascal33@gmail.com"; //TODO replace with custom domain
+	private static final String ISSUER_NAME = "L'équipe resto-roulette";
+	private static final String ISSUER_ADDRESS = "noreply@resto-roulette.app"; //TODO replace with custom domain
 	private static final String API_URL = "https://api.brevo.com/v3/smtp/email";
 	private final RestTemplate restTemplate = new RestTemplate();
 	@Value("${mail.token}")

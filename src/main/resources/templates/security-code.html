@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://resto-roulette.app/medias/logo" alt="Logo Resto-Roulette" style="max-width: 150px;">
+    </div>
+    <h2 style="color: #2c3e50;">Code de sécurité</h2>
+    <p>Bonjour <span th:text="${username}">Utilisateur</span>,</p>
+    <p>Tu as initié une action sur <strong>Resto-Roulette</strong> qui requiert une confirmation.</p>
+    <p>Voici ton code de sécurité :</p>
+
+    <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 2em; font-weight: bold; color: #e67e22; letter-spacing: 5px; padding: 15px 30px; border: 2px dashed #e67e22; border-radius: 8px;"
+                  th:text="${token}">000000</span>
+    </div>
+
+    <p style="color: #7f8c8d; font-size: 0.9em;">Ce code est temporaire. Si tu n'es pas à l'origine de cette demande, ignore ce message.</p>
+    <p>À la prochaine, et d'ici là, bonnes dégustations !</p>
+</div>
+</body>
+</html>

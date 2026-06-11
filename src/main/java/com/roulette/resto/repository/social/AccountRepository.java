@@ -166,4 +166,8 @@ public class AccountRepository {
 	public List<MinimalAccountInfo> getFollowingRequestByAccount(int accountId) {
 		return accountDao.getFollowingRequest(accountId);
 	}
+
+	public List<MinimalAccountInfo> getUserMatchByLogin(String userLogin) {
+		return accountDao.getUserMatchByLogin(userLogin);
+	}
 }

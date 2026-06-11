@@ -11,6 +11,7 @@ import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.dto.out.BasicAuthDto;
 import com.roulette.resto.data.social.dto.out.UserInfoDto;
 import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.exception.ErrorResponse;
@@ -213,5 +214,14 @@ public class AccountController {
 		adminService.rightCheckIsAdmin(authentication);
 		UserInfoDto userInfoDto = userService.getUserInfoByLogin(user_login);
 		return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
+	}
+	@GetMapping("/search/{user_login}")
+	@Tag(name = "Account | Admin view")
+	@Operation(summary = "Search users")
+	public ResponseEntity<List<MinimalAccountInfo>> searchUsers(@PathVariable String user_login,
+														Authentication authentication) {
+		adminService.rightCheckIsAdmin(authentication);
+		List<MinimalAccountInfo> users = userService.getUserMatchByLogin(user_login);
+		return new ResponseEntity<>(users, HttpStatus.OK);
 	}
 }

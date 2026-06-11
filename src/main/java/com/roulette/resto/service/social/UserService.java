@@ -256,4 +256,8 @@ public class UserService {
 		}
 		return accountInfos;
 	}
+
+	public List<MinimalAccountInfo> getUserMatchByLogin(String userLogin) {
+		return accountRepository.getUserMatchByLogin(userLogin);
+	}
 }

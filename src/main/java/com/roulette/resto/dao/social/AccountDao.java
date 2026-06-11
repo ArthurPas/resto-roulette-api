@@ -14,6 +14,7 @@ import com.roulette.resto.exception.APIError;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -21,16 +22,19 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.sql.*;
+import java.sql.Date;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.apache.naming.SelectorContext.prefix;
 
 @Repository
 @Log4j2
@@ -654,5 +658,33 @@ public class AccountDao {
 				new MinimalAccountRowMapper()
 		);
 		return accounts;
+	}
+	public List<MinimalAccountInfo> getUserMatchByLogin(String userLogin) {
+		if (userLogin == null || userLogin.isBlank()) return Collections.emptyList();
+
+		String pattern = "%" + userLogin.substring(0, Math.min(userLogin.length(), 3)) + "%";
+
+		String query = "SELECT account_id FROM account WHERE login LIKE ? LIMIT 50";
+		List<Long> ids = jdbcTemplate.queryForList(query, Long.class, pattern);
+
+		if (ids.isEmpty()) return Collections.emptyList();
+		NamedParameterJdbcTemplate namedJdbc = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
+
+		String queryDetails = """
+			   SELECT a.login, a.account_id, uum.resource_id AS avatar, ui.last_name, ui.first_name
+			   FROM account a
+			   JOIN user_info ui ON a.user_info_id = ui.user_info_id
+			   LEFT JOIN resto_roulette.user_user_medias uum ON a.account_id = uum.account_id
+			   WHERE a.account_id IN (:ids)
+			   """;
+
+		MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
+		List<MinimalAccountInfo> candidates = namedJdbc.query(queryDetails, params, new MinimalAccountRowMapper());
+
+		LevenshteinDistance dist = new LevenshteinDistance();
+		return candidates.stream()
+				.filter(acc -> dist.apply(acc.getLogin(), userLogin) <= 3)
+				.sorted(Comparator.comparingInt(acc -> dist.apply(acc.getLogin(), userLogin)))
+				.collect(Collectors.toList());
 	}
 }

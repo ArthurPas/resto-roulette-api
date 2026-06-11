@@ -558,7 +558,11 @@ public class AccountDao {
 				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			});
-		} catch (DataIntegrityViolationException e) {
+		} 
+		catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
+		}
+		catch (DataIntegrityViolationException e) {
 			log.error(e.getMessage());
 			throw new AccountNotFoundException("accountAsked for follow doesnt exist");
 		}

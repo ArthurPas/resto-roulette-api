@@ -49,7 +49,7 @@ public class AccountController {
 	private final AdminService adminService;
 	private final AccountService accountService;
 	private final RestoService restoService;
-
+	public record SearchUserList(List<MinimalAccountInfo> usersList) {}
 	public AccountController(UserService userService, JwtService jwtService, AdminService adminService, AccountService accountService, RestoService restoService) {
 		this.userService = userService;
 		this.jwtService = jwtService;
@@ -218,10 +218,8 @@ public class AccountController {
 	@GetMapping("/search/{user_login}")
 	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Search users")
-	public ResponseEntity<List<MinimalAccountInfo>> searchUsers(@PathVariable String user_login,
-														Authentication authentication) {
-		adminService.rightCheckIsAdmin(authentication);
+	public ResponseEntity<SearchUserList> searchUsers(@PathVariable String user_login) {
 		List<MinimalAccountInfo> users = userService.getUserMatchByLogin(user_login);
-		return new ResponseEntity<>(users, HttpStatus.OK);
+		return new ResponseEntity<>(new SearchUserList(users), HttpStatus.OK);
 	}
 }

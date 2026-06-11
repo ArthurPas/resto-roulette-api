@@ -258,6 +258,10 @@ public class UserService {
 	}
 
 	public List<MinimalAccountInfo> getUserMatchByLogin(String userLogin) {
-		return accountRepository.getUserMatchByLogin(userLogin);
+		List<MinimalAccountInfo>  accountInfos = accountRepository.getUserMatchByLogin(userLogin);
+		for (MinimalAccountInfo accountInfo : accountInfos) {
+			accountInfo.setAvatar(buildMediaUrl(accountInfo.getAvatar()));
+		}
+		return accountInfos;
 	}
 }

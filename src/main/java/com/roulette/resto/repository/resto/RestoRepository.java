@@ -198,7 +198,7 @@ public class RestoRepository {
 	}
 
 	public List<Restaurant> getRestosByTypes(Set<String> existingFoodTypesList) {
-		log.info(restoDao.getRestosByTypes(existingFoodTypesList).toString());
+//		log.info(restoDao.getRestosByTypes(existingFoodTypesList).toString());
 		return restoDao.getRestosByTypes(existingFoodTypesList);
 	}
 }

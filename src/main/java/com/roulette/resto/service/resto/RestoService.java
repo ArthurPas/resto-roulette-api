@@ -170,7 +170,7 @@ public class RestoService {
 
 	public List<RestoDto> getRestosByTypes(Set<String> foodTypes) throws APIError {
 		Set<String> existingFoodTypesList = existingFoodTypesList(foodTypes);
-		log.info("Found {} food types for this session", existingFoodTypesList.toString());
+//		log.info("Found {} food types for this session", existingFoodTypesList.toString());
 		List<Restaurant> resto = restoRepository.getRestosByTypes(existingFoodTypesList);
 		return new ArrayList<>(resto.stream().map(RestoDto::new).toList());
 	}

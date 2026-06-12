@@ -1,8 +1,7 @@
 package com.roulette.resto.data.roulette.dto.out;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

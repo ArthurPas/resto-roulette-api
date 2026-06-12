@@ -3,12 +3,11 @@ package com.roulette.resto.controller.social.socialInteraction;
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.data.social.dto.in.NewComment;
 import com.roulette.resto.data.social.dto.out.CommentResponse;
-import com.roulette.resto.data.social.dto.out.LikedResto;
 import com.roulette.resto.data.social.dto.out.SocialInteractionResponse;
 import com.roulette.resto.data.social.entity.Account;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import com.roulette.resto.service.social.AccountService;
-import com.roulette.resto.service.social.InteractionsService;
+import com.roulette.resto.service.social.SocialService;
 import com.roulette.resto.service.social.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,7 +29,7 @@ import java.util.List;
 @SecurityRequirement(name = "Bearer Authentication")
 public class SocialController {
 
-	final InteractionsService interactionsService;
+	final SocialService socialService;
 	final UserService userService;
 	final JwtService jwtService;
 	private final AccountService accountService;
@@ -38,9 +37,9 @@ public class SocialController {
 	public record SocialInteractions(List<SocialInteractionResponse> socialInteractionResponses) {}
 	public record FollowRequests(List<MinimalAccountInfo> requests){}
 	public record Followers(List<MinimalAccountInfo> followers){}
-	public record FollowersStatus(boolean isFollower, boolean isFollowed) {}
-	public SocialController(InteractionsService interactionsService, JwtService jwtService, UserService userService, AccountService accountService) {
-		this.interactionsService = interactionsService;
+
+	public SocialController(SocialService socialService, JwtService jwtService, UserService userService, AccountService accountService) {
+		this.socialService = socialService;
 		this.jwtService = jwtService;
 		this.userService = userService;
 		this.accountService = accountService;
@@ -51,7 +50,7 @@ public class SocialController {
 	public ResponseEntity<CommentResponse> newComment(Authentication authentication, @PathVariable String activity_id,
 										@RequestBody @Valid NewComment newComment){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		int commentId = interactionsService.addComment(activity_id, accountId,newComment);
+		int commentId = socialService.addComment(activity_id, accountId,newComment);
 		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
 
@@ -60,7 +59,7 @@ public class SocialController {
 	@Operation(summary = "Change comment")
 	public ResponseEntity<CommentResponse> editComment(Authentication authentication, @PathVariable String comment_id,
 										@RequestBody @Valid NewComment newComment){
-		int commentId = interactionsService.editComment(comment_id,newComment);
+		int commentId = socialService.editComment(comment_id,newComment);
 		return new ResponseEntity<>(new CommentResponse(newComment.getComment(), commentId),HttpStatus.OK);
 	}
 
@@ -68,7 +67,7 @@ public class SocialController {
 	@DeleteMapping("/delete-comment/{comment_id}")
 	@Operation(summary = "Delete comment")
 	public ResponseEntity<Void> deleteComment(Authentication authentication, @PathVariable String comment_id){
-		interactionsService.deleteComment(comment_id);
+		socialService.deleteComment(comment_id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -77,7 +76,7 @@ public class SocialController {
 	@Operation(summary = "Get my social interactions (comments)")
 	public ResponseEntity<SocialInteractions> myInteractions(Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		List<SocialInteractionResponse> comment = interactionsService.getInteractionsByAccountId(accountId);
+		List<SocialInteractionResponse> comment = socialService.getInteractionsByAccountId(accountId);
 		return new ResponseEntity<>(new SocialInteractions(comment), HttpStatus.OK);
 	}
 	@Tag(name = "Account | Followers")
@@ -133,7 +132,9 @@ public class SocialController {
 		Account accountByLogin = accountService.getAccountByLogin(login);
 		boolean isFollowed = userService.getFollowersByAccountId(connectedAccount.getAccountId()).contains(new MinimalAccountInfo(accountByLogin));
 		boolean isFollower = userService.getFollowersByAccountId(accountByLogin.getAccountId()).contains(new MinimalAccountInfo(connectedAccount));
-		FollowersStatus followersStatus = new FollowersStatus(isFollower, isFollowed);
+		SocialService.FollowersStatus followersStatus = socialService.getFollowersStatus(connectedAccount,
+				accountByLogin);
+		log.warn(followersStatus.toString());
 		return new ResponseEntity<>(new MinimalAccountInfo(accountByLogin, followersStatus),HttpStatus.OK);
 	}
 

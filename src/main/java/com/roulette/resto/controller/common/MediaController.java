@@ -27,7 +27,7 @@ public class MediaController {
 
 	@GetMapping("/{uuid}")
 	public ResponseEntity<Void> getSinglePicture(@PathVariable String uuid) {
-		log.info("Getting picture for {}", uuid);
+//		log.info("Getting picture for {}", uuid);
 		return ResponseEntity.ok()
 		.header("X-Accel-Redirect", "/stockage_interne/" + uuid)
 		.cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic())

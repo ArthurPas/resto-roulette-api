@@ -1,6 +1,8 @@
-package com.roulette.resto.data.social.entity;
+package com.roulette.resto.data.social.dto;
 
-import com.roulette.resto.controller.social.socialInteraction.SocialController;
+import com.roulette.resto.data.social.entity.Account;
+import com.roulette.resto.data.social.entity.FollowingStatus;
+import com.roulette.resto.service.social.SocialService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +20,7 @@ public class MinimalAccountInfo {
 	private boolean isFollowed;
 	private String firstname;
 	private String lastname;
+	private FollowingStatus followingStatus;
 
 	public MinimalAccountInfo(Account account) {
 		this.setAvatar(account.getUserInfo().getAvatar());
@@ -27,7 +30,7 @@ public class MinimalAccountInfo {
 		this.setLastname(account.getUserInfo().getLastName());
 	}
 
-	public MinimalAccountInfo(Account account, SocialController.FollowersStatus followersStatus) {
+	public MinimalAccountInfo(Account account, SocialService.FollowersStatus followersStatus) {
 		this.setAccountId(account.getAccountId());
 		this.setLogin(account.getLogin());
 		this.setAvatar(account.getUserInfo().getAvatar());
@@ -35,6 +38,7 @@ public class MinimalAccountInfo {
 		this.setFollowed(followersStatus.isFollowed());
 		this.setFirstname(account.getUserInfo().getFirstName());
 		this.setLastname(account.getUserInfo().getLastName());
+		this.setFollowingStatus(followersStatus.followingStatus());
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public class MailService {
 	}
 
 	public void sendVerificationMail(Account account) {
-		log.info("Sending verification mail");
+//		log.info("Sending verification mail");
 		EmailContent emailContent = this.fillVerificationMailContent(account, "https://callback.todo/todo");
 		try {
 			emailRepository.sendEmail(emailContent);
@@ -31,7 +31,7 @@ public class MailService {
 	}
 
 	public void sendSecurityCode(Account account) {
-		log.info("Sending security code mail");
+//		log.info("Sending security code mail");
 		EmailContent emailContent = this.fillSecurityCodeMail(account);
 		try {
 			emailRepository.sendEmail(emailContent);

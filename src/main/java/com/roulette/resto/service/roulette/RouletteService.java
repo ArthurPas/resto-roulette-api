@@ -22,14 +22,10 @@ public class RouletteService {
 
 	final RouletteRepository rouletteRepository;
 	final RestoService restoService;
-	private final UserService userService;
-	private final AccountService accountService;
 
-	public RouletteService(RouletteRepository rouletteRepository, RestoService restoService, UserService userService, AccountService accountService) {
+	public RouletteService(RouletteRepository rouletteRepository, RestoService restoService){
 		this.rouletteRepository = rouletteRepository;
 		this.restoService = restoService;
-		this.userService = userService;
-		this.accountService = accountService;
 	}
 
 	public AccountsInSession addAccountToCurrentSession(String sessionId, JoinSession account)  {
@@ -77,7 +73,7 @@ public class RouletteService {
 		accountsInSession.setAccountsJoined(accountsId);
 		accountsInSession.setAccountsSwiped(accountsIdSwiped);
 		accountsInSession.setAccountsVeto(accountsIdVeto);
-		log.info("{} veto : {}", sessionId, accountsInSession);
+//		log.info("{} veto : {}", sessionId, accountsInSession);
 		return accountsInSession;
 	}
 	public List<RestoDto> getMatchedRestosBySessionId(String sessionId) {
@@ -120,7 +116,7 @@ public class RouletteService {
 		if (remainingRestos == null || remainingRestos.isEmpty()) {
 			return null;
 		}
-		log.info(remainingRestos.toString());
+//		log.info(remainingRestos.toString());
 		Random random = new Random();
 		int randomIndex = random.nextInt(remainingRestos.size());
 
@@ -140,7 +136,7 @@ public class RouletteService {
 
 		List<RestoDto> restoDtos = new ArrayList<>();
 		List<Restaurant> restos = restoService.getRestosBasicInfoByIds(ids);
-		log.info("Found {} restos for this session", restoDtos);
+//		log.info("Found {} restos for this session", restoDtos);
 		for (Restaurant resto : restos) {
 			restoDtos.add(new RestoDto(resto));
 		}

@@ -2,14 +2,8 @@ package com.roulette.resto.controller.social.socialInteraction;
 
 import com.roulette.resto.configuration.JwtService;
 import com.roulette.resto.configuration.TrackCampaign;
-import com.roulette.resto.data.roulette.ActivityDto;
 import com.roulette.resto.data.roulette.dto.out.ActivityResponse;
-import com.roulette.resto.data.social.entity.Account;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
-import com.roulette.resto.service.resto.RestoService;
 import com.roulette.resto.service.roulette.ActivityService;
-import com.roulette.resto.service.social.AccountService;
-import com.roulette.resto.service.social.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j

@@ -35,7 +35,7 @@ public class ActivityRowMapper implements RowMapper<ActivityDto> {
 				}
 			}
 		}catch (SQLException e){
-			log.info("no participantsId");
+			log.warn("no participantsId");
 		}
 		activityDto.setDetails(rouletteSessionDto);
 		activityDto.setUploaded(rs.getBoolean("is_uploaded"));

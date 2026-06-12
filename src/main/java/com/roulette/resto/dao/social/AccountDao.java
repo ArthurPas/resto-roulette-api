@@ -5,15 +5,13 @@ import com.roulette.resto.data.common.entity.MediaType;
 import com.roulette.resto.data.common.entity.mappers.MediaMapper;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.entity.Account;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.data.social.mapper.AccountUserRowMapper;
 import com.roulette.resto.data.social.mapper.MinimalAccountRowMapper;
 import com.roulette.resto.data.social.mapper.UserInfoRowMapper;
 import com.roulette.resto.exception.APIError;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -33,8 +31,6 @@ import java.sql.Date;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.apache.naming.SelectorContext.prefix;
 
 @Repository
 @Log4j2
@@ -122,7 +118,7 @@ public class AccountDao {
 			);
 			return DataAccessUtils.requiredSingleResult(accounts);
 		} catch (EmptyResultDataAccessException e) {
-			log.info("No user found with login {}", login);
+			log.error("No user found with login {}", login);
 			throw new AccountNotFoundException(e.getMessage());
 		}
 	}
@@ -151,7 +147,7 @@ public class AccountDao {
 			);
 			return DataAccessUtils.requiredSingleResult(accounts);
 		} catch (EmptyResultDataAccessException e) {
-			log.info("No user found with email {}", email);
+			log.error("No user found with email {}", email);
 			throw new AccountNotFoundException(e.getMessage());
 		}
 	}

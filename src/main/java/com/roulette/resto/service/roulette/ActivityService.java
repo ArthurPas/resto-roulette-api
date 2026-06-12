@@ -8,7 +8,7 @@ import com.roulette.resto.data.roulette.websocket.AccountsInSession;
 import com.roulette.resto.data.social.dto.out.CommentInfo;
 import com.roulette.resto.data.social.dto.out.CommentInfoWithAccount;
 import com.roulette.resto.data.social.entity.Account;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.repository.roulette.ActivityRepository;
 import com.roulette.resto.service.resto.RestoService;

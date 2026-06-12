@@ -295,7 +295,7 @@ public class RouletteDao {
 							ac.setVetoDone(status);
 						});
 				String updatedJson = objectMapper.writeValueAsString(session);
-				log.info(updatedJson);
+//				log.info(updatedJson);
 				redisTemplate.opsForValue().set(key, updatedJson);
 			}
 

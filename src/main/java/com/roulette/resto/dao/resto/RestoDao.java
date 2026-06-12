@@ -261,10 +261,8 @@ public class RestoDao {
 		try {
 			return jdbcTemplate.query(conn -> {
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
-				log.info("Executing query {}",preparedStatement);
 				preparedStatement.setInt(1, limit);
 				preparedStatement.setInt(2, offset);
-				log.debug("Executing query {}",preparedStatement);
 				return preparedStatement;
 			}, new RestoRowMapper());
 		} catch (EmptyResultDataAccessException e) {
@@ -743,7 +741,7 @@ public class RestoDao {
 				JOIN resto_type on rrt.type_id = resto_type.id
 				JOIN resto_info on resto.resto_id = resto_info.resto_id
 				WHERE resto_type.food_type IN (""" + placeholders + ")";
-		log.info(query);
+//		log.info(query);
 		return jdbcTemplate.query(query, existingFoodTypesList.toArray(), (rs, rowNum) -> {
 			Restaurant restaurant = new Restaurant();
 			restaurant.setId(rs.getInt("resto_id"));

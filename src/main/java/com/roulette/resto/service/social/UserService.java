@@ -1,6 +1,5 @@
 package com.roulette.resto.service.social;
 
-import com.roulette.resto.controller.social.socialInteraction.SocialController;
 import com.roulette.resto.data.administration.dto.out.AccountsInfos;
 import com.roulette.resto.data.common.entity.MediaResource;
 import com.roulette.resto.data.common.entity.MediaType;
@@ -10,7 +9,7 @@ import com.roulette.resto.data.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.dto.out.UserInfoDto;
 import com.roulette.resto.data.social.entity.Account;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.repository.social.AccountRepository;
@@ -43,14 +42,17 @@ public class UserService {
 	final InteractionRepository interactionRepository;
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
+	private final SocialService socialService;
+
 
 	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository,
 					   AuthenticationManager authenticationManager,
-					   PasswordEncoder passwordEncoder) {
+					   PasswordEncoder passwordEncoder, SocialService socialService, SocialService socialService1) {
 		this.accountRepository = accountRepository;
 		this.interactionRepository = interactionRepository;
 		this.authenticationManager = authenticationManager;
 		this.passwordEncoder = passwordEncoder;
+		this.socialService = socialService1;
 	}
 
 
@@ -67,7 +69,7 @@ public class UserService {
 		userInfoDto.setLogin(account.getLogin());
 
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
-		log.info(mediaResources.toString()+"COUCOU");
+//		log.info(mediaResources.toString()+"COUCOU");
 		userInfoDto.setMedias(
 				buildMediaUrl(mediaResources.stream()
 						.filter(mediaResource -> !mediaResource.getMediaType().equals(MediaType.AVATAR)).toList()));
@@ -240,10 +242,11 @@ public class UserService {
 		List<MinimalAccountInfo> followers = accountRepository.getFollowersByAccountId(accountId);
 		List<MinimalAccountInfo> result = new ArrayList<>();
 		for (MinimalAccountInfo follower : followers) {
-			boolean isFollowed = accountRepository.getFollowersByAccountId(accountId).contains(follower);
-			boolean isFollower =
-					accountRepository.getFollowersByAccountId(follower.getAccountId()).contains(new MinimalAccountInfo(accountRepository.getAccountById(accountId)));
-			SocialController.FollowersStatus followersStatus = new SocialController.FollowersStatus(isFollower, isFollowed);
+//			boolean isFollowed = accountRepository.getFollowersByAccountId(accountId).contains(follower);
+//			boolean isFollower =
+//					accountRepository.getFollowersByAccountId(follower.getAccountId()).contains(new MinimalAccountInfo(accountRepository.getAccountById(accountId)));
+			SocialService.FollowersStatus followersStatus =
+					socialService.getFollowersStatus(accountRepository.getAccountById(accountId), accountRepository.getAccountById(follower.getAccountId()));
 			result.add(new MinimalAccountInfo(accountRepository.getAccountById(follower.getAccountId()), followersStatus));
 		}
 		return result;

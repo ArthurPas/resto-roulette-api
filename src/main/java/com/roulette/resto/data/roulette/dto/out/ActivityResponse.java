@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.roulette.resto.data.resto.dto.out.MinimalRestoInfo;
 import com.roulette.resto.data.roulette.ActivityDto;
-import com.roulette.resto.data.social.dto.out.CommentInfo;
 import com.roulette.resto.data.social.dto.out.CommentInfoWithAccount;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

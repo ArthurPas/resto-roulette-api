@@ -7,7 +7,7 @@ import com.roulette.resto.data.social.dto.in.DeleteAccount;
 import com.roulette.resto.data.social.dto.in.UpdateAccountInfo;
 import com.roulette.resto.data.social.dto.in.UpdateUserInfo;
 import com.roulette.resto.data.social.entity.Account;
-import com.roulette.resto.data.social.entity.MinimalAccountInfo;
+import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
 import com.roulette.resto.service.common.MediaService;

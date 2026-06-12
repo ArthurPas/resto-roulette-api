@@ -43,7 +43,6 @@ public class RouletteController {
 	@Operation(summary = "create a new session")
 	public ResponseEntity<RouletteSession> createNewSession() {
 		RouletteSession rouletteSession = rouletteService.createNewSession();
-		log.info(rouletteSession.toString());
 		return new ResponseEntity<>(rouletteSession, HttpStatus.CREATED);
 	}
 	@Tag(name = "App | Roulette")
@@ -57,32 +56,32 @@ public class RouletteController {
 	@MessageMapping("/start/{sessionId}")
 	@SendTo("/session/{sessionId}")
 	public BroadcastSessionResponse createNewSession(@DestinationVariable String sessionId) {
-		log.info(sessionId);
+//		log.info(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.SWIPE);
 		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
 		response.setAccountsInSession(accountsInSession.getAccountsJoined());
 		response.setAccountsRemaining(accountsInSession.getAccountsJoined());
-		log.info("send : {}",response);
+//		log.info("send : {}",response);
 		return response;
 	}
 
 	@MessageMapping("/join/{sessionId}")
 	@SendTo("/session/{sessionId}")
 	public BroadcastSessionResponse joinSession(@DestinationVariable String sessionId, JoinSession account)  {
-		log.info(sessionId + "Account : " + account.getLogin());
+//		log.info(sessionId + "Account : " + account.getLogin());
 		AccountsInSession accountsInSession = rouletteService.addAccountToCurrentSession(sessionId, account);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.LOBBY);
 		response.setAccountsInSession(accountsInSession.getAccountsJoined());
-		log.info("send : {}",response);
+//		log.info("send : {}",response);
 		return response;
 	}
 	@MessageMapping("/swipe/{sessionId}")
 	@SendTo("/session/{sessionId}")
 	public BroadcastSessionResponse swipe(@DestinationVariable String sessionId, AccountChoices choices) {
 		rouletteService.addFoodChoices(sessionId, choices);
-		log.info(sessionId + "choices : " + choices.toString());
+//		log.info(sessionId + "choices : " + choices.toString());
 		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.SWIPE);
@@ -90,7 +89,7 @@ public class RouletteController {
 		response.setAccountsInSession(accountInSession);
 		accountInSession.removeAll(accountsInSession.getAccountsSwiped());
 		response.setAccountsRemaining(accountInSession);
-		log.info("send : {}",response);
+//		log.info("send : {}",response);
 		return response;
 	}
 	@MessageMapping("/swipe-done/{sessionId}")
@@ -98,21 +97,21 @@ public class RouletteController {
 	public BroadcastSessionResponse sendResto(@DestinationVariable String sessionId) {
 		List<RestoDto> restos = rouletteService.getMatchedRestosBySessionId(sessionId);
 		rouletteService.saveMatchingRestos(restos,sessionId);
-		log.info("{} restos : {}", sessionId, restos);
+//		log.info("{} restos : {}", sessionId, restos);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.VETO);
 		response.setRestoCandidates(restos);
 		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
 		response.setAccountsInSession(accountsInSession.getAccountsJoined());
 		response.setAccountsRemaining(accountsInSession.getAccountsJoined());
-		log.info("send : {}",response);
+//		log.info("send : {}",response);
 		return response;
 	}
 	@MessageMapping("/veto/{sessionId}")
 	@SendTo("/session/{sessionId}")
 	public BroadcastSessionResponse addVeto(@DestinationVariable String sessionId, VetoResto veto) {
 		rouletteService.removeResto(sessionId, veto);
-		log.info("{} veto : {}", sessionId, veto);
+//		log.info("{} veto : {}", sessionId, veto);
 		AccountsInSession status = rouletteService.getAccountsStatus(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.VETO);
@@ -122,7 +121,7 @@ public class RouletteController {
 		remaining.removeAll(status.getAccountsVeto());
 		response.setAccountsRemaining(remaining);
 		response.setRestoCandidates(rouletteService.getRestoBySession(sessionId));
-		log.info("Broadcast response: {}", response);
+//		log.info("Broadcast response: {}", response);
 		return response;
 	}
 	@MessageMapping("/veto-done/{sessionId}")
@@ -133,7 +132,7 @@ public class RouletteController {
 		response.setWinner(winner);
 		response.setStatus(SessionStatus.RESULT);
 		activityService.saveSession(sessionId,winner);
-		log.info("send : {}",response);
+//		log.info("send : {}",response);
 		return response;
 	}
 

@@ -23,19 +23,19 @@
       args:
         executable: /bin/bash
 
-    - name: Ensure destination directory exists on VPS
+    - name: Ensure destination directory exists on server
       file:
         path: "{{ app_dir }}"
         state: directory
         mode: "0755"
 
-    - name: Upload Spring Boot JAR to VPS
+    - name: Upload Spring Boot JAR to server
       copy:
         src: "{{ local_repo }}/build/libs/resto-0.0.1-SNAPSHOT.jar"
         dest: "{{ app_dir }}/app.jar"
         mode: "0644"
 
-    - name: Upload .env file to VPS
+    - name: Upload .env file to server
       copy:
         src: "/tmp/.env"
         dest: "{{ app_dir }}/.env"

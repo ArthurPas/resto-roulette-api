@@ -28,7 +28,7 @@ public class KpiRepository {
 	}
 
 	public Float getWheelTrend(int currentMonth, int comparedMonth, int year) {
-		log.info("Getting wheel trend for current month: " + currentMonth);
+//		log.info("Getting wheel trend for current month: " + currentMonth);
 		return kpiDao.getWheelTrend(currentMonth, comparedMonth, year);
 	}
 }

@@ -25,7 +25,7 @@ public class CampaignInterceptor implements HandlerInterceptor {
 
 	@Override
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-		log.info("CampaignInterceptor postHandle");
+//		log.info("CampaignInterceptor postHandle");
 
 		if (handler instanceof HandlerMethod handlerMethod) {
 			TrackCampaign annotation = handlerMethod.getMethodAnnotation(TrackCampaign.class);

@@ -84,7 +84,7 @@ public class SocialController {
 	@Operation(summary = "Get my following request that was not accepted yet")
 	public ResponseEntity<FollowRequests> GetFollowingRequest(Authentication authentication){
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
-		return new ResponseEntity<>(new FollowRequests(userService.getFollowingRequest(accountId)),HttpStatus.OK);
+		return new ResponseEntity<>(new FollowRequests(userService.getIngoingFollowingRequest(accountId)),HttpStatus.OK);
 	}
 
 
@@ -130,10 +130,7 @@ public class SocialController {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);
 		Account connectedAccount = accountService.getAccountById(accountId);
 		Account accountByLogin = accountService.getAccountByLogin(login);
-		boolean isFollowed = userService.getFollowersByAccountId(connectedAccount.getAccountId()).contains(new MinimalAccountInfo(accountByLogin));
-		boolean isFollower = userService.getFollowersByAccountId(accountByLogin.getAccountId()).contains(new MinimalAccountInfo(connectedAccount));
-		SocialService.FollowersStatus followersStatus = socialService.getFollowersStatus(connectedAccount,
-				accountByLogin);
+		SocialService.FollowersStatus followersStatus = socialService.getFollowersStatus(connectedAccount,accountByLogin);
 		log.warn(followersStatus.toString());
 		return new ResponseEntity<>(new MinimalAccountInfo(accountByLogin, followersStatus),HttpStatus.OK);
 	}

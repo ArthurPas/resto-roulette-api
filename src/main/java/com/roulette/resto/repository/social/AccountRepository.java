@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -163,11 +164,15 @@ public class AccountRepository {
 		return accountDao.getFollowersByAccountId(accountId);
 	}
 
-	public List<MinimalAccountInfo> getFollowingRequestByAccount(int accountId) {
-		return accountDao.getFollowingRequest(accountId);
+	public List<MinimalAccountInfo> getIngoingFollowingRequest(int accountId) {
+		return accountDao.getIngoingFollowingRequest(accountId);
 	}
 
 	public List<MinimalAccountInfo> getUserMatchByLogin(String userLogin) {
 		return accountDao.getUserMatchByLogin(userLogin);
+	}
+
+	public Collection<Object> getFollowerStatus(int accountId) {
+		return null;
 	}
 }

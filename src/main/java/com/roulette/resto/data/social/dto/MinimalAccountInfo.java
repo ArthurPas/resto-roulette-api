@@ -16,8 +16,6 @@ public class MinimalAccountInfo {
 	private int accountId;
 	private String login;
 	private String avatar = "";
-	private boolean isFollowingMe;
-	private boolean isFollowed;
 	private String firstname;
 	private String lastname;
 	private FollowingStatus followingStatus;
@@ -34,8 +32,6 @@ public class MinimalAccountInfo {
 		this.setAccountId(account.getAccountId());
 		this.setLogin(account.getLogin());
 		this.setAvatar(account.getUserInfo().getAvatar());
-		this.setFollowingMe(followersStatus.isFollower());
-		this.setFollowed(followersStatus.isFollowed());
 		this.setFirstname(account.getUserInfo().getFirstName());
 		this.setLastname(account.getUserInfo().getLastName());
 		this.setFollowingStatus(followersStatus.followingStatus());

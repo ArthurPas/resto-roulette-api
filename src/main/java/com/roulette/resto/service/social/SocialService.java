@@ -10,7 +10,6 @@ import com.roulette.resto.data.social.dto.out.SocialInteractionResponse;
 import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.entity.FollowingStatus;
 import com.roulette.resto.exception.APIError;
-import com.roulette.resto.repository.resto.RestoRepository;
 import com.roulette.resto.repository.social.AccountRepository;
 import com.roulette.resto.repository.social.InteractionRepository;
 import com.roulette.resto.service.resto.RestoService;
@@ -20,7 +19,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,8 +31,8 @@ public class SocialService {
 	private final RestoService restoService;
 	private final AccountRepository accountRepository;
 	public record FollowersStatus(
-			@JsonProperty("isFollower") boolean isFollower,
-			@JsonProperty("isFollowed") boolean isFollowed,
+//			@JsonProperty("isFollower") boolean isFollower,
+//			@JsonProperty("isFollowed") boolean isFollowed,
 			@JsonProperty("followingStatus") FollowingStatus followingStatus
 	) {}
 	public SocialService(InteractionRepository interactionRepository, RestoService restoService, AccountRepository accountRepository) {
@@ -100,25 +98,29 @@ public class SocialService {
 		return socialInteractionResponses;
 	}
 
-	public FollowersStatus getFollowersStatus(Account account, Account otherAccountId)  {
-		boolean isFollowed =
-				accountRepository.getFollowersByAccountId(account.getAccountId()).contains(new MinimalAccountInfo(otherAccountId));
-		boolean isFollower =
-				accountRepository.getFollowersByAccountId(otherAccountId.getAccountId()).contains(new MinimalAccountInfo(account));
-		if(isFollowed && isFollower) {
-			return new FollowersStatus(true, true, FollowingStatus.BOTH_FOLLOW);
-		}
-		else if(isFollowed) {
-			return new FollowersStatus(false, true, FollowingStatus.FOLLOWING);
-		}
-		else if(isFollower) {
-			return new FollowersStatus(true, false, FollowingStatus.FOLLOW_ME);
-		}
-		else  {
-			return new FollowersStatus(false, false, FollowingStatus.NONE);
-		}
+	public FollowersStatus getFollowersStatus(Account account, Account otherAccountId){
+		return getFollowersStatus(new MinimalAccountInfo(account), new MinimalAccountInfo(otherAccountId));
 	}
 
+	public FollowersStatus getFollowersStatus(MinimalAccountInfo account, MinimalAccountInfo otherAccountId)  {
+		boolean isFriend =
+				accountRepository.getFollowersByAccountId(account.getAccountId()).contains(otherAccountId);
+		boolean isAsking  =
+				accountRepository.getIngoingFollowingRequest(account.getAccountId()).contains(otherAccountId);
+		boolean isAsked = accountRepository.getIngoingFollowingRequest(otherAccountId.getAccountId()).contains(account);
+		if(isFriend) {
+			return new FollowersStatus(FollowingStatus.FRIENDS);
+		}
+		else if(isAsking) {
+			return new FollowersStatus(FollowingStatus.INCOMING_REQUEST);
+		}
+		else if(isAsked) {
+			return new FollowersStatus(FollowingStatus.OUTGOING_REQUEST);
+		}
+		else  {
+			return new FollowersStatus(FollowingStatus.NONE);
+		}
+	}
 }
 
 

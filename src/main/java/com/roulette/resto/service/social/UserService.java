@@ -252,19 +252,34 @@ public class UserService {
 		return result;
 	}
 
-	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {
-		List<MinimalAccountInfo>  accountInfos = accountRepository.getFollowingRequestByAccount(accountId);
+	public List<MinimalAccountInfo> getIngoingFollowingRequest(int accountId) {
+		try {
+		List<MinimalAccountInfo>  accountInfos = accountRepository.getIngoingFollowingRequest(accountId);
+		Account account = accountRepository.getAccountById(accountId);
+		MinimalAccountInfo ownInfo = new MinimalAccountInfo(account);
 		for (MinimalAccountInfo accountInfo : accountInfos) {
 			accountInfo.setAvatar(buildMediaUrl(accountInfo.getAvatar()));
+			accountInfo.setFollowingStatus(socialService.getFollowersStatus(ownInfo, accountInfo).followingStatus());
 		}
 		return accountInfos;
+		}catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
+		}
 	}
 
-	public List<MinimalAccountInfo> getUserMatchByLogin(String userLogin) {
-		List<MinimalAccountInfo>  accountInfos = accountRepository.getUserMatchByLogin(userLogin);
-		for (MinimalAccountInfo accountInfo : accountInfos) {
-			accountInfo.setAvatar(buildMediaUrl(accountInfo.getAvatar()));
+	public List<MinimalAccountInfo> getUserMatchByLogin(int accountId, String userLogin)  {
+		try {
+
+			Account account = accountRepository.getAccountById(accountId);
+			MinimalAccountInfo ownInfo = new MinimalAccountInfo(account);
+			List<MinimalAccountInfo>  accountInfos = accountRepository.getUserMatchByLogin(userLogin);
+			for (MinimalAccountInfo accountInfo : accountInfos) {
+				accountInfo.setAvatar(buildMediaUrl(accountInfo.getAvatar()));
+				accountInfo.setFollowingStatus(socialService.getFollowersStatus(ownInfo, accountInfo).followingStatus());
+			}
+			return accountInfos;
+		}catch (AccountNotFoundException e) {
+			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
-		return accountInfos;
 	}
 }

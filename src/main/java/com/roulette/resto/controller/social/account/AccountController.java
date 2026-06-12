@@ -217,8 +217,9 @@ public class AccountController {
 	@GetMapping("/search/{user_login}")
 	@Tag(name = "Account | Admin view")
 	@Operation(summary = "Search users")
-	public ResponseEntity<SearchUserList> searchUsers(@PathVariable String user_login) {
-		List<MinimalAccountInfo> users = userService.getUserMatchByLogin(user_login);
+	public ResponseEntity<SearchUserList> searchUsers(@PathVariable String user_login, Authentication authentication) {
+		int accountId = jwtService.getAccountIdAuthenticated(authentication);
+		List<MinimalAccountInfo> users = userService.getUserMatchByLogin(accountId,user_login);
 		return new ResponseEntity<>(new SearchUserList(users), HttpStatus.OK);
 	}
 }

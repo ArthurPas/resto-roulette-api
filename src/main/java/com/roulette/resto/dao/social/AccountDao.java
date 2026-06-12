@@ -630,7 +630,7 @@ public class AccountDao {
 		return accounts;
 	}
 
-	public List<MinimalAccountInfo> getFollowingRequest(int accountId) {
+	public List<MinimalAccountInfo> getIngoingFollowingRequest(int accountId) {
 		String query = """
                       SELECT
 						a.login,
@@ -645,6 +645,36 @@ public class AccountDao {
                          AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
                       WHERE
                          f.asked_account_id = ?
+                         AND f.accepted_date IS NULL
+                   """;
+
+		List<MinimalAccountInfo> accounts = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement preparedStatement = connection.prepareStatement(query);
+					preparedStatement.setInt(1, accountId);
+					log.debug(preparedStatement.toString());
+					return preparedStatement;
+				},
+				new MinimalAccountRowMapper()
+		);
+		return accounts;
+	}
+
+	public List<MinimalAccountInfo> getOutgoingFollowingRequest(int accountId) {
+		String query = """
+                      SELECT
+						a.login,
+						a.account_id,
+						uum.resource_id AS avatar,
+						ui.last_name,
+						ui.first_name
+                      FROM follower f
+                      JOIN account a ON f.ask_account_id = a.account_id
+					  JOIN resto_roulette.user_info ui on a.user_info_id = ui.user_info_id
+                      LEFT JOIN resto_roulette.user_user_medias uum ON a.account_id = uum.account_id
+                         AND uum.media_type_id = (SELECT media_type_id FROM media_type WHERE type = 'AVATAR')
+                      WHERE
+                         f.ask_account_id = ?
                          AND f.accepted_date IS NULL
                    """;
 

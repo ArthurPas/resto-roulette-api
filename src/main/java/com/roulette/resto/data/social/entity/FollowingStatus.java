@@ -1,9 +1,9 @@
 package com.roulette.resto.data.social.entity;
 
 public enum FollowingStatus {
-	FOLLOW_ME,
-	FOLLOWING,
-	BOTH_FOLLOW,
+	OUTGOING_REQUEST,
+	INCOMING_REQUEST,
+	FRIENDS,
 	NONE
 
 }

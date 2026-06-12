@@ -24,10 +24,17 @@ public class CampaignInterceptor implements HandlerInterceptor {
 	}
 
 	@Override
-	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView){
+	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
 		log.info("CampaignInterceptor postHandle");
+
 		if (handler instanceof HandlerMethod handlerMethod) {
 			TrackCampaign annotation = handlerMethod.getMethodAnnotation(TrackCampaign.class);
+
+			// Add this guard clause
+			if (annotation == null) {
+				return;
+			}
+
 			switch (annotation.type()) {
 				case "Resto":
 					Map<String, String> pathVariables =

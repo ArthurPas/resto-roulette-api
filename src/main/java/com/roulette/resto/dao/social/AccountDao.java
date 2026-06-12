@@ -665,11 +665,12 @@ public class AccountDao {
 	}
 	public List<MinimalAccountInfo> getUserMatchByLogin(String userLogin) {
 		if (userLogin == null || userLogin.isBlank()) return Collections.emptyList();
+		String prefixPattern = userLogin.substring(0, Math.min(userLogin.length(), 3)) + "%";
 
-		String pattern = "%" + userLogin.substring(0, Math.min(userLogin.length(), 3)) + "%";
+		String pattern = (userLogin.length() < 3) ? "%" + userLogin + "%" : prefixPattern;
 
-		String query = "SELECT account_id FROM account WHERE login LIKE ? LIMIT 50";
-		List<Long> ids = jdbcTemplate.queryForList(query, Long.class, pattern);
+		String queryIds = "SELECT account_id FROM account WHERE login LIKE ? LIMIT 20";
+		List<Long> ids = jdbcTemplate.queryForList(queryIds, Long.class, pattern);
 
 		if (ids.isEmpty()) return Collections.emptyList();
 		NamedParameterJdbcTemplate namedJdbc = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
@@ -686,8 +687,9 @@ public class AccountDao {
 		List<MinimalAccountInfo> candidates = namedJdbc.query(queryDetails, params, new MinimalAccountRowMapper());
 
 		LevenshteinDistance dist = new LevenshteinDistance();
+		int tolerance = (userLogin.length() < 6) ? 10 : 3;
 		return candidates.stream()
-				.filter(acc -> dist.apply(acc.getLogin(), userLogin) <= 3)
+				.filter(acc -> dist.apply(acc.getLogin(), userLogin) <= tolerance)
 				.sorted(Comparator.comparingInt(acc -> dist.apply(acc.getLogin(), userLogin)))
 				.collect(Collectors.toList());
 	}

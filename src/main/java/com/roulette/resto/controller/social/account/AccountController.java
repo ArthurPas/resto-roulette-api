@@ -215,7 +215,7 @@ public class AccountController {
 		return new ResponseEntity<>(userInfoDto, HttpStatus.OK);
 	}
 	@GetMapping("/search/{user_login}")
-	@Tag(name = "Account | Admin view")
+	@Tag(name = "Social | User profile")
 	@Operation(summary = "Search users")
 	public ResponseEntity<SearchUserList> searchUsers(@PathVariable String user_login, Authentication authentication) {
 		int accountId = jwtService.getAccountIdAuthenticated(authentication);

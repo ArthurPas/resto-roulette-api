@@ -12,8 +12,10 @@ import com.roulette.resto.data.social.entity.Account;
 import com.roulette.resto.data.social.dto.MinimalAccountInfo;
 import com.roulette.resto.data.social.entity.UserInfo;
 import com.roulette.resto.exception.APIError;
+import com.roulette.resto.repository.roulette.ActivityRepository;
 import com.roulette.resto.repository.social.AccountRepository;
 import com.roulette.resto.repository.social.InteractionRepository;
+import com.roulette.resto.service.roulette.ActivityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -43,16 +45,17 @@ public class UserService {
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
 	private final SocialService socialService;
-
+	private	final ActivityRepository activityRepository;
 
 	public UserService(AccountRepository accountRepository, InteractionRepository interactionRepository,
 					   AuthenticationManager authenticationManager,
-					   PasswordEncoder passwordEncoder, SocialService socialService, SocialService socialService1) {
+					   PasswordEncoder passwordEncoder, SocialService socialService, SocialService socialService1, ActivityRepository activityRepository) {
 		this.accountRepository = accountRepository;
 		this.interactionRepository = interactionRepository;
 		this.authenticationManager = authenticationManager;
 		this.passwordEncoder = passwordEncoder;
 		this.socialService = socialService1;
+		this.activityRepository = activityRepository;
 	}
 
 
@@ -65,7 +68,10 @@ public class UserService {
 		} catch (AccountNotFoundException e) {
 			throw new APIError(64, HttpStatus.NOT_FOUND);
 		}
-		userInfoDto.setUserInfo(account.getUserInfo());
+		int nbActivityPending = activityRepository.getNbActivityPendingByAccountId(account.getAccountId());
+		UserInfo userInfo = account.getUserInfo();
+		userInfo.setNbActivityPending(nbActivityPending);
+		userInfoDto.setUserInfo(userInfo);
 		userInfoDto.setLogin(account.getLogin());
 
 		List<MediaResource> mediaResources = accountRepository.getAccountMedias(id);
@@ -79,6 +85,9 @@ public class UserService {
 	public UserInfoDto getUserInfoByLogin(String login) {
 		try {
 			Account account = accountRepository.getAccountByLogin(login);
+			int nbActivityPending = activityRepository.getNbActivityPendingByAccountId(account.getAccountId());
+			UserInfo userInfo = account.getUserInfo();
+			userInfo.setNbActivityPending(nbActivityPending);
 			UserInfoDto userInfoDto = new UserInfoDto();
 			userInfoDto.setUserInfo(account.getUserInfo());
 			userInfoDto.setLogin(account.getLogin());

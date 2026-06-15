@@ -51,29 +51,25 @@ public class RestoDao {
              INSERT INTO resto (display_name, owner_id, created_at, verification_status)
              VALUES (?, ?, ?, ?)
              """;
+		int accountId = restaurant.getOwner().getAccountId();
 		try {
-			int accountId = accountDao.getAccountId(restaurant.getOwner());
-			try {
-				jdbcTemplate.update(conn -> {
-					PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-					preparedStatement.setString(1, restaurant.getDisplayName());
-					preparedStatement.setInt(2, accountId);
-					preparedStatement.setDate(3, createdDate);
-					preparedStatement.setString(4, VerificationStatus.UNVERIFIED.toString());
-					log.debug("Executing query {}",preparedStatement);
-					return preparedStatement;
-				}, generatedKeyHolder);
-				int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
-				this.createRestoInfos(restaurant, restoId);
-				this.linkFoodsType(restoId, restaurant.getFoodTypes());
-				this.addLabelsToResto(restoId, restaurant.getLabels());
-				return restoId;
-			} catch (DuplicateKeyException e) {
-				log.error(e.getMessage());
-				throw e;
-			}
-		} catch (AccountNotFoundException e) {
-			throw new RuntimeException(e);
+			jdbcTemplate.update(conn -> {
+				PreparedStatement preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setString(1, restaurant.getDisplayName());
+				preparedStatement.setInt(2, accountId);
+				preparedStatement.setDate(3, createdDate);
+				preparedStatement.setString(4, VerificationStatus.UNVERIFIED.toString());
+				log.debug("Executing query {}",preparedStatement);
+				return preparedStatement;
+			}, generatedKeyHolder);
+			int restoId = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
+			this.createRestoInfos(restaurant, restoId);
+			this.linkFoodsType(restoId, restaurant.getFoodTypes());
+			this.addLabelsToResto(restoId, restaurant.getLabels());
+			return restoId;
+		} catch (DuplicateKeyException e) {
+			log.error(e.getMessage());
+			throw e;
 		}
 	}
 

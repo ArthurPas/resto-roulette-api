@@ -577,6 +577,12 @@ public class AccountDao {
 				log.debug(preparedStatement.toString());
 				return preparedStatement;
 			});
+			String insertQuery = "INSERT INTO follower (ask_account_id, asked_account_id, accepted_date) VALUES (?, ?, ?)";
+			try {
+				jdbcTemplate.update(insertQuery, accountAskedId, accountAskerId, new Date(System.currentTimeMillis()));
+			} catch (DataIntegrityViolationException e) {
+				log.error("Erreur while followback");
+			}
 		} catch (DataIntegrityViolationException e) {
 			log.error(e.getMessage());
 			throw new AccountNotFoundException("accountAsked for follow doesnt exist");

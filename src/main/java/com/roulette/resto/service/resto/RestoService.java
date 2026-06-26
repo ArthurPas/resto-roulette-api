@@ -168,11 +168,11 @@ public class RestoService {
 		return restoRepository.getRestoByOwner(accountId);
 	}
 
-	public List<RestoDto> getRestosByTypes(Set<String> foodTypes) throws APIError {
+	public Set<RestoDto> getRestosByTypes(Set<String> foodTypes) throws APIError {
 		Set<String> existingFoodTypesList = existingFoodTypesList(foodTypes);
 //		log.info("Found {} food types for this session", existingFoodTypesList.toString());
 		List<Restaurant> resto = restoRepository.getRestosByTypes(existingFoodTypesList);
-		return new ArrayList<>(resto.stream().map(RestoDto::new).toList());
+		return new HashSet<>(resto.stream().map(RestoDto::new).toList());
 	}
 
 	private MediaResource addMenuPicture(String restoId, MultipartFile menuPicture) throws APIError {

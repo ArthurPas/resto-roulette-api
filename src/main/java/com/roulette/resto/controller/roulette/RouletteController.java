@@ -21,7 +21,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @Slf4j
@@ -85,7 +87,7 @@ public class RouletteController {
 		AccountsInSession accountsInSession = rouletteService.getAccountsStatus(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.SWIPE);
-		List<String> accountInSession = accountsInSession.getAccountsJoined();
+		Set<String> accountInSession = accountsInSession.getAccountsJoined();
 		response.setAccountsInSession(accountInSession);
 		accountInSession.removeAll(accountsInSession.getAccountsSwiped());
 		response.setAccountsRemaining(accountInSession);
@@ -95,7 +97,7 @@ public class RouletteController {
 	@MessageMapping("/swipe-done/{sessionId}")
 	@SendTo("/session/{sessionId}")
 	public BroadcastSessionResponse sendResto(@DestinationVariable String sessionId) {
-		List<RestoDto> restos = rouletteService.getMatchedRestosBySessionId(sessionId);
+		Set<RestoDto> restos = rouletteService.getMatchedRestosBySessionId(sessionId);
 		rouletteService.saveMatchingRestos(restos,sessionId);
 //		log.info("{} restos : {}", sessionId, restos);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
@@ -115,9 +117,9 @@ public class RouletteController {
 		AccountsInSession status = rouletteService.getAccountsStatus(sessionId);
 		BroadcastSessionResponse response = new BroadcastSessionResponse();
 		response.setStatus(SessionStatus.VETO);
-		List<String> totalJoined = new ArrayList<>(status.getAccountsJoined());
+		Set<String> totalJoined = new HashSet<>(status.getAccountsJoined());
 		response.setAccountsInSession(totalJoined);
-		List<String> remaining = new ArrayList<>(totalJoined);
+		Set<String> remaining = new HashSet<>(totalJoined);
 		remaining.removeAll(status.getAccountsVeto());
 		response.setAccountsRemaining(remaining);
 		response.setRestoCandidates(rouletteService.getRestoBySession(sessionId));

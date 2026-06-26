@@ -25,10 +25,14 @@ public class RouletteRepository {
 	public AccountsInSession addAccountIdToSession(String sessionId, String login) {
 		rouletteDao.addAccountIdToSession(sessionId, login);
 		RouletteSession rouletteSession = rouletteDao.getSession(sessionId);
-		List<String> logins =
-				rouletteSession.getAccountChoices().stream().map(AccountChoices::getLogin).collect(Collectors.toList());
+
+		Set<String> logins = rouletteSession.getAccountChoices().stream()
+				.map(AccountChoices::getLogin)
+				.collect(Collectors.toSet());
+
 		AccountsInSession accountsJoined = new AccountsInSession();
 		accountsJoined.setAccountsJoined(logins);
+
 		log.info(accountsJoined.toString());
 		return accountsJoined;
 	}

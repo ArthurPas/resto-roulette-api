@@ -53,9 +53,9 @@ public class RouletteService {
 	public AccountsInSession getAccountsStatus(String sessionId) {
 		RouletteSession rouletteSession = rouletteRepository.getSessionById(sessionId);
 
-		List<String> accountsId = new ArrayList<>();
-		List<String> accountsIdSwiped = new ArrayList<>();
-		List<String> accountsIdVeto = new ArrayList<>();
+		Set<String> accountsId = new HashSet<>();
+		Set<String> accountsIdSwiped = new HashSet<>();
+		Set<String> accountsIdVeto = new HashSet<>();
 
 		for (AccountChoices ac : rouletteSession.getAccountChoices()) {
 			String login = ac.getLogin();
@@ -76,10 +76,10 @@ public class RouletteService {
 //		log.info("{} veto : {}", sessionId, accountsInSession);
 		return accountsInSession;
 	}
-	public List<RestoDto> getMatchedRestosBySessionId(String sessionId) {
+	public Set<RestoDto> getMatchedRestosBySessionId(String sessionId) {
 		List<AccountChoices> choices = rouletteRepository.getChoiceBySession(sessionId);
 		if (choices.isEmpty()) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 		Set<String> foodTypesCommon = new HashSet<>(choices.getFirst().getFoodLiked());
 		for (AccountChoices choice : choices) {
@@ -88,13 +88,13 @@ public class RouletteService {
 
 		log.info("Found {} common food types for this session", foodTypesCommon.size());
 		if (foodTypesCommon.isEmpty()) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 
 		return restoService.getRestosByTypes(foodTypesCommon);
 	}
 
-	public void saveMatchingRestos(List<RestoDto> restoDtos, String sessionId) {
+	public void saveMatchingRestos(Set<RestoDto> restoDtos, String sessionId) {
 		Set<Integer> restoIds = new HashSet<>();
 		for (RestoDto restoDto : restoDtos) {
 			restoIds.add(restoDto.getId());
@@ -102,9 +102,9 @@ public class RouletteService {
 		rouletteRepository.saveMatchingRestos(restoIds,sessionId);
 	}
 
-	public List<RestoDto> removeResto(String sessionId, VetoResto vetoPayload) {
+	public Set<RestoDto> removeResto(String sessionId, VetoResto vetoPayload) {
 		if (vetoPayload == null || vetoPayload.getRestoIds() == null) {
-			return new ArrayList<>();
+			return new HashSet<>();
 		}
 		Set<Integer> ids = rouletteRepository.removeRestos(sessionId, vetoPayload);
 
@@ -112,7 +112,7 @@ public class RouletteService {
 	}
 
 	public RestoDto randomWinnerResto(String sessionId) {
-		List<RestoDto> remainingRestos = this.getRestoBySession(sessionId);
+		Set<RestoDto> remainingRestos = this.getRestoBySession(sessionId);
 		if (remainingRestos == null || remainingRestos.isEmpty()) {
 			return null;
 		}
@@ -120,21 +120,21 @@ public class RouletteService {
 		Random random = new Random();
 		int randomIndex = random.nextInt(remainingRestos.size());
 
-		return remainingRestos.get(randomIndex);
+		return remainingRestos.stream().toList().get(randomIndex);
 	}
 
-	public List<RestoDto> getRestoBySession(String sessionId) {
+	public Set<RestoDto> getRestoBySession(String sessionId) {
 
 		Set<Integer> ids = rouletteRepository.getRestosBySession(sessionId);
 		return getRestosDtosByIds(ids);
 	}
 
-	private List<RestoDto> getRestosDtosByIds(Set<Integer> ids) {
+	private Set<RestoDto> getRestosDtosByIds(Set<Integer> ids) {
 		if (ids == null) {
-			return new ArrayList<>();
+			return new HashSet<>();
 		}
 
-		List<RestoDto> restoDtos = new ArrayList<>();
+		Set<RestoDto> restoDtos = new HashSet<>();
 		List<Restaurant> restos = restoService.getRestosBasicInfoByIds(ids);
 //		log.info("Found {} restos for this session", restoDtos);
 		for (Restaurant resto : restos) {

@@ -6,15 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class BroadcastSessionResponse {
 	SessionStatus status = SessionStatus.LOBBY;
-	List<String> accountsInSession = new ArrayList<>();
-	List<String> accountsRemaining = new ArrayList<>();
-	List<RestoDto> restoCandidates  = new ArrayList<>();
+	Set<String> accountsInSession = new HashSet<>();
+	Set<String> accountsRemaining = new HashSet<>();
+	Set<RestoDto> restoCandidates  = new HashSet<>();
 	RestoDto winner;
 }
